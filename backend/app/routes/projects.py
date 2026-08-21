@@ -1,0 +1,32 @@
+from fastapi import APIRouter, HTTPException
+from backend.app.services.benchmark_service import peer_benchmark
+from backend.app.services.data_service import list_projects, row_to_dict, sectors, get_project
+from backend.app.services.prediction_service import project_prediction
+
+router = APIRouter(prefix="/api/projects", tags=["projects"])
+
+@router.get("")
+def projects(search: str | None = None, sector: str | None = None, limit: int = 100):
+    df = list_projects(search, sector).head(max(1, min(limit, 200)))
+    return {"items": [row_to_dict(r) for _, r in df.iterrows()], "sectors": sectors()}
+
+@router.get("/{code}")
+def project(code: str):
+    try:
+        return row_to_dict(get_project(code))
+    except KeyError:
+        raise HTTPException(404, "Project not found")
+
+@router.get("/{code}/prediction")
+def prediction(code: str):
+    try:
+        return project_prediction(code)
+    except KeyError:
+        raise HTTPException(404, "Project not found")
+
+@router.get("/{code}/peers")
+def peers(code: str):
+    try:
+        return peer_benchmark(code)
+    except KeyError:
+        raise HTTPException(404, "Project not found")

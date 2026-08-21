@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "dataset_rows": 96,
+    "dataset_kind": "curated official PAIMANA May 2026 public-project subset",
+    "forecasting_note": "These trained models are real-data baseline models for observed overrun state. Forward-horizon labels require the full monthly OCMS/PAIMANA archive; the codebase includes the longitudinal replay pipeline and does not present these baselines as future-ground-truth models."
+  },
+  "schedule_classifier": {
+    "logistic_regression": {"rows": 70,"folds": 5,"accuracy": 0.7286,"f1": 0.8376,"roc_auc": 0.5242,"positive_rate": 0.8857},
+    "random_forest": {"rows": 70,"folds": 5,"accuracy": 0.8857,"f1": 0.9385,"roc_auc": 0.8145,"positive_rate": 0.8857},
+    "xgboost": {"rows": 70,"folds": 5,"accuracy": 0.9143,"f1": 0.9531,"roc_auc": 0.8952,"positive_rate": 0.8857},
+    "catboost": {"rows": 70,"folds": 5,"accuracy": 0.8857,"f1": 0.9365,"roc_auc": 0.8286,"positive_rate": 0.8857},
+    "best_model": "xgboost"
+  },
+  "cost_classifier": {
+    "logistic_regression": {"rows": 56,"folds": 5,"accuracy": 0.75,"f1": 0.6818,"roc_auc": 0.8445,"positive_rate": 0.4107},
+    "random_forest": {"rows": 56,"folds": 5,"accuracy": 0.7857,"f1": 0.7143,"roc_auc": 0.7892,"positive_rate": 0.4107},
+    "xgboost": {"rows": 56,"folds": 5,"accuracy": 0.7857,"f1": 0.7,"roc_auc": 0.8511,"positive_rate": 0.4107},
+    "catboost": {"rows": 56,"folds": 5,"accuracy": 0.7679,"f1": 0.6829,"roc_auc": 0.8327,"positive_rate": 0.4107},
+    "best_model": "xgboost"
+  },
+  "schedule_regressor": {
+    "linear_regression": {"rows": 70,"folds": 5,"mae": 1019.1993,"rmse": 4375.0199,"r2": -21.6688},
+    "random_forest": {"rows": 70,"folds": 5,"mae": 269.9092,"rmse": 616.7132,"r2": 0.5496},
+    "xgboost": {"rows": 70,"folds": 5,"mae": 291.9795,"rmse": 618.8373,"r2": 0.5465},
+    "catboost": {"rows": 70,"folds": 5,"mae": 273.0491,"rmse": 630.5537,"r2": 0.5291},
+    "best_model": "random_forest"
+  },
+  "cost_regressor": {
+    "linear_regression": {"rows": 56,"folds": 4,"mae": 51.5805,"rmse": 142.3163,"r2": -6.5823},
+    "random_forest": {"rows": 56,"folds": 4,"mae": 23.0183,"rmse": 39.014,"r2": 0.4302},
+    "xgboost": {"rows": 56,"folds": 4,"mae": 23.3272,"rmse": 40.7046,"r2": 0.3797},
+    "catboost": {"rows": 56,"folds": 4,"mae": 25.0482,"rmse": 40.755,"r2": 0.3782},
+    "best_model": "random_forest"
+  }
+}
+Saved 16 trained model artifacts to /mnt/data/SIH-26/models

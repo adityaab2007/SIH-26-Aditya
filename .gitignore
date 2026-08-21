@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.DS_Store
+catboost_info/
+test-output/
+*.log
+# Reproducible generated ML artifacts (trained automatically on first run)
+models/*.joblib
+# Reproducible generated dataset outputs
+data/raw/*.csv
+data/processed/*.csv
+models/global_feature_importance.json
+models/metrics.json
+models/registry.json
