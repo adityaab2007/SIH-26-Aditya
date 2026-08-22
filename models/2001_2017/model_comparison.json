@@ -3,54 +3,54 @@
   "cost_candidates": [
     {
       "model": "catboost",
-      "MAE": 19.5702
+      "MAE": 16.0247
     },
     {
       "model": "lightgbm",
-      "MAE": 21.0362
+      "MAE": 19.5796
     },
     {
       "model": "xgboost",
-      "MAE": 17.5053
+      "MAE": 16.3314
     },
     {
       "model": "random_forest",
-      "MAE": 19.0957
+      "MAE": 16.1964
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 30.5848
+      "MAE": 17.7857
     }
   ],
   "delay_candidates": [
     {
       "model": "catboost",
-      "MAE": 346.5194
+      "MAE": 298.0928
     },
     {
       "model": "lightgbm",
-      "MAE": 342.1431
+      "MAE": 300.2179
     },
     {
       "model": "xgboost",
-      "MAE": 338.713
+      "MAE": 300.4178
     },
     {
       "model": "random_forest",
-      "MAE": 369.9531
+      "MAE": 380.8607
     },
     {
       "model": "two_stage_catboost",
-      "MAE": 264.3273
+      "MAE": 347.9947
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 346.3975
+      "MAE": 1755.8223
     }
   ],
   "selected": {
-    "cost": "xgboost",
-    "delay": "two_stage_catboost"
+    "cost": "catboost",
+    "delay": "catboost"
   },
   "stacking_policy": "CatBoost + LightGBM + XGBoost with LinearRegression meta-model is selected only when its later-year MAE beats every individual model."
 }

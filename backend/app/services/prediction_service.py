@@ -7,7 +7,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.real_time_windows import FEATURES, _predict_regressor, active_version, model_dir
+from backend.app.ml.real_time_windows import FEATURES, _predict_regressor, active_version, features, model_dir, predict_quantiles
 from backend.app.services.data_service import get_project
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -22,12 +22,38 @@ def _model_inputs(project: pd.Series) -> pd.DataFrame:
     # The current PAIMANA monitoring extract does not publish implementing
     # agency for every row. Use its explicit categorical missing value, not a
     # fabricated numerical fallback.
-    return pd.DataFrame([{
+    raw = pd.DataFrame([{
         "approved_cost_cr": float(approved_cost),
         "sector": str(project.get("sector") or "Not reported"),
+        "ministry": str(project.get("ministry") or "Not reported"),
         "implementing_agency": str(project.get("implementing_agency") or "Not reported"),
-        "planned_commissioning_year": int(planned_date.year),
+        "state": str(project.get("state") or "Not reported"),
+        "planned_commissioning_date": planned_date,
+        "revised_cost_cr": project.get("revised_cost_cr"),
+        "current_expenditure_cr": project.get("expenditure_cr"),
+        "physical_progress": project.get("physical_progress_pct"),
+        "snapshot_date": project.get("snapshot_date"),
+        "revised_completion_date": project.get("revised_end_date"),
     }])
+    return features(raw)[FEATURES]
+
+
+def _completion_probabilities(target, X: pd.DataFrame, planned: pd.Timestamp) -> list[dict]:
+    path = target / "survival_model.pkl"
+    if not path.exists():
+        return []
+    try:
+        bundle = joblib.load(path)
+        covariates = X[bundle["features"]].copy().fillna(bundle["medians"]).fillna(0)
+        values = []
+        for year in range(max(pd.Timestamp.today().year, planned.year), max(pd.Timestamp.today().year, planned.year) + 3):
+            horizon = max(1, (pd.Timestamp(year=year, month=12, day=31) - planned).days + 1)
+            survival = bundle["model"].predict_survival_function(covariates, times=[horizon])
+            probability = 1.0 - float(survival.iloc[0, 0])
+            values.append({"year": year, "probability_percentage": round(np.clip(probability, 0, 1) * 100, 1)})
+        return values
+    except Exception:
+        return []
 
 
 def project_forecast(code: str) -> dict:
@@ -46,6 +72,15 @@ def project_forecast(code: str) -> dict:
     # signed early/late completion outcomes, while a negative live estimate is
     # represented as no predicted delay rather than a negative delay duration.
     delay = max(0.0, float(_predict_regressor(delay_model, X, delay_target=True)[0]))
+    uncertainty = joblib.load(target / "uncertainty_models.pkl") if (target / "uncertainty_models.pkl").exists() else None
+    expected_range = None
+    if uncertainty:
+        cost_q = predict_quantiles(uncertainty["cost"], X, delay_target=False)
+        delay_q = predict_quantiles(uncertainty["delay"], X, delay_target=True)
+        expected_range = {
+            "cost_overrun_percentage": {label: round(float(values[0]), 2) for label, values in cost_q.items()},
+            "delay_days": {label: round(float(values[0]), 1) for label, values in delay_q.items()},
+        }
     risk_prediction = int(np.asarray(risk_model.predict(X), dtype=int).reshape(-1)[0])
     probability = float(np.asarray(risk_model.predict_proba(X))[0][1]) if hasattr(risk_model, "predict_proba") and len(np.asarray(risk_model.predict_proba(X))[0]) > 1 else float(risk_prediction)
     planned = pd.to_datetime(project.original_end_date, errors="coerce")
@@ -70,6 +105,9 @@ def project_forecast(code: str) -> dict:
         "risk_score": round(probability * 100, 1), "risk_level": "HIGH" if risk_prediction else "LOW",
         "explanation": factors, "shap_explanation": factors, "cost_factors": factors, "delay_factors": _shap_factors_for_model(delay_model, X.iloc[0]),
         "best_models": {"cost": metadata.get("algorithms", {}).get("cost", "registered model"), "delay": metadata.get("algorithms", {}).get("delay", "registered model")},
+        "expected_range": expected_range,
+        "completion_probabilities": _completion_probabilities(target, X, planned),
+        "features_used": metadata.get("features_used", FEATURES),
         "model_scope": f"Real PAIMANA time-window model {version}; final expenditure and completion date are not inference inputs.",
     }
 

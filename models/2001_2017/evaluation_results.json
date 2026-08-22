@@ -1,23 +1,26 @@
 {
   "model_version": "2001_2017",
   "cost_model": {
-    "MAE": 34.76,
-    "RMSE": 61.607,
-    "MAPE": 208.232,
-    "accuracy_percentage": 7.53
+    "MAE": 32.662,
+    "RMSE": 61.832,
+    "R2": -0.0753,
+    "MAPE": 287.122,
+    "accuracy_percentage": 7.54
   },
   "delay_model": {
-    "MAE": 1055.691,
-    "MAE_days": 1055.691,
-    "RMSE": 1505.122,
-    "RMSE_days": 1505.122,
-    "accuracy_percentage": 21.59
+    "MAE": 1111.656,
+    "MAE_days": 1111.656,
+    "RMSE": 1554.006,
+    "RMSE_days": 1554.006,
+    "R2": -0.7289,
+    "log_target_RMSE": 1.5239,
+    "accuracy_percentage": 20.93
   },
   "risk_model": {
-    "accuracy": 0.8772,
-    "precision": 0.9259,
-    "recall": 0.9434,
-    "f1": 0.9346
+    "accuracy": 0.9551,
+    "precision": 0.9803,
+    "recall": 0.9739,
+    "f1": 0.977
   },
   "metadata": {
     "model_version": "2001_2017",
@@ -25,23 +28,121 @@
     "training_end": 2017,
     "test_start": 2018,
     "test_end": 2024,
+    "testing_start": 2018,
+    "testing_end": 2024,
     "available_actual_end": 2024,
     "features_used": [
       "approved_cost_cr",
+      "approved_cost_log",
+      "planned_commissioning_year",
+      "planned_commissioning_month",
+      "revised_cost_cr",
+      "current_expenditure_cr",
+      "physical_progress",
+      "planned_duration_days",
+      "elapsed_duration_days",
+      "cost_escalation_percentage",
+      "budget_stress_index",
+      "expenditure_ratio",
+      "cost_growth_velocity",
+      "cost_revision_count",
+      "progress_deviation",
+      "progress_velocity",
+      "progress_acceleration",
+      "duration_ratio",
+      "schedule_slippage_score",
+      "milestone_delay_count",
+      "complexity_score",
       "sector",
+      "ministry",
       "implementing_agency",
-      "planned_commissioning_year"
+      "state",
+      "project_size_category"
     ],
-    "training_samples": 629,
+    "feature_count": 26,
+    "feature_availability": {
+      "available_when_published_at_cutoff": [
+        "approved_cost_cr",
+        "approved_cost_log",
+        "planned_commissioning_year",
+        "planned_commissioning_month",
+        "revised_cost_cr",
+        "current_expenditure_cr",
+        "physical_progress",
+        "planned_duration_days",
+        "elapsed_duration_days",
+        "cost_escalation_percentage",
+        "budget_stress_index",
+        "expenditure_ratio",
+        "cost_growth_velocity",
+        "cost_revision_count",
+        "progress_deviation",
+        "progress_velocity",
+        "progress_acceleration",
+        "duration_ratio",
+        "schedule_slippage_score",
+        "milestone_delay_count",
+        "complexity_score",
+        "sector",
+        "ministry",
+        "implementing_agency",
+        "state",
+        "project_size_category"
+      ],
+      "historical_archive_missingness_policy": "Unavailable as-of fields remain NaN/Not reported. No fuzzy joins, zero fills, or synthetic behaviour values are used."
+    },
+    "model_type": {
+      "cost": "catboost",
+      "delay": "catboost",
+      "risk": "catboost_classifier"
+    },
+    "algorithms": {
+      "cost": "catboost",
+      "delay": "catboost",
+      "risk": "CatBoostClassifier"
+    },
+    "validation_method": "latest-year temporal selection plus future-year holdout and expanding rolling validation",
+    "outlier_policy": "Invalid labels are rejected by explicit rules. Valid extremes remain, with MAE/Huber objectives, log1p delay, and robust sample weighting.",
+    "label_quality": {
+      "source_rows": 800,
+      "invalid_cost_labels_removed": 294,
+      "invalid_delay_labels_removed": 276,
+      "valid_joint_labels": 459,
+      "cost_policy": "approved_cost > 0; final cost present and > 0; -90% <= overrun <= 1000%",
+      "delay_policy": "both dates present and actual completion is not before planned completion",
+      "missing_targets_filled_with_zero": false
+    },
+    "uncertainty": {
+      "method": "CatBoost quantile regression",
+      "quantiles": [
+        0.1,
+        0.5,
+        0.9
+      ]
+    },
+    "survival_experiment": {
+      "status": "available",
+      "model": "Cox proportional hazards",
+      "duration": "non-negative delay days + 1",
+      "event": "official completion",
+      "features": [
+        "approved_cost_log",
+        "planned_commissioning_year",
+        "planned_commissioning_month",
+        "complexity_score"
+      ],
+      "use_policy": "Advanced probability experiment only; it does not replace cost/delay models."
+    },
+    "training_samples": 303,
     "data_source": "Official PAIMANA completed-project archive reports",
     "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
     "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
-    "created_at": "2026-08-22T18:35:59.457341+00:00",
+    "created_at": "2026-08-22T19:42:25.983813+00:00",
     "status": "trained",
     "evaluated_test_start": 2018,
     "evaluated_test_end": 2024,
     "pending_actual_outcomes": [],
-    "testing_samples": 171,
+    "testing_samples": 156,
     "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."
   }
 }

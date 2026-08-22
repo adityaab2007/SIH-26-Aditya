@@ -32,6 +32,7 @@ def validation_rows(version: str | None = None) -> pd.DataFrame:
 def validation_payload(limit: int = 100, version: str | None = None) -> dict:
     all_rows = validation_rows(version)
     frame = all_rows.head(max(1, min(limit, 500)))
-    safe = frame.replace([float("inf"), float("-inf")], pd.NA).astype(object)
+    safe = frame.astype(object)
+    safe = safe.where(~frame.isin([float("inf"), float("-inf")]), None)
     safe = safe.where(pd.notna(safe), None)
     return {"model_version": _version(version), "items": safe.to_dict(orient="records"), "total": int(len(all_rows))}

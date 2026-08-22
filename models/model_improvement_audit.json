@@ -1,0 +1,67 @@
+{
+  "audit_scope": "Pre-improvement real PAIMANA time-window forecasting pipeline",
+  "active_model_version": "2001_2017",
+  "current_models": {
+    "cost": "CatBoostRegressor with MAE loss",
+    "delay": "CatBoostRegressor with signed log1p target and MAE loss",
+    "risk": "CatBoostClassifier"
+  },
+  "current_features": [
+    "approved_cost_cr",
+    "sector",
+    "implementing_agency",
+    "planned_commissioning_year"
+  ],
+  "current_metrics": {
+    "cost_MAE_percentage_points": 36.821,
+    "cost_RMSE_percentage_points": 63.589,
+    "delay_MAE_days": 1284.944,
+    "delay_RMSE_days": 1686.425,
+    "risk_accuracy": 0.5556,
+    "risk_f1": 0.6935,
+    "testing_samples": 171
+  },
+  "target_distributions": {
+    "raw_cost_overrun_percentage": {
+      "count": 800,
+      "min": -100.0,
+      "p25": -99.6586,
+      "median": -32.7000,
+      "p75": -3.7547,
+      "p99": 368.8424,
+      "max": 2629.9703
+    },
+    "raw_delay_days": {
+      "count": 800,
+      "min": -2437,
+      "p25": -62,
+      "median": 213,
+      "p75": 761,
+      "p99": 4472.93,
+      "max": 9434
+    }
+  },
+  "missing_values": {
+    "project_id": 795,
+    "implementing_agency": 798,
+    "approved_cost_cr": 0,
+    "reported_completion_expenditure_cr": 0,
+    "planned_commissioning_date": 0,
+    "completion_date": 0
+  },
+  "outliers": {
+    "cost_IQR_outliers": 30,
+    "delay_IQR_outliers": 82,
+    "invalid_cost_labels_removed_by_new_policy": 294,
+    "invalid_delay_labels_removed_by_new_policy": 276,
+    "finding": "The completed-project parser contains obvious malformed labels near -100 percent and negative delays. These invalid labels dominated the old metrics. Valid extreme positive outcomes remain and will be handled with robust losses, transforms, and sample weights rather than blindly deleted."
+  },
+  "data_availability": {
+    "completed_outcome_rows": 800,
+    "monthly_history_rows": 4692,
+    "monthly_history_snapshot_months": 3,
+    "safe_exact_matches_between_completed_outcomes_and_monthly_history": 0,
+    "constraint": "Behavioural fields are supported by the new feature builder and used when an as-of snapshot publishes them. They are left missing for historical outcome rows that cannot be safely linked; no fuzzy join or synthetic replacement is used."
+  },
+  "validation_methodology": "Selected completion-year range for fitting, later completion years held out; expanding-year rolling validation; future cost/date outcomes excluded from features."
+}

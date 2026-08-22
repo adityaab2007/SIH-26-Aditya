@@ -16,22 +16,36 @@ import joblib
 import numpy as np
 import pandas as pd
 from catboost import CatBoostClassifier, CatBoostRegressor, Pool
+from lightgbm import LGBMRegressor
 from sklearn.compose import ColumnTransformer
+from sklearn.base import clone
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, mean_squared_error, precision_score, recall_score
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, mean_squared_error, precision_score, recall_score, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from xgboost import XGBRegressor
 
 ROOT = Path(__file__).resolve().parents[3]
 OUTCOMES = ROOT / "data" / "processed" / "paimana_completed_outcomes.csv"
 MODELS = ROOT / "models"
 TIME_WINDOW_REGISTRY = MODELS / "time_window_registry.json"
-FEATURES = ["approved_cost_cr", "sector", "implementing_agency", "planned_commissioning_year"]
-NUMERIC = ["approved_cost_cr", "planned_commissioning_year"]
-CATEGORICAL = ["sector", "implementing_agency"]
+NUMERIC = [
+    "approved_cost_cr", "approved_cost_log", "planned_commissioning_year",
+    "planned_commissioning_month", "revised_cost_cr", "current_expenditure_cr",
+    "physical_progress", "planned_duration_days", "elapsed_duration_days",
+    "cost_escalation_percentage", "budget_stress_index", "expenditure_ratio",
+    "cost_growth_velocity", "cost_revision_count", "progress_deviation",
+    "progress_velocity", "progress_acceleration", "duration_ratio",
+    "schedule_slippage_score", "milestone_delay_count", "complexity_score",
+]
+CATEGORICAL = ["sector", "ministry", "implementing_agency", "state", "project_size_category"]
+FEATURES = NUMERIC + CATEGORICAL
 CAT_FEATURE_INDICES = [FEATURES.index(column) for column in CATEGORICAL]
+TARGET_COLUMNS = {"actual_cost_overrun_percentage", "actual_delay_days", "actual_risk", "reported_completion_expenditure_cr", "completion_date", "completion_year"}
+MAX_COST_OVERRUN_PERCENTAGE = 1000.0
 
 
 @dataclass(frozen=True)
@@ -90,45 +104,141 @@ def outcome_data() -> pd.DataFrame:
     return frame
 
 
+def _series(frame: pd.DataFrame, *names: str) -> pd.Series:
+    for name in names:
+        if name in frame.columns:
+            return frame[name]
+    return pd.Series(np.nan, index=frame.index, dtype=float)
+
+
 def features(frame: pd.DataFrame) -> pd.DataFrame:
+    """Build only as-of features; unavailable archival fields remain missing."""
     result = frame.copy()
-    for column in ["completion_date", "planned_commissioning_date"]:
-        result[column] = pd.to_datetime(result[column], errors="coerce")
-    result["approved_cost_cr"] = pd.to_numeric(result["approved_cost_cr"], errors="coerce")
-    result["planned_commissioning_year"] = result["planned_commissioning_date"].dt.year
-    result["completion_year"] = result["completion_date"].dt.year
+    planned = pd.to_datetime(_series(result, "planned_commissioning_date", "planned_completion_date", "original_end_date"), errors="coerce")
+    completed = pd.to_datetime(_series(result, "completion_date", "actual_completion_date"), errors="coerce")
+    snapshot = pd.to_datetime(_series(result, "snapshot_date", "month"), errors="coerce")
+    started = pd.to_datetime(_series(result, "planned_start_date", "original_start_date"), errors="coerce")
+    revised_end = pd.to_datetime(_series(result, "revised_completion_date", "revised_end_date"), errors="coerce")
+    approved = pd.to_numeric(_series(result, "approved_cost_cr", "original_cost", "original_cost_cr"), errors="coerce")
+    revised = pd.to_numeric(_series(result, "revised_cost_cr", "revised_cost"), errors="coerce")
+    expenditure = pd.to_numeric(_series(result, "current_expenditure_cr", "current_expenditure", "expenditure_cr"), errors="coerce")
+    progress = pd.to_numeric(_series(result, "physical_progress", "physical_progress_percentage", "physical_progress_pct"), errors="coerce")
+    result["approved_cost_cr"] = approved
+    result["approved_cost_log"] = np.log1p(approved.where(approved > 0))
+    result["planned_commissioning_date"] = planned
+    result["completion_date"] = completed
+    result["planned_commissioning_year"] = planned.dt.year
+    result["planned_commissioning_month"] = planned.dt.month
+    result["completion_year"] = completed.dt.year
+    result["revised_cost_cr"] = revised
+    result["current_expenditure_cr"] = expenditure
+    result["physical_progress"] = progress
+    result["planned_duration_days"] = (planned - started).dt.days.where(planned.ge(started))
+    result["elapsed_duration_days"] = (snapshot - started).dt.days.where(snapshot.ge(started))
+    result["cost_escalation_percentage"] = ((revised - approved) / approved * 100).where(approved.gt(0) & revised.notna())
+    result["budget_stress_index"] = (revised / approved).where(approved.gt(0) & revised.notna())
+    result["expenditure_ratio"] = (expenditure / approved).where(approved.gt(0) & expenditure.notna())
+    elapsed_years = result["elapsed_duration_days"] / 365.25
+    result["cost_growth_velocity"] = (revised - approved).div(elapsed_years).where(elapsed_years.gt(0) & revised.notna())
+    revisions = pd.to_numeric(_series(result, "cost_revision_count"), errors="coerce")
+    inferred_revision = pd.Series(np.where(revised.notna(), (revised.sub(approved).abs() > 1e-9).astype(float), np.nan), index=result.index)
+    result["cost_revision_count"] = revisions.where(revisions.notna(), inferred_revision)
+    if "project_id" in result.columns and snapshot.notna().any() and revised.notna().any():
+        order = result.assign(_snapshot=snapshot, _revised=revised).sort_values(["project_id", "_snapshot"])
+        changed = order.groupby("project_id", dropna=False)["_revised"].transform(lambda values: values.notna() & values.ne(values.ffill().shift()))
+        revision_count = changed.groupby(order["project_id"], dropna=False).cumsum().astype(float)
+        result.loc[order.index, "cost_revision_count"] = result.loc[order.index, "cost_revision_count"].where(result.loc[order.index, "cost_revision_count"].notna(), revision_count)
+    expected_progress = (result["elapsed_duration_days"] / result["planned_duration_days"] * 100).clip(0, 100)
+    result["progress_deviation"] = (expected_progress - progress).where(progress.notna())
+    elapsed_months = result["elapsed_duration_days"] / 30.4375
+    result["progress_velocity"] = (progress / elapsed_months).where(elapsed_months.gt(0) & progress.notna())
+    result["progress_acceleration"] = pd.to_numeric(_series(result, "progress_acceleration"), errors="coerce")
+    if "project_id" in result.columns and snapshot.notna().any():
+        order = result.assign(_snapshot=snapshot).sort_values(["project_id", "_snapshot"])
+        acceleration = order.groupby("project_id", dropna=False)["progress_velocity"].diff()
+        result.loc[order.index, "progress_acceleration"] = result.loc[order.index, "progress_acceleration"].where(result.loc[order.index, "progress_acceleration"].notna(), acceleration)
+    result["duration_ratio"] = (result["elapsed_duration_days"] / result["planned_duration_days"]).where(result["planned_duration_days"].gt(0))
+    result["schedule_slippage_score"] = (revised_end - planned).dt.days.where(revised_end.notna() & planned.notna())
+    milestone_count = pd.to_numeric(_series(result, "milestone_delay_count"), errors="coerce")
+    if "milestone_status" in result.columns:
+        delayed = result["milestone_status"].astype(str).str.contains("delay|late|overdue|slip", case=False, regex=True)
+        milestone_count = milestone_count.where(milestone_count.notna(), delayed.astype(float))
+    result["milestone_delay_count"] = milestone_count
+    result["project_size_category"] = pd.cut(approved, [-np.inf, 500, 5000, np.inf], labels=["Small", "Medium", "Large"]).astype(object)
+    result["complexity_score"] = (
+        result["approved_cost_log"].div(10)
+        + result["duration_ratio"].fillna(0).clip(lower=0)
+        + result["cost_revision_count"].fillna(0).clip(lower=0).mul(0.25)
+        + result["milestone_delay_count"].fillna(0).clip(lower=0).mul(0.1)
+    )
     for column in CATEGORICAL:
+        if column not in result:
+            result[column] = "Not reported"
         result[column] = result[column].fillna("Not reported").astype(str)
+    for column in NUMERIC:
+        result[column] = pd.to_numeric(result[column], errors="coerce")
     return result
 
 
 def labelled(frame: pd.DataFrame) -> pd.DataFrame:
     result = features(frame)
     final_cost = pd.to_numeric(result["reported_completion_expenditure_cr"], errors="coerce")
-    valid_cost = result["approved_cost_cr"].gt(0) & final_cost.notna()
-    valid_dates = result["completion_date"].notna() & result["planned_commissioning_date"].notna()
-    # Never turn a missing outcome into a zero target. Early completion remains
-    # negative schedule variance, exactly as recorded by the official dates.
+    raw_cost = (final_cost - result["approved_cost_cr"]) / result["approved_cost_cr"] * 100
+    valid_cost = (
+        result["approved_cost_cr"].gt(0) & final_cost.notna() & final_cost.gt(0)
+        & raw_cost.ge(-90) & raw_cost.le(MAX_COST_OVERRUN_PERCENTAGE)
+    )
+    raw_delay = (result["completion_date"] - result["planned_commissioning_date"]).dt.days
+    valid_dates = result["completion_date"].notna() & result["planned_commissioning_date"].notna() & raw_delay.ge(0)
     result["actual_cost_overrun_percentage"] = np.nan
-    result.loc[valid_cost, "actual_cost_overrun_percentage"] = ((final_cost[valid_cost] - result.loc[valid_cost, "approved_cost_cr"]) / result.loc[valid_cost, "approved_cost_cr"]) * 100
+    result.loc[valid_cost, "actual_cost_overrun_percentage"] = raw_cost[valid_cost]
     result["actual_delay_days"] = np.nan
-    result.loc[valid_dates, "actual_delay_days"] = (result.loc[valid_dates, "completion_date"] - result.loc[valid_dates, "planned_commissioning_date"]).dt.days
+    result.loc[valid_dates, "actual_delay_days"] = raw_delay[valid_dates]
     result["actual_risk"] = ((result["actual_cost_overrun_percentage"] >= 5) | (result["actual_delay_days"] >= 90)).astype(int)
     return result.dropna(subset=["approved_cost_cr", "planned_commissioning_year", "actual_cost_overrun_percentage", "actual_delay_days"])
 
 
+def label_quality_report(frame: pd.DataFrame | None = None) -> dict:
+    raw = features(outcome_data() if frame is None else frame)
+    final_cost = pd.to_numeric(raw.get("reported_completion_expenditure_cr"), errors="coerce")
+    cost = (final_cost - raw.approved_cost_cr) / raw.approved_cost_cr * 100
+    delay = (raw.completion_date - raw.planned_commissioning_date).dt.days
+    valid_cost = raw.approved_cost_cr.gt(0) & final_cost.notna() & final_cost.gt(0) & cost.ge(-90) & cost.le(MAX_COST_OVERRUN_PERCENTAGE)
+    valid_delay = raw.completion_date.notna() & raw.planned_commissioning_date.notna() & delay.ge(0)
+    return {
+        "source_rows": int(len(raw)),
+        "invalid_cost_labels_removed": int((~valid_cost).sum()),
+        "invalid_delay_labels_removed": int((~valid_delay).sum()),
+        "valid_joint_labels": int((valid_cost & valid_delay).sum()),
+        "cost_policy": "approved_cost > 0; final cost present and > 0; -90% <= overrun <= 1000%",
+        "delay_policy": "both dates present and actual completion is not before planned completion",
+        "missing_targets_filled_with_zero": False,
+    }
+
+
 def preprocessor() -> ColumnTransformer:
     return ColumnTransformer([
-        ("numeric", Pipeline([("impute", SimpleImputer(strategy="median")), ("scale", StandardScaler())]), NUMERIC),
-        ("category", Pipeline([("impute", SimpleImputer(strategy="most_frequent")), ("onehot", OneHotEncoder(handle_unknown="ignore"))]), CATEGORICAL),
+        ("numeric", Pipeline([("impute", SimpleImputer(strategy="median", keep_empty_features=True)), ("scale", StandardScaler())]), NUMERIC),
+        ("category", Pipeline([("impute", SimpleImputer(strategy="most_frequent")), ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))]), CATEGORICAL),
     ])
 
 
 def _regressor(seed: int = 26103, parameters: dict | None = None) -> CatBoostRegressor:
-    """Robust categorical regressor; MAE loss limits influence of extreme projects."""
-    options = {"iterations": 450, "depth": 6, "learning_rate": 0.05, "l2_leaf_reg": 6.0}
+    """Default robust regressor retained for the live judge session contract."""
+    options = {"iterations": 360, "depth": 6, "learning_rate": 0.04, "l2_leaf_reg": 8.0}
     options.update(parameters or {})
     return CatBoostRegressor(loss_function="MAE", eval_metric="MAE", random_seed=seed, verbose=False, allow_writing_files=False, **options)
+
+
+def _algorithm_regressor(name: str, seed: int = 26103):
+    if name == "catboost":
+        return _regressor(seed)
+    estimators = {
+        "lightgbm": LGBMRegressor(n_estimators=360, learning_rate=0.035, num_leaves=20, max_depth=6, objective="huber", reg_lambda=3.0, random_state=seed, verbosity=-1),
+        "xgboost": XGBRegressor(n_estimators=360, learning_rate=0.035, max_depth=5, subsample=0.85, colsample_bytree=0.85, objective="reg:absoluteerror", reg_lambda=4.0, random_state=seed, n_jobs=2),
+        "random_forest": RandomForestRegressor(n_estimators=320, min_samples_leaf=3, criterion="absolute_error", max_features=0.8, random_state=seed, n_jobs=2),
+    }
+    return Pipeline([("preprocess", preprocessor()), ("model", estimators[name])])
 
 
 def _classifier(y: pd.Series, seed: int = 26103):
@@ -141,18 +251,28 @@ def _classifier(y: pd.Series, seed: int = 26103):
     )
 
 
+def _sample_weights(y: pd.Series) -> np.ndarray:
+    values = np.asarray(y, dtype=float)
+    median = float(np.median(values)); iqr = float(np.percentile(values, 75) - np.percentile(values, 25)) or 1.0
+    return np.clip(1.0 / (1.0 + np.abs(values - median) / (3.0 * iqr)), 0.25, 1.0)
+
+
 def _fit_regressor(model, X: pd.DataFrame, y: pd.Series, *, delay_target: bool = False) -> None:
-    target = np.sign(y) * np.log1p(np.abs(y)) if delay_target else y
-    model.fit(X, target, cat_features=CAT_FEATURE_INDICES)
+    target = np.log1p(np.asarray(y, dtype=float)) if delay_target else np.asarray(y, dtype=float)
+    weights = _sample_weights(pd.Series(target))
+    if model.__class__.__module__.startswith("catboost"):
+        model.fit(X, target, cat_features=CAT_FEATURE_INDICES, sample_weight=weights)
+    elif isinstance(model, Pipeline):
+        model.fit(X, target, model__sample_weight=weights)
+    else:
+        model.fit(X, target)
 
 
 def _predict_regressor(model, X: pd.DataFrame, *, delay_target: bool = False) -> np.ndarray:
     values = np.asarray(model.predict(X), dtype=float)
-    # Existing registry artifacts before this upgrade predict delay directly;
-    # only CatBoost delay models are fitted on log1p(delay).
-    if delay_target and model.__class__.__module__.startswith("catboost"):
-        return np.sign(values) * np.expm1(np.clip(np.abs(values), 0, 20))
-    return values
+    if isinstance(model, (TwoStageDelayModel, TemporalStackingRegressor)):
+        return values
+    return np.expm1(np.clip(values, 0, 20)) if delay_target else values
 
 
 def _fit_classifier(model, X: pd.DataFrame, y: pd.Series) -> None:
@@ -162,33 +282,155 @@ def _fit_classifier(model, X: pd.DataFrame, y: pd.Series) -> None:
         model.fit(X, y, cat_features=CAT_FEATURE_INDICES)
 
 
-TUNING_GRID = [
-    {"iterations": 300, "depth": 5, "learning_rate": 0.05, "l2_leaf_reg": 4.0},
-    {"iterations": 450, "depth": 6, "learning_rate": 0.05, "l2_leaf_reg": 6.0},
-    {"iterations": 550, "depth": 7, "learning_rate": 0.03, "l2_leaf_reg": 8.0},
-]
+class TwoStageDelayModel:
+    def __init__(self, classifier, severity_model, low_delay_days: float):
+        self.classifier = classifier
+        self.severity_model = severity_model
+        self.low_delay_days = float(low_delay_days)
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        probability = np.asarray(self.classifier.predict_proba(X))[:, 1]
+        severity = _predict_regressor(self.severity_model, X, delay_target=True)
+        return probability * severity + (1.0 - probability) * self.low_delay_days
 
 
-def _tune_regressor(train_data: pd.DataFrame, target_column: str, *, delay_target: bool) -> tuple[dict, list[dict]]:
-    """Small temporal grid search; the latest training year is never fitted."""
+class TemporalStackingRegressor:
+    def __init__(self, models: list, meta_model: LinearRegression, delay_target: bool):
+        self.models = models
+        self.meta_model = meta_model
+        self.delay_target = delay_target
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        matrix = np.column_stack([_predict_regressor(model, X, delay_target=self.delay_target) for model in self.models])
+        return np.maximum(0, self.meta_model.predict(matrix)) if self.delay_target else self.meta_model.predict(matrix)
+
+
+def _fit_two_stage(frame: pd.DataFrame) -> TwoStageDelayModel:
+    severe = frame.actual_delay_days.gt(365).astype(int)
+    classifier = _classifier(severe, seed=26105)
+    _fit_classifier(classifier, frame[FEATURES], severe)
+    high = frame[severe.eq(1)]
+    severity = _regressor(seed=26106)
+    _fit_regressor(severity, high[FEATURES], high.actual_delay_days, delay_target=True)
+    low = frame.loc[severe.eq(0), "actual_delay_days"]
+    return TwoStageDelayModel(classifier, severity, float(low.median() if not low.empty else 180.0))
+
+
+def _fit_stacking(frame: pd.DataFrame, target_column: str, *, delay_target: bool) -> TemporalStackingRegressor | None:
+    years = sorted(int(year) for year in frame.completion_year.dropna().unique())
+    if len(years) < 3:
+        return None
+    meta_year = years[-1]
+    base_frame = frame[frame.completion_year < meta_year]
+    meta_frame = frame[frame.completion_year == meta_year]
+    if len(base_frame) < 12 or len(meta_frame) < 2:
+        return None
+    names = ["catboost", "lightgbm", "xgboost"]
+    initial = []
+    for index, name in enumerate(names):
+        model = _algorithm_regressor(name, 26200 + index)
+        _fit_regressor(model, base_frame[FEATURES], base_frame[target_column], delay_target=delay_target)
+        initial.append(model)
+    matrix = np.column_stack([_predict_regressor(model, meta_frame[FEATURES], delay_target=delay_target) for model in initial])
+    meta = LinearRegression().fit(matrix, meta_frame[target_column])
+    final_models = []
+    for index, name in enumerate(names):
+        model = _algorithm_regressor(name, 26300 + index)
+        _fit_regressor(model, frame[FEATURES], frame[target_column], delay_target=delay_target)
+        final_models.append(model)
+    return TemporalStackingRegressor(final_models, meta, delay_target)
+
+
+def _benchmark_regressor(train_data: pd.DataFrame, target_column: str, *, delay_target: bool) -> tuple[str, object, list[dict]]:
+    """Choose by MAE on the latest completion year, never on fitted rows."""
     validation_year = int(train_data.completion_year.max())
     fitting = train_data[train_data.completion_year < validation_year]
     validation = train_data[train_data.completion_year == validation_year]
     if len(fitting) < 12 or validation.empty:
-        return TUNING_GRID[1], [{"parameters": TUNING_GRID[1], "MAE": None, "note": "insufficient internal temporal validation records"}]
+        model = _regressor(); _fit_regressor(model, train_data[FEATURES], train_data[target_column], delay_target=delay_target)
+        return "catboost", model, [{"model": "catboost", "MAE": None, "note": "insufficient internal temporal validation records"}]
+    candidates: list[tuple[str, object]] = []
     results = []
-    for options in TUNING_GRID:
-        candidate = _regressor(parameters=options)
+    for index, name in enumerate(["catboost", "lightgbm", "xgboost", "random_forest"]):
+        candidate = _algorithm_regressor(name, 26103 + index)
         _fit_regressor(candidate, fitting[FEATURES], fitting[target_column], delay_target=delay_target)
         predicted = _predict_regressor(candidate, validation[FEATURES], delay_target=delay_target)
-        results.append({"parameters": options, "MAE": round(float(mean_absolute_error(validation[target_column], predicted)), 4)})
-    winner = min(results, key=lambda item: item["MAE"])
-    return winner["parameters"], results
+        results.append({"model": name, "MAE": round(float(mean_absolute_error(validation[target_column], predicted)), 4)})
+        candidates.append((name, candidate))
+    if delay_target and fitting.actual_delay_days.gt(365).sum() >= 5:
+        two_stage = _fit_two_stage(fitting)
+        prediction = two_stage.predict(validation[FEATURES])
+        results.append({"model": "two_stage_catboost", "MAE": round(float(mean_absolute_error(validation[target_column], prediction)), 4)})
+        candidates.append(("two_stage_catboost", two_stage))
+    stacked = _fit_stacking(fitting, target_column, delay_target=delay_target)
+    if stacked is not None:
+        prediction = stacked.predict(validation[FEATURES])
+        results.append({"model": "temporal_stacking_catboost_lightgbm_xgboost", "MAE": round(float(mean_absolute_error(validation[target_column], prediction)), 4)})
+        candidates.append(("temporal_stacking_catboost_lightgbm_xgboost", stacked))
+    winner_name = min(results, key=lambda item: item["MAE"])["model"]
+    if winner_name == "two_stage_catboost":
+        final_model = _fit_two_stage(train_data)
+    elif winner_name.startswith("temporal_stacking"):
+        final_model = _fit_stacking(train_data, target_column, delay_target=delay_target)
+    else:
+        final_model = _algorithm_regressor(winner_name)
+        _fit_regressor(final_model, train_data[FEATURES], train_data[target_column], delay_target=delay_target)
+    return winner_name, final_model, results
+
+
+def _fit_selected(name: str, frame: pd.DataFrame, target_column: str, *, delay_target: bool, seed: int):
+    if name == "two_stage_catboost":
+        return _fit_two_stage(frame)
+    if name.startswith("temporal_stacking"):
+        stacked = _fit_stacking(frame, target_column, delay_target=delay_target)
+        if stacked is not None:
+            return stacked
+        name = "catboost"
+    model = _algorithm_regressor(name, seed)
+    _fit_regressor(model, frame[FEATURES], frame[target_column], delay_target=delay_target)
+    return model
 
 
 def model_dir(key: str) -> Path:
     window_for(key)
     return MODELS / key
+
+
+def _fit_quantiles(train_data: pd.DataFrame, target_column: str, *, delay_target: bool) -> dict[str, CatBoostRegressor]:
+    models = {}
+    target = np.log1p(train_data[target_column].to_numpy()) if delay_target else train_data[target_column].to_numpy()
+    for label, alpha in (("p10", 0.1), ("p50", 0.5), ("p90", 0.9)):
+        model = CatBoostRegressor(iterations=300, depth=6, learning_rate=0.04, loss_function=f"Quantile:alpha={alpha}", random_seed=26400 + int(alpha * 100), verbose=False, allow_writing_files=False)
+        model.fit(train_data[FEATURES], target, cat_features=CAT_FEATURE_INDICES, sample_weight=_sample_weights(pd.Series(target)))
+        models[label] = model
+    return models
+
+
+def predict_quantiles(models: dict, X: pd.DataFrame, *, delay_target: bool) -> dict[str, np.ndarray]:
+    values = {}
+    for label, model in models.items():
+        prediction = np.asarray(model.predict(X), dtype=float)
+        values[label] = np.expm1(np.clip(prediction, 0, 20)) if delay_target else prediction
+    matrix = np.sort(np.column_stack([values["p10"], values["p50"], values["p90"]]), axis=1)
+    return {"p10": matrix[:, 0], "p50": matrix[:, 1], "p90": matrix[:, 2]}
+
+
+def _fit_survival_experiment(train_data: pd.DataFrame, target: Path) -> dict:
+    """Fit an optional Cox model for probability of finishing within N delay days."""
+    try:
+        from lifelines import CoxPHFitter
+        covariates = ["approved_cost_log", "planned_commissioning_year", "planned_commissioning_month", "complexity_score"]
+        frame = train_data[covariates].copy()
+        medians = frame.median(numeric_only=True).fillna(0).to_dict()
+        frame = frame.fillna(medians).fillna(0)
+        frame["duration"] = train_data.actual_delay_days.clip(lower=0).to_numpy() + 1
+        frame["completed"] = 1
+        model = CoxPHFitter(penalizer=0.2)
+        model.fit(frame, duration_col="duration", event_col="completed", show_progress=False)
+        joblib.dump({"model": model, "features": covariates, "medians": medians}, target / "survival_model.pkl")
+        return {"status": "available", "model": "Cox proportional hazards", "duration": "non-negative delay days + 1", "event": "official completion", "features": covariates, "use_policy": "Advanced probability experiment only; it does not replace cost/delay models."}
+    except Exception as exc:
+        return {"status": "unavailable", "model": "Cox proportional hazards", "reason": f"{type(exc).__name__}: {exc}", "use_policy": "Not selected because the experiment did not fit reliably."}
 
 
 def train(key: str) -> dict:
@@ -197,17 +439,17 @@ def train(key: str) -> dict:
     train_data = all_data[all_data.completion_year.between(window.training_start, window.training_end)].copy()
     if len(train_data) < 12:
         raise ValueError(f"{key} has only {len(train_data)} real completed-project records; at least 12 are required.")
-    cost_parameters, cost_comparison = _tune_regressor(train_data, "actual_cost_overrun_percentage", delay_target=False)
-    delay_parameters, delay_comparison = _tune_regressor(train_data, "actual_delay_days", delay_target=True)
     X = train_data[FEATURES]
-    cost = _regressor(parameters=cost_parameters); delay = _regressor(seed=26104, parameters=delay_parameters); risk = _classifier(train_data.actual_risk)
-    _fit_regressor(cost, X, train_data.actual_cost_overrun_percentage)
-    _fit_regressor(delay, X, train_data.actual_delay_days, delay_target=True)
+    cost_name, cost, cost_comparison = _benchmark_regressor(train_data, "actual_cost_overrun_percentage", delay_target=False)
+    delay_name, delay, delay_comparison = _benchmark_regressor(train_data, "actual_delay_days", delay_target=True)
+    risk = _classifier(train_data.actual_risk)
     _fit_classifier(risk, X, train_data.actual_risk)
     target = model_dir(key); target.mkdir(parents=True, exist_ok=True)
     joblib.dump(cost, target / "cost_model.pkl")
     joblib.dump(delay, target / "delay_model.pkl")
     joblib.dump(risk, target / "risk_model.pkl")
+    joblib.dump({"cost": _fit_quantiles(train_data, "actual_cost_overrun_percentage", delay_target=False), "delay": _fit_quantiles(train_data, "actual_delay_days", delay_target=True)}, target / "uncertainty_models.pkl")
+    survival = _fit_survival_experiment(train_data, target)
     # CatBoost natively processes categorical columns; retain a documented
     # preprocessing artifact for the model-registry contract.
     joblib.dump({"numeric_features": NUMERIC, "categorical_features": CATEGORICAL, "native_categorical_encoding": True}, target / "scaler.pkl")
@@ -217,15 +459,22 @@ def train(key: str) -> dict:
         "training_end": window.training_end,
         "test_start": window.test_start,
         "test_end": window.test_end,
+        "testing_start": window.test_start,
+        "testing_end": window.test_end,
         "available_actual_end": int(all_data.completion_year.max()),
         "features_used": FEATURES,
+        "feature_count": len(FEATURES),
         "feature_availability": {
-            "available": FEATURES,
-            "not_used_without_precompletion_snapshots": ["revised_cost_cr", "expenditure_cr", "physical_progress_pct", "progress_deviation", "duration_ratio", "milestone_delay_count"],
+            "available_when_published_at_cutoff": FEATURES,
+            "historical_archive_missingness_policy": "Unavailable as-of fields remain NaN/Not reported. No fuzzy joins, zero fills, or synthetic behaviour values are used.",
         },
-        "algorithms": {"cost": "CatBoostRegressor(MAE)", "delay": "CatBoostRegressor(log1p delay, MAE)", "risk": "CatBoostClassifier"},
-        "best_parameters": {"cost": cost_parameters, "delay": delay_parameters},
-        "outlier_policy": "Cost uses CatBoost MAE loss. Delay is trained on log1p(delay days) and converted back to days for evaluation; no official record is deleted.",
+        "model_type": {"cost": cost_name, "delay": delay_name, "risk": "catboost_classifier"},
+        "algorithms": {"cost": cost_name, "delay": delay_name, "risk": "CatBoostClassifier"},
+        "validation_method": "latest-year temporal selection plus future-year holdout and expanding rolling validation",
+        "outlier_policy": "Invalid labels are rejected by explicit rules. Valid extremes remain, with MAE/Huber objectives, log1p delay, and robust sample weighting.",
+        "label_quality": label_quality_report(),
+        "uncertainty": {"method": "CatBoost quantile regression", "quantiles": [0.1, 0.5, 0.9]},
+        "survival_experiment": survival,
         "training_samples": int(len(train_data)),
         "data_source": "Official PAIMANA completed-project archive reports",
         "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
@@ -238,7 +487,8 @@ def train(key: str) -> dict:
         "selection_method": "latest-year temporal validation within the selected training range",
         "cost_candidates": cost_comparison,
         "delay_candidates": delay_comparison,
-        "selected": {"cost": cost_parameters, "delay": delay_parameters},
+        "selected": {"cost": cost_name, "delay": delay_name},
+        "stacking_policy": "CatBoost + LightGBM + XGBoost with LinearRegression meta-model is selected only when its later-year MAE beats every individual model.",
     }, indent=2))
     return metadata
 
@@ -257,10 +507,23 @@ def evaluate(key: str, save: bool = True) -> dict:
     test_data = all_data[all_data.completion_year.between(window.test_start, actual_end)].copy()
     if test_data.empty:
         raise ValueError(f"No official completed-project outcomes are available for {window.test_start}-{actual_end}.")
-    X = test_data[FEATURES]
+    feature_columns = metadata.get("features_used", FEATURES)
+    X = test_data[feature_columns]
     cost = joblib.load(target / "cost_model.pkl"); delay = joblib.load(target / "delay_model.pkl"); risk = joblib.load(target / "risk_model.pkl")
+    uncertainty = joblib.load(target / "uncertainty_models.pkl") if (target / "uncertainty_models.pkl").exists() else None
     test_data["predicted_cost_overrun"] = _predict_regressor(cost, X)
     test_data["predicted_delay_days"] = _predict_regressor(delay, X, delay_target=True)
+    if uncertainty:
+        cost_range = predict_quantiles(uncertainty["cost"], X, delay_target=False)
+        delay_range = predict_quantiles(uncertainty["delay"], X, delay_target=True)
+        for label in ("p10", "p50", "p90"):
+            test_data[f"predicted_cost_{label}"] = cost_range[label]
+            test_data[f"predicted_delay_{label}"] = delay_range[label]
+        cost_width = np.maximum(test_data.predicted_cost_p90 - test_data.predicted_cost_p10, 0)
+        delay_width = np.maximum(test_data.predicted_delay_p90 - test_data.predicted_delay_p10, 0)
+        cost_confidence = 100 / (1 + cost_width / (np.abs(test_data.predicted_cost_p50) + 10))
+        delay_confidence = 100 / (1 + delay_width / (np.abs(test_data.predicted_delay_p50) + 90))
+        test_data["model_confidence_percentage"] = (cost_confidence + delay_confidence) / 2
     test_data["predicted_risk"] = np.asarray(risk.predict(X), dtype=int).reshape(-1)
     test_data["cost_error"] = test_data.predicted_cost_overrun - test_data.actual_cost_overrun_percentage
     test_data["delay_error"] = test_data.predicted_delay_days - test_data.actual_delay_days
@@ -272,17 +535,20 @@ def evaluate(key: str, save: bool = True) -> dict:
     delay_scale = max(float(np.mean(np.abs(delay_y))), 1e-9)
     metrics = {
         "model_version": key,
-        "cost_model": {"MAE": round(cost_mae, 3), "RMSE": round(float(mean_squared_error(cost_y, cost_p) ** .5), 3), "MAPE": round(_safe_mape(cost_y, cost_p), 3), "accuracy_percentage": round(max(0.0, 100 * (1 - cost_mae / cost_scale)), 2)},
-        "delay_model": {"MAE": round(delay_mae, 3), "MAE_days": round(delay_mae, 3), "RMSE": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "RMSE_days": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "log_target_RMSE": round(float(mean_squared_error(np.sign(delay_y) * np.log1p(np.abs(delay_y)), np.sign(delay_p) * np.log1p(np.abs(delay_p))) ** .5), 4), "accuracy_percentage": round(max(0.0, 100 * (1 - delay_mae / delay_scale)), 2)},
+        "cost_model": {"MAE": round(cost_mae, 3), "RMSE": round(float(mean_squared_error(cost_y, cost_p) ** .5), 3), "R2": round(float(r2_score(cost_y, cost_p)), 4), "MAPE": round(_safe_mape(cost_y, cost_p), 3), "accuracy_percentage": round(max(0.0, 100 * (1 - cost_mae / cost_scale)), 2)},
+        "delay_model": {"MAE": round(delay_mae, 3), "MAE_days": round(delay_mae, 3), "RMSE": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "RMSE_days": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "R2": round(float(r2_score(delay_y, delay_p)), 4), "log_target_RMSE": round(float(mean_squared_error(np.log1p(delay_y), np.log1p(np.maximum(delay_p, 0))) ** .5), 4), "accuracy_percentage": round(max(0.0, 100 * (1 - delay_mae / delay_scale)), 2)},
         "risk_model": {"accuracy": round(float(accuracy_score(test_data.actual_risk, test_data.predicted_risk)), 4), "precision": round(float(precision_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4), "recall": round(float(recall_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4), "f1": round(float(f1_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4)},
         "metadata": {**metadata, "evaluated_test_start": window.test_start, "evaluated_test_end": actual_end, "pending_actual_outcomes": list(range(actual_end + 1, window.test_end + 1)), "testing_samples": int(len(test_data)), "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."},
     }
     columns = ["project_id", "project_name", "sector", "implementing_agency", "planned_commissioning_year", "completion_date", "approved_cost_cr", "reported_completion_expenditure_cr", "predicted_cost_overrun", "actual_cost_overrun_percentage", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error", "predicted_risk", "actual_risk"]
+    if uncertainty:
+        columns += ["predicted_cost_p10", "predicted_cost_p50", "predicted_cost_p90", "predicted_delay_p10", "predicted_delay_p50", "predicted_delay_p90", "model_confidence_percentage"]
     rows = test_data[columns].sort_values(["completion_date", "project_name"]).rename(columns={"actual_cost_overrun_percentage": "actual_cost_overrun"})
     if save:
         rows.to_csv(target / "evaluation_results.csv", index=False)
         rows.to_csv(target / "prediction_validation.csv", index=False)
         (target / "evaluation_results.json").write_text(json.dumps(metrics, indent=2))
+        (target / "metadata.json").write_text(json.dumps(metrics["metadata"], indent=2))
     return {"metrics": metrics, "rows": rows}
 
 
@@ -297,12 +563,9 @@ def rolling_validation(key: str) -> dict:
         testing = all_data[all_data.completion_year == test_year]
         if len(fitting) < 12 or testing.empty:
             continue
-        # Use the chosen settings but lower iterations for the diagnostic folds.
-        params = {**metadata.get("best_parameters", {}).get("cost", {}), "iterations": 180}
-        cost = _regressor(seed=26103 + test_year, parameters=params)
-        delay = _regressor(seed=26104 + test_year, parameters={**metadata.get("best_parameters", {}).get("delay", {}), "iterations": 180})
-        _fit_regressor(cost, fitting[FEATURES], fitting.actual_cost_overrun_percentage)
-        _fit_regressor(delay, fitting[FEATURES], fitting.actual_delay_days, delay_target=True)
+        selected = metadata.get("model_type", {})
+        cost = _fit_selected(selected.get("cost", "catboost"), fitting, "actual_cost_overrun_percentage", delay_target=False, seed=26103 + test_year)
+        delay = _fit_selected(selected.get("delay", "catboost"), fitting, "actual_delay_days", delay_target=True, seed=26104 + test_year)
         cost_pred = _predict_regressor(cost, testing[FEATURES])
         delay_pred = _predict_regressor(delay, testing[FEATURES], delay_target=True)
         folds.append({
@@ -313,10 +576,16 @@ def rolling_validation(key: str) -> dict:
             "delay_MAE_days": round(float(mean_absolute_error(testing.actual_delay_days, delay_pred)), 3),
             "delay_RMSE_days": round(float(mean_squared_error(testing.actual_delay_days, delay_pred) ** .5), 3),
         })
+    cost_errors = [fold["cost_MAE"] for fold in folds]
+    delay_errors = [fold["delay_MAE_days"] for fold in folds]
     report = {
         "model_version": key, "folds": folds, "fold_count": len(folds),
-        "average_cost_mae": round(float(np.mean([fold["cost_MAE"] for fold in folds])), 3) if folds else None,
-        "average_delay_mae_days": round(float(np.mean([fold["delay_MAE_days"] for fold in folds])), 3) if folds else None,
+        "average_cost_mae": round(float(np.mean(cost_errors)), 3) if folds else None,
+        "average_delay_mae_days": round(float(np.mean(delay_errors)), 3) if folds else None,
+        "best_cost_mae": round(float(np.min(cost_errors)), 3) if folds else None,
+        "worst_cost_mae": round(float(np.max(cost_errors)), 3) if folds else None,
+        "best_delay_mae_days": round(float(np.min(delay_errors)), 3) if folds else None,
+        "worst_delay_mae_days": round(float(np.max(delay_errors)), 3) if folds else None,
         "policy": "Each fold trains only on completion years before its test year. No future outcomes are used in fitting.",
     }
     (model_dir(key) / "rolling_validation_results.json").write_text(json.dumps(report, indent=2))
@@ -333,12 +602,15 @@ def retrain(start_year: int, end_year: int) -> dict:
     result = evaluate(key, save=True)
     rolling = rolling_validation(key)
     _set_active_version(key)
+    metrics = result["metrics"]
     return {
         "status": "success", "model_version": key,
         "training_years": f"{metadata['training_start']}-{metadata['training_end']}",
         "testing_years": f"{metadata['test_start']}-{metadata['test_end']}",
-        "metrics": result["metrics"], "training_samples": metadata["training_samples"],
-        "testing_samples": result["metrics"]["metadata"]["testing_samples"], "rolling_validation": rolling,
+        "cost_mae": metrics["cost_model"]["MAE"], "delay_mae": metrics["delay_model"]["MAE_days"],
+        "risk_metrics": metrics["risk_model"], "validation_projects": metrics["metadata"]["testing_samples"],
+        "metrics": metrics, "training_samples": metadata["training_samples"],
+        "testing_samples": metrics["metadata"]["testing_samples"], "rolling_validation": rolling,
     }
 
 
