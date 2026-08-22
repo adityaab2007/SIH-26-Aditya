@@ -16,6 +16,11 @@ if [[ ! -f data/project_history.csv ]]; then
   python scripts/generate_project_history.py
 fi
 
+if [[ ! -f data/processed/model_dataset.csv ]]; then
+  echo "[InfraSight] Processed PAIMANA snapshot not found. Building it..."
+  python scripts/build_model_dataset.py
+fi
+
 if [[ ! -f data/processed/project_monthly_history.csv && -f data/raw/paimana_archive/manifest.json ]]; then
   echo "[InfraSight] Normalizing checked-in official PAIMANA archive reports..."
   python scripts/ingest_paimana_archive.py --local-only
@@ -25,6 +30,8 @@ REQUIRED=(
   models/cost_model.pkl
   models/delay_model.pkl
   models/model_metrics.json
+  models/registry.json
+  models/global_feature_importance.json
 )
 missing=0
 for artifact in "${REQUIRED[@]}"; do
