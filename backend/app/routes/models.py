@@ -13,9 +13,9 @@ def importance():
     return global_importances()
 
 @router.get("/validation")
-def validation():
-    return validation_report()
+def validation(model: str | None = None):
+    return validation_report(model)
 
 @router.get("/prediction-validation")
-def prediction_validation(limit: int = 100):
-    return validation_payload(limit)
+def prediction_validation(model: str | None = None, limit: int = 100):
+    return validation_payload(model, limit)
