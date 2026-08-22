@@ -30,19 +30,18 @@ if [[ ! -f data/processed/project_monthly_history.csv && -f data/raw/paimana_arc
 fi
 
 REQUIRED=(
-  models/cost_model.pkl
-  models/delay_model.pkl
-  models/model_metrics.json
-  models/registry.json
-  models/global_feature_importance.json
+  models/2001_2015/cost_model.pkl
+  models/2001_2015/delay_model.pkl
+  models/2001_2015/risk_model.pkl
+  models/2001_2015/metadata.json
 )
 missing=0
 for artifact in "${REQUIRED[@]}"; do
   if [[ ! -f "$artifact" ]]; then missing=1; break; fi
 done
 if [[ "$missing" -eq 1 ]]; then
-  echo "[InfraSight] Temporal forecast artifacts not found. Training model candidates..."
-  python scripts/train_models.py
+  echo "[InfraSight] Official PAIMANA forecast artifacts not found. Training the registered real-data model..."
+  python -c 'from backend.app.ml.real_time_windows import retrain; retrain(2001, 2015)'
 fi
 
 exec uvicorn backend.app.main:app --host 127.0.0.1 --port "${PORT:-8000}" --reload

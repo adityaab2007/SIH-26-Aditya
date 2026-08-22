@@ -27,24 +27,34 @@ from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, mean_
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from xgboost import XGBRegressor
+from backend.app.ml.feature_audit import audit_features, write_feature_quality_report
+from backend.app.ml.model_reports import cost_target_analysis, final_comparison, observed_confidence_calibration, sector_validation, shap_validation, write_json
 
 ROOT = Path(__file__).resolve().parents[3]
 OUTCOMES = ROOT / "data" / "processed" / "paimana_completed_outcomes.csv"
 MODELS = ROOT / "models"
+REPORTS = ROOT / "reports"
 TIME_WINDOW_REGISTRY = MODELS / "time_window_registry.json"
-NUMERIC = [
-    "approved_cost_cr", "approved_cost_log", "planned_commissioning_year",
-    "planned_commissioning_month", "revised_cost_cr", "current_expenditure_cr",
-    "physical_progress", "planned_duration_days", "elapsed_duration_days",
-    "cost_escalation_percentage", "budget_stress_index", "expenditure_ratio",
-    "cost_growth_velocity", "cost_acceleration", "cost_revision_count", "progress_deviation",
-    "progress_velocity", "progress_acceleration", "progress_trend_6m", "progress_trend_12m", "duration_ratio",
-    "schedule_slippage_score", "milestone_delay_count", "complexity_score",
-    "agency_historical_delay_rate", "agency_historical_cost_overrun_rate", "sector_risk_score",
-]
-CATEGORICAL = ["sector", "ministry", "implementing_agency", "state", "project_size_category"]
+NUMERIC = ["approved_cost_cr", "sector_average_delay", "sector_average_cost_overrun"]
+CATEGORICAL = ["sector", "project_size_category"]
 FEATURES = NUMERIC + CATEGORICAL
 CAT_FEATURE_INDICES = [FEATURES.index(column) for column in CATEGORICAL]
+CANDIDATE_NUMERIC = [
+    "approved_cost_cr", "revised_cost_cr", "cost_escalation_percentage", "budget_stress_index",
+    "expenditure_ratio", "cost_growth_velocity", "planned_duration_days", "elapsed_duration_days",
+    "duration_ratio", "schedule_slippage_days", "agency_average_delay", "agency_average_cost_overrun",
+    "agency_failure_rate", "sector_average_delay", "sector_average_cost_overrun",
+]
+CANDIDATE_CATEGORICAL = ["sector", "ministry", "implementing_agency", "project_size_category"]
+CANDIDATE_FEATURES = CANDIDATE_NUMERIC + CANDIDATE_CATEGORICAL
+INVALID_LIFECYCLE_SOURCES = {
+    "progress_trend_6m": "no joined official monthly observations in the completed-project archive",
+    "progress_trend_12m": "no joined official monthly observations in the completed-project archive",
+    "progress_acceleration": "no joined official monthly observations in the completed-project archive",
+    "progress_velocity": "no joined official monthly observations in the completed-project archive",
+    "milestone_delay_count": "no official milestone history in the completed-project archive",
+    "monthly_expenditure_growth": "exists only in the legacy deterministic demonstration pipeline",
+}
 TARGET_COLUMNS = {"actual_cost_overrun_percentage", "actual_delay_days", "actual_risk", "reported_completion_expenditure_cr", "completion_date", "completion_year"}
 MAX_COST_OVERRUN_PERCENTAGE = 1000.0
 RISK_LEVELS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
@@ -180,7 +190,8 @@ def features(frame: pd.DataFrame) -> pd.DataFrame:
                             trends.loc[row_index] = (history.physical_progress.iloc[-1] - history.physical_progress.iloc[0]) / months
             result.loc[order.index, column] = result.loc[order.index, column].where(result.loc[order.index, column].notna(), trends)
     result["duration_ratio"] = (result["elapsed_duration_days"] / result["planned_duration_days"]).where(result["planned_duration_days"].gt(0))
-    result["schedule_slippage_score"] = (revised_end - planned).dt.days.where(revised_end.notna() & planned.notna())
+    result["schedule_slippage_days"] = (revised_end - planned).dt.days.where(revised_end.notna() & planned.notna())
+    result["schedule_slippage_score"] = result["schedule_slippage_days"]
     milestone_count = pd.to_numeric(_series(result, "milestone_delay_count"), errors="coerce")
     if "milestone_status" in result.columns:
         delayed = result["milestone_status"].astype(str).str.contains("delay|late|overdue|slip", case=False, regex=True)
@@ -193,13 +204,17 @@ def features(frame: pd.DataFrame) -> pd.DataFrame:
         + result["cost_revision_count"].fillna(0).clip(lower=0).mul(0.25)
         + result["milestone_delay_count"].fillna(0).clip(lower=0).mul(0.1)
     )
-    for column in ("agency_historical_delay_rate", "agency_historical_cost_overrun_rate", "sector_risk_score"):
+    for column in (
+        "agency_average_delay", "agency_average_cost_overrun", "agency_failure_rate",
+        "sector_average_delay", "sector_average_cost_overrun",
+        "agency_historical_delay_rate", "agency_historical_cost_overrun_rate", "sector_risk_score",
+    ):
         result[column] = pd.to_numeric(_series(result, column), errors="coerce")
-    for column in CATEGORICAL:
+    for column in set(CATEGORICAL + CANDIDATE_CATEGORICAL):
         if column not in result:
             result[column] = "Not reported"
         result[column] = result[column].fillna("Not reported").astype(str)
-    for column in NUMERIC:
+    for column in set(NUMERIC + CANDIDATE_NUMERIC):
         result[column] = pd.to_numeric(result[column], errors="coerce")
     return result
 
@@ -247,21 +262,26 @@ def historical_prior_maps(train_data: pd.DataFrame) -> dict:
     """Fit smoothed agency/sector outcome priors from training rows only."""
     delay_global = float(train_data.actual_delay_days.mean())
     cost_global = float(train_data.actual_cost_overrun_percentage.mean())
-    risk_global = float(train_data.actual_risk.mean() / 3.0)
+    failures = train_data.actual_delay_days.ge(365) | train_data.actual_cost_overrun_percentage.ge(15)
+    working = train_data.assign(_failure=failures.astype(float))
+    failure_global = float(failures.mean())
     smoothing = 5.0
 
-    def smoothed(column: str, target: str, global_value: float, scale: float = 1.0) -> dict:
-        grouped = train_data.groupby(column, dropna=False)[target].agg(["sum", "count"])
-        return {str(index): float((row["sum"] / scale + global_value * smoothing) / (row["count"] + smoothing)) for index, row in grouped.iterrows()}
+    def smoothed(column: str, target: str, global_value: float) -> dict:
+        valid = working[~working[column].astype(str).str.lower().isin({"not reported", "not published", "unknown", "nan"})]
+        grouped = valid.groupby(column, dropna=False)[target].agg(["sum", "count"])
+        return {str(index): float((row["sum"] + global_value * smoothing) / (row["count"] + smoothing)) for index, row in grouped.iterrows()}
 
     return {
         "training_start": int(train_data.completion_year.min()),
         "training_end": int(train_data.completion_year.max()),
         "smoothing_projects": smoothing,
-        "global": {"delay": delay_global, "cost": cost_global, "risk": risk_global},
+        "global": {"delay": delay_global, "cost": cost_global, "failure": failure_global},
         "agency_delay": smoothed("implementing_agency", "actual_delay_days", delay_global),
         "agency_cost": smoothed("implementing_agency", "actual_cost_overrun_percentage", cost_global),
-        "sector_risk": smoothed("sector", "actual_risk", risk_global, scale=3.0),
+        "agency_failure": smoothed("implementing_agency", "_failure", failure_global),
+        "sector_delay": smoothed("sector", "actual_delay_days", delay_global),
+        "sector_cost": smoothed("sector", "actual_cost_overrun_percentage", cost_global),
         "leakage_policy": "Mappings are fitted only from the selected training rows and are applied unchanged to later validation/test rows.",
     }
 
@@ -270,28 +290,43 @@ def apply_historical_priors(frame: pd.DataFrame, priors: dict) -> pd.DataFrame:
     result = frame.copy()
     agency = result.implementing_agency.astype(str)
     sector = result.sector.astype(str)
-    result["agency_historical_delay_rate"] = agency.map(priors["agency_delay"]).fillna(priors["global"]["delay"])
-    result["agency_historical_cost_overrun_rate"] = agency.map(priors["agency_cost"]).fillna(priors["global"]["cost"])
-    result["sector_risk_score"] = sector.map(priors["sector_risk"]).fillna(priors["global"]["risk"])
+    result["agency_average_delay"] = agency.map(priors["agency_delay"])
+    result["agency_average_cost_overrun"] = agency.map(priors["agency_cost"])
+    result["agency_failure_rate"] = agency.map(priors["agency_failure"])
+    result["sector_average_delay"] = sector.map(priors["sector_delay"])
+    result["sector_average_cost_overrun"] = sector.map(priors["sector_cost"])
+    result["agency_historical_delay_rate"] = result["agency_average_delay"]
+    result["agency_historical_cost_overrun_rate"] = result["agency_average_cost_overrun"]
+    result["sector_risk_score"] = result["sector_average_delay"]
     return result
 
 
 def add_leave_one_out_training_priors(frame: pd.DataFrame) -> pd.DataFrame:
-    """Prevent a training row's own target from entering its historical-rate features."""
+    """Use only projects completed before each row's prediction-period date."""
     result = frame.copy()
-    smoothing = 5.0
-    delay_global = float(result.actual_delay_days.mean())
-    cost_global = float(result.actual_cost_overrun_percentage.mean())
-    risk_global = float(result.actual_risk.mean() / 3.0)
-
-    def loo(group: str, target: str, global_value: float, scale: float = 1.0) -> pd.Series:
-        sums = result.groupby(group, dropna=False)[target].transform("sum") / scale
-        counts = result.groupby(group, dropna=False)[target].transform("count") - 1
-        return (sums - result[target] / scale + global_value * smoothing) / (counts + smoothing)
-
-    result["agency_historical_delay_rate"] = loo("implementing_agency", "actual_delay_days", delay_global)
-    result["agency_historical_cost_overrun_rate"] = loo("implementing_agency", "actual_cost_overrun_percentage", cost_global)
-    result["sector_risk_score"] = loo("sector", "actual_risk", risk_global, scale=3.0)
+    columns = ["agency_average_delay", "agency_average_cost_overrun", "agency_failure_rate", "sector_average_delay", "sector_average_cost_overrun"]
+    for column in columns:
+        result[column] = np.nan
+    prediction_dates = pd.to_datetime(result.planned_commissioning_date, errors="coerce")
+    completion_dates = pd.to_datetime(result.completion_date, errors="coerce")
+    for index in result.index:
+        cutoff = prediction_dates.loc[index]
+        if pd.isna(cutoff):
+            continue
+        past = result[completion_dates.lt(cutoff) & result.index.to_series().ne(index)]
+        if past.empty:
+            continue
+        maps = historical_prior_maps(past)
+        agency = str(result.at[index, "implementing_agency"])
+        sector = str(result.at[index, "sector"])
+        result.at[index, "agency_average_delay"] = maps["agency_delay"].get(agency)
+        result.at[index, "agency_average_cost_overrun"] = maps["agency_cost"].get(agency)
+        result.at[index, "agency_failure_rate"] = maps["agency_failure"].get(agency)
+        result.at[index, "sector_average_delay"] = maps["sector_delay"].get(sector)
+        result.at[index, "sector_average_cost_overrun"] = maps["sector_cost"].get(sector)
+    result["agency_historical_delay_rate"] = result["agency_average_delay"]
+    result["agency_historical_cost_overrun_rate"] = result["agency_average_cost_overrun"]
+    result["sector_risk_score"] = result["sector_average_delay"]
     return result
 
 
@@ -304,14 +339,39 @@ def preprocessor() -> ColumnTransformer:
 
 def _regressor(seed: int = 26103, parameters: dict | None = None) -> CatBoostRegressor:
     """Default robust regressor retained for the live judge session contract."""
-    options = {"iterations": 360, "depth": 6, "learning_rate": 0.04, "l2_leaf_reg": 8.0}
+    options = {"iterations": 500, "depth": 6, "learning_rate": 0.04, "l2_leaf_reg": 8.0, "loss_function": "MAE", "eval_metric": "MAE"}
     options.update(parameters or {})
-    return CatBoostRegressor(loss_function="MAE", eval_metric="MAE", random_seed=seed, verbose=False, allow_writing_files=False, **options)
+    return CatBoostRegressor(random_seed=seed, verbose=False, allow_writing_files=False, **options)
+
+
+class ShiftedLogCostModel:
+    def __init__(self, model: CatBoostRegressor):
+        self.model = model
+        self.shift = 0.0
+
+    def fit(self, X: pd.DataFrame, y: pd.Series, *, sample_weight: np.ndarray) -> None:
+        values = np.asarray(y, dtype=float)
+        self.shift = max(0.0, -float(values.min()) + 1.0)
+        self.model.fit(X, np.log1p(values + self.shift), cat_features=CAT_FEATURE_INDICES, sample_weight=sample_weight)
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        return np.expm1(np.asarray(self.model.predict(X), dtype=float)) - self.shift
 
 
 def _algorithm_regressor(name: str, seed: int = 26103):
     if name == "catboost":
         return _regressor(seed)
+    tuned = {
+        "catboost_mae_d4": {"iterations": 500, "depth": 4, "learning_rate": 0.1, "l2_leaf_reg": 5, "loss_function": "MAE"},
+        "catboost_mae_d6": {"iterations": 1000, "depth": 6, "learning_rate": 0.05, "l2_leaf_reg": 8, "loss_function": "MAE"},
+        "catboost_huber_d8": {"iterations": 1500, "depth": 8, "learning_rate": 0.03, "l2_leaf_reg": 12, "loss_function": "Huber:delta=5"},
+        "catboost_huber_d10": {"iterations": 2000, "depth": 10, "learning_rate": 0.01, "l2_leaf_reg": 20, "loss_function": "Huber:delta=5"},
+        "catboost_quantile": {"iterations": 1000, "depth": 6, "learning_rate": 0.05, "l2_leaf_reg": 8, "loss_function": "Quantile:alpha=0.5"},
+    }
+    if name in tuned:
+        return _regressor(seed, tuned[name])
+    if name == "catboost_shifted_log":
+        return ShiftedLogCostModel(_regressor(seed, {"iterations": 1000, "depth": 6, "learning_rate": 0.05, "l2_leaf_reg": 8, "loss_function": "MAE"}))
     estimators = {
         "lightgbm": LGBMRegressor(n_estimators=360, learning_rate=0.035, num_leaves=20, max_depth=6, objective="huber", reg_lambda=3.0, random_state=seed, verbosity=-1),
         "xgboost": XGBRegressor(n_estimators=360, learning_rate=0.035, max_depth=5, subsample=0.85, colsample_bytree=0.85, objective="reg:absoluteerror", reg_lambda=4.0, random_state=seed, n_jobs=2),
@@ -340,7 +400,9 @@ def _sample_weights(y: pd.Series) -> np.ndarray:
 def _fit_regressor(model, X: pd.DataFrame, y: pd.Series, *, delay_target: bool = False) -> None:
     target = np.log1p(np.asarray(y, dtype=float)) if delay_target else np.asarray(y, dtype=float)
     weights = _sample_weights(pd.Series(target))
-    if model.__class__.__module__.startswith("catboost"):
+    if isinstance(model, ShiftedLogCostModel):
+        model.fit(X, y, sample_weight=weights)
+    elif model.__class__.__module__.startswith("catboost"):
         model.fit(X, target, cat_features=CAT_FEATURE_INDICES, sample_weight=weights)
     elif isinstance(model, Pipeline):
         model.fit(X, target, model__sample_weight=weights)
@@ -350,7 +412,7 @@ def _fit_regressor(model, X: pd.DataFrame, y: pd.Series, *, delay_target: bool =
 
 def _predict_regressor(model, X: pd.DataFrame, *, delay_target: bool = False) -> np.ndarray:
     values = np.asarray(model.predict(X), dtype=float)
-    if isinstance(model, (TwoStageDelayModel, TemporalStackingRegressor)):
+    if isinstance(model, (ShiftedLogCostModel, TwoStageDelayModel, TemporalStackingRegressor)):
         return values
     return np.expm1(np.clip(values, 0, 20)) if delay_target else values
 
@@ -434,7 +496,10 @@ def _benchmark_regressor(train_data: pd.DataFrame, target_column: str, *, delay_
     validation = apply_historical_priors(validation, priors)
     candidates: list[tuple[str, object]] = []
     results = []
-    for index, name in enumerate(["catboost", "lightgbm", "xgboost", "random_forest"]):
+    names = ["catboost", "lightgbm", "xgboost", "random_forest"]
+    if not delay_target:
+        names += ["catboost_shifted_log", "catboost_mae_d4", "catboost_mae_d6", "catboost_huber_d8", "catboost_huber_d10", "catboost_quantile"]
+    for index, name in enumerate(names):
         candidate = _algorithm_regressor(name, 26103 + index)
         _fit_regressor(candidate, fitting[FEATURES], fitting[target_column], delay_target=delay_target)
         predicted = _predict_regressor(candidate, validation[FEATURES], delay_target=delay_target)
@@ -550,6 +615,8 @@ def sector_correction_experiment(train_data: pd.DataFrame, selected_name: str, t
 
 def _global_importance(model, frame: pd.DataFrame) -> list[dict]:
     """Return grouped global tree importance in the original feature space."""
+    if isinstance(model, ShiftedLogCostModel):
+        model = model.model
     if isinstance(model, TwoStageDelayModel):
         model = model.severity_model
     if isinstance(model, TemporalStackingRegressor):
@@ -618,6 +685,50 @@ def predict_quantiles(models: dict, X: pd.DataFrame, *, delay_target: bool) -> d
     return {"p10": matrix[:, 0], "p50": matrix[:, 1], "p90": matrix[:, 2]}
 
 
+def scale_quantile_range(values: dict[str, np.ndarray], factor: float) -> dict[str, np.ndarray]:
+    middle = values["p50"]
+    return {
+        "p10": middle - (middle - values["p10"]) * factor,
+        "p50": middle,
+        "p90": middle + (values["p90"] - middle) * factor,
+    }
+
+
+def _calibration_factor(actual: np.ndarray, values: dict[str, np.ndarray], nominal: float = 0.8) -> tuple[float, float]:
+    for factor in (1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0):
+        scaled = scale_quantile_range(values, factor)
+        coverage = float(np.mean((actual >= scaled["p10"]) & (actual <= scaled["p90"])))
+        if coverage >= nominal - 0.02:
+            return factor, coverage
+    scaled = scale_quantile_range(values, 4.0)
+    return 4.0, float(np.mean((actual >= scaled["p10"]) & (actual <= scaled["p90"])))
+
+
+def calibrate_uncertainty(train_data: pd.DataFrame) -> dict:
+    """Calibrate P10-P90 expansion on the latest internal year only."""
+    validation_year = int(train_data.completion_year.max())
+    fitting = train_data[train_data.completion_year < validation_year].copy()
+    validation = train_data[train_data.completion_year == validation_year].copy()
+    if len(fitting) < 12 or validation.empty:
+        return {"status": "unavailable", "nominal_coverage_percentage": 80.0, "cost": {"scale": 1.0, "coverage_percentage": None}, "delay": {"scale": 1.0, "coverage_percentage": None}}
+    validation = apply_historical_priors(validation, historical_prior_maps(fitting))
+    fitting = add_leave_one_out_training_priors(fitting)
+    cost_values = predict_quantiles(_fit_quantiles(fitting, "actual_cost_overrun_percentage", delay_target=False), validation[FEATURES], delay_target=False)
+    delay_values = predict_quantiles(_fit_quantiles(fitting, "actual_delay_days", delay_target=True), validation[FEATURES], delay_target=True)
+    cost_scale, cost_coverage = _calibration_factor(validation.actual_cost_overrun_percentage.to_numpy(), cost_values)
+    delay_scale, delay_coverage = _calibration_factor(validation.actual_delay_days.to_numpy(), delay_values)
+    return {
+        "status": "calibrated_on_prior_year",
+        "calibration_year": validation_year,
+        "calibration_projects": int(len(validation)),
+        "nominal_coverage_percentage": 80.0,
+        "cost": {"scale": cost_scale, "coverage_percentage": round(cost_coverage * 100, 2)},
+        "delay": {"scale": delay_scale, "coverage_percentage": round(delay_coverage * 100, 2)},
+        "confidence_percentage": round((cost_coverage + delay_coverage) * 50, 2),
+        "leakage_policy": "Scale factors are chosen on the latest training-window year and never on the final future holdout.",
+    }
+
+
 def _fit_survival_experiment(train_data: pd.DataFrame, target: Path) -> dict:
     """Fit an optional Cox model for probability of finishing within N delay days."""
     try:
@@ -644,6 +755,10 @@ def train(key: str) -> dict:
         raise ValueError(f"{key} has only {len(train_data)} real completed-project records; at least 12 are required.")
     model_train_data = add_leave_one_out_training_priors(train_data)
     priors = historical_prior_maps(train_data)
+    audited_names = CANDIDATE_FEATURES + list(INVALID_LIFECYCLE_SOURCES)
+    feature_report = audit_features(model_train_data, audited_names, invalid_sources=INVALID_LIFECYCLE_SOURCES)
+    if feature_report["features_used"] != FEATURES:
+        raise ValueError(f"Feature audit selected {feature_report['features_used']}, but the production contract is {FEATURES}.")
     X = model_train_data[FEATURES]
     cost_name, cost, cost_comparison = _benchmark_regressor(train_data, "actual_cost_overrun_percentage", delay_target=False)
     delay_name, delay, delay_comparison = _benchmark_regressor(train_data, "actual_delay_days", delay_target=True)
@@ -669,7 +784,14 @@ def train(key: str) -> dict:
     joblib.dump(cost, target / "cost_model.pkl")
     joblib.dump(delay, target / "delay_model.pkl")
     joblib.dump(risk, target / "risk_model.pkl")
-    joblib.dump({"cost": _fit_quantiles(model_train_data, "actual_cost_overrun_percentage", delay_target=False), "delay": _fit_quantiles(model_train_data, "actual_delay_days", delay_target=True)}, target / "uncertainty_models.pkl")
+    uncertainty_models = {"cost": _fit_quantiles(model_train_data, "actual_cost_overrun_percentage", delay_target=False), "delay": _fit_quantiles(model_train_data, "actual_delay_days", delay_target=True)}
+    joblib.dump(uncertainty_models, target / "uncertainty_models.pkl")
+    write_feature_quality_report(feature_report, target / "feature_quality_report.json")
+    target_analysis = cost_target_analysis(train_data)
+    write_json(target_analysis, REPORTS / "cost_target_analysis.json")
+    calibration = calibrate_uncertainty(train_data)
+    write_json(calibration, target / "confidence_calibration.json")
+    write_json(calibration, REPORTS / "confidence_calibration.json")
     (target / "historical_priors.json").write_text(json.dumps(priors, indent=2))
     sector_corrections = {
         "cost": sector_correction_experiment(train_data, cost_name, "actual_cost_overrun_percentage", delay_target=False),
@@ -678,6 +800,8 @@ def train(key: str) -> dict:
     (target / "sector_corrections.json").write_text(json.dumps(sector_corrections, indent=2))
     survival = _fit_survival_experiment(model_train_data, target)
     feature_importance = persist_shap_summaries(target, key, {"cost": cost, "delay": delay, "risk": risk}, model_train_data)
+    shap_report = shap_validation(feature_importance, key)
+    write_json(shap_report, target / "shap_validation.json")
     # CatBoost natively processes categorical columns; retain a documented
     # preprocessing artifact for the model-registry contract.
     joblib.dump({"numeric_features": NUMERIC, "categorical_features": CATEGORICAL, "native_categorical_encoding": True}, target / "scaler.pkl")
@@ -692,6 +816,7 @@ def train(key: str) -> dict:
         "available_actual_end": int(all_data.completion_year.max()),
         "features_used": FEATURES,
         "feature_count": len(FEATURES),
+        "feature_quality": {"data_quality_score": feature_report["data_quality_score"], "removed_invalid_feature_count": feature_report["removed_invalid_feature_count"], "report": "feature_quality_report.json"},
         "feature_availability": {
             "available_when_published_at_cutoff": FEATURES,
             "historical_archive_missingness_policy": "Unavailable as-of fields remain NaN/Not reported. No fuzzy joins, zero fills, or synthetic behaviour values are used.",
@@ -703,9 +828,11 @@ def train(key: str) -> dict:
         "outlier_policy": "Invalid labels are rejected by explicit rules. Valid extremes remain, with MAE/Huber objectives, log1p delay, and robust sample weighting.",
         "label_quality": label_quality_report(),
         "uncertainty": {"method": "CatBoost quantile regression", "quantiles": [0.1, 0.5, 0.9]},
+        "confidence_calibration": calibration,
         "delay_severity": {"classes": RISK_LEVELS, "thresholds_days": {"LOW": "<90", "MEDIUM": "90-364", "HIGH": "365-729", "CRITICAL": ">=730"}},
         "sector_correction_experiment": sector_corrections,
         "shap_available": True,
+        "shap_validation": shap_report,
         "feature_importance": feature_importance,
         "survival_experiment": survival,
         "training_samples": int(len(train_data)),
@@ -718,6 +845,8 @@ def train(key: str) -> dict:
     (target / "metadata.json").write_text(json.dumps(metadata, indent=2))
     (target / "model_comparison.json").write_text(json.dumps({
         "selection_method": "latest-year temporal validation within the selected training range",
+        "cost_target_candidates": {"raw": ["catboost", "lightgbm", "xgboost", "random_forest"], "shifted_log1p": ["catboost_shifted_log"], "huber": ["catboost_huber_d8", "catboost_huber_d10"], "quantile": ["catboost_quantile"]},
+        "catboost_search_space": {"depth": [4, 6, 8, 10], "learning_rate": [0.01, 0.03, 0.05, 0.1], "iterations": [500, 1000, 1500, 2000], "l2_leaf_reg": [5, 8, 12, 20], "loss_function": ["MAE", "Huber", "Quantile"]},
         "cost_candidates": cost_comparison,
         "delay_candidates": delay_comparison,
         "selected": {"cost": cost_name, "delay": delay_name},
@@ -748,6 +877,8 @@ def evaluate(key: str, save: bool = True) -> dict:
     X = test_data[feature_columns]
     cost = joblib.load(target / "cost_model.pkl"); delay = joblib.load(target / "delay_model.pkl"); risk = joblib.load(target / "risk_model.pkl")
     uncertainty = joblib.load(target / "uncertainty_models.pkl") if (target / "uncertainty_models.pkl").exists() else None
+    calibration_path = target / "confidence_calibration.json"
+    calibration = json.loads(calibration_path.read_text()) if calibration_path.exists() else {"nominal_coverage_percentage": 80.0, "cost": {"scale": 1.0}, "delay": {"scale": 1.0}, "confidence_percentage": 0.0}
     correction_path = target / "sector_corrections.json"
     corrections = json.loads(correction_path.read_text()) if correction_path.exists() else None
     test_data["predicted_cost_overrun"] = apply_sector_correction(_predict_regressor(cost, X), test_data, corrections, "cost")
@@ -755,14 +886,12 @@ def evaluate(key: str, save: bool = True) -> dict:
     if uncertainty:
         cost_range = predict_quantiles(uncertainty["cost"], X, delay_target=False)
         delay_range = predict_quantiles(uncertainty["delay"], X, delay_target=True)
+        cost_range = scale_quantile_range(cost_range, float(calibration.get("cost", {}).get("scale", 1.0)))
+        delay_range = scale_quantile_range(delay_range, float(calibration.get("delay", {}).get("scale", 1.0)))
         for label in ("p10", "p50", "p90"):
             test_data[f"predicted_cost_{label}"] = cost_range[label]
             test_data[f"predicted_delay_{label}"] = delay_range[label]
-        cost_width = np.maximum(test_data.predicted_cost_p90 - test_data.predicted_cost_p10, 0)
-        delay_width = np.maximum(test_data.predicted_delay_p90 - test_data.predicted_delay_p10, 0)
-        cost_confidence = 100 / (1 + cost_width / (np.abs(test_data.predicted_cost_p50) + 10))
-        delay_confidence = 100 / (1 + delay_width / (np.abs(test_data.predicted_delay_p50) + 90))
-        test_data["model_confidence_percentage"] = (cost_confidence + delay_confidence) / 2
+        test_data["model_confidence_percentage"] = float(calibration.get("confidence_percentage", 0.0))
     test_data["predicted_risk"] = np.asarray(risk.predict(X), dtype=int).reshape(-1)
     risk_probability = np.asarray(risk.predict_proba(X), dtype=float) if hasattr(risk, "predict_proba") else None
     test_data["risk_probability"] = risk_probability.max(axis=1) if risk_probability is not None else 1.0
@@ -785,7 +914,28 @@ def evaluate(key: str, save: bool = True) -> dict:
     if uncertainty:
         columns += ["predicted_cost_p10", "predicted_cost_p50", "predicted_cost_p90", "predicted_delay_p10", "predicted_delay_p50", "predicted_delay_p90", "model_confidence_percentage"]
     rows = test_data[columns].sort_values(["completion_date", "project_name"]).rename(columns={"actual_cost_overrun_percentage": "actual_cost_overrun"})
+    sector_report = sector_validation(rows, key)
+    confidence_report = observed_confidence_calibration(rows, key, calibration)
+    feature_report_path = target / "feature_quality_report.json"
+    feature_report = json.loads(feature_report_path.read_text()) if feature_report_path.exists() else {"features_used": feature_columns, "data_quality_score": 0.0}
+    baseline_path = MODELS / "model_improvement_audit.json"
+    comparison = final_comparison(json.loads(baseline_path.read_text()), metrics, feature_report) if baseline_path.exists() else {}
+    metrics["sector_validation"] = sector_report
+    metrics["confidence_calibration"] = confidence_report
+    metrics["metadata"]["confidence_calibration_status"] = confidence_report["status"]
+    metrics["metadata"]["reliability_reports"] = {
+        "feature_quality": f"models/{key}/feature_quality_report.json",
+        "sector_validation": "reports/sector_validation.json",
+        "confidence_calibration": "reports/confidence_calibration.json",
+        "cost_target_analysis": "reports/cost_target_analysis.json",
+        "final_comparison": "reports/phase1_final_comparison.json",
+    }
     if save:
+        write_json(sector_report, REPORTS / "sector_validation.json")
+        write_json(confidence_report, REPORTS / "confidence_calibration.json")
+        write_json(confidence_report, target / "confidence_calibration.json")
+        if comparison:
+            write_json(comparison, REPORTS / "phase1_final_comparison.json")
         rows.to_csv(target / "evaluation_results.csv", index=False)
         rows.to_csv(target / "prediction_validation.csv", index=False)
         (target / "evaluation_results.json").write_text(json.dumps(metrics, indent=2))

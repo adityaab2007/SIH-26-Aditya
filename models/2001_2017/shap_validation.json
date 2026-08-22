@@ -1,0 +1,49 @@
+{
+  "model_version": "2001_2017",
+  "targets": {
+    "cost": {
+      "top_features": [
+        "approved_cost_cr",
+        "sector",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "project_size_category"
+      ],
+      "meaningful_expected_factors": [
+        "approved_cost_cr",
+        "sector_average_cost_overrun"
+      ],
+      "status": "validated"
+    },
+    "delay": {
+      "top_features": [
+        "sector",
+        "approved_cost_cr",
+        "project_size_category",
+        "sector_average_delay",
+        "sector_average_cost_overrun"
+      ],
+      "meaningful_expected_factors": [
+        "approved_cost_cr",
+        "sector_average_delay"
+      ],
+      "status": "validated"
+    },
+    "risk": {
+      "top_features": [
+        "sector",
+        "sector_average_delay",
+        "project_size_category",
+        "approved_cost_cr",
+        "sector_average_cost_overrun"
+      ],
+      "meaningful_expected_factors": [
+        "sector_average_delay",
+        "approved_cost_cr",
+        "sector_average_cost_overrun"
+      ],
+      "status": "validated"
+    }
+  },
+  "validated": true
+}

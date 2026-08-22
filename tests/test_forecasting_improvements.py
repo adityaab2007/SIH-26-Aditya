@@ -1,10 +1,18 @@
 import json
 
+import joblib
 import pandas as pd
+import numpy as np
 
+from backend.app.ml.feature_audit import audit_features
 from backend.app.ml.real_time_windows import (
+    CANDIDATE_FEATURES,
     FEATURES,
+    INVALID_LIFECYCLE_SOURCES,
     TARGET_COLUMNS,
+    _predict_regressor,
+    apply_historical_priors,
+    add_leave_one_out_training_priors,
     features,
     historical_prior_maps,
     label_quality_report,
@@ -32,16 +40,13 @@ def test_invalid_cost_and_delay_labels_are_removed_without_zero_fills():
     assert clean[["actual_cost_overrun_percentage", "actual_delay_days"]].notna().all().all()
 
 
-def test_feature_count_and_requested_feature_families_increased():
-    assert len(FEATURES) > 4
-    assert {
-        "cost_escalation_percentage", "budget_stress_index", "expenditure_ratio",
-        "progress_deviation", "progress_velocity", "progress_acceleration",
-        "planned_duration_days", "duration_ratio", "schedule_slippage_score",
-        "complexity_score", "project_size_category", "ministry", "state",
-        "cost_acceleration", "progress_trend_6m", "progress_trend_12m",
-        "agency_historical_delay_rate", "agency_historical_cost_overrun_rate", "sector_risk_score",
-    }.issubset(FEATURES)
+def test_feature_audit_removes_unavailable_lifecycle_fields():
+    clean = labelled(outcome_data())
+    training = add_leave_one_out_training_priors(clean[clean.completion_year.between(2001, 2015)].copy())
+    report = audit_features(training, CANDIDATE_FEATURES + list(INVALID_LIFECYCLE_SOURCES), invalid_sources=INVALID_LIFECYCLE_SOURCES)
+    assert report["features_used"] == FEATURES
+    assert set(INVALID_LIFECYCLE_SOURCES).issubset(report["removed_features"])
+    assert all(next(item for item in report["features"] if item["feature"] == name)["decision"] == "remove" for name in INVALID_LIFECYCLE_SOURCES)
 
 
 def test_historical_priors_are_fit_only_on_training_outcomes():
@@ -66,6 +71,19 @@ def test_future_agency_does_not_enter_training_agency_statistics():
     assert "Future-only agency" not in priors["agency_delay"]
     assert "Future-only agency" not in priors["agency_cost"]
     assert priors["training_end"] == int(training.completion_year.max())
+
+
+def test_training_agency_history_uses_strictly_past_completions():
+    frame = pd.DataFrame({
+        "planned_commissioning_date": pd.to_datetime(["2008-01-01", "2011-01-01", "2015-01-01"]),
+        "completion_date": pd.to_datetime(["2009-01-01", "2012-01-01", "2016-01-01"]),
+        "completion_year": [2009, 2012, 2016], "implementing_agency": ["A", "A", "A"], "sector": ["Power", "Power", "Power"],
+        "actual_delay_days": [365.0, 730.0, 9_999_999.0], "actual_cost_overrun_percentage": [10.0, 30.0, 9_999_999.0], "actual_risk": [2, 3, 3],
+    })
+    enriched = add_leave_one_out_training_priors(frame)
+    assert pd.isna(enriched.iloc[0].agency_average_delay)
+    assert enriched.iloc[1].agency_average_delay == 365.0
+    assert enriched.iloc[2].agency_average_delay < 1_000
 
 
 def test_missing_lifecycle_history_stays_missing_instead_of_zero():
@@ -100,3 +118,35 @@ def test_final_model_shap_and_uncertainty_use_registered_features():
         payload = json.loads((model_dir("2001_2015") / "shap" / f"{target_name}_shap_importance.json").read_text())
         assert payload["features"]
         assert all(item["feature"] in FEATURES for item in payload["features"])
+
+
+def test_reliability_reports_are_validation_safe_and_calibrated():
+    target = model_dir("2001_2015")
+    feature_report = json.loads((target / "feature_quality_report.json").read_text())
+    shap_report = json.loads((target / "shap_validation.json").read_text())
+    evaluation = json.loads((target / "evaluation_results.json").read_text())
+    assert feature_report["features_used"] == FEATURES
+    assert shap_report["targets"]["cost"]["meaningful_expected_factors"]
+    assert evaluation["sector_validation"]["policy"].startswith("Computed only from future held-out")
+    calibration = evaluation["confidence_calibration"]
+    assert calibration["status"] in {"well_calibrated", "calibration_warning"}
+    expected_confidence = (calibration["cost"]["coverage_percentage"] + calibration["delay"]["coverage_percentage"]) / 2
+    assert calibration["confidence_percentage"] == expected_confidence
+    if calibration["status"] == "calibration_warning":
+        assert calibration["cost"]["scale"] > 1 or calibration["delay"]["scale"] > 1
+    assert 0 <= calibration["holdout_observed"]["cost_interval_coverage_percentage"] <= 100
+    assert 0 <= calibration["holdout_observed"]["delay_interval_coverage_percentage"] <= 100
+
+
+def test_project_inputs_change_predictions_and_same_agency_is_not_deterministic():
+    target = model_dir("2001_2015")
+    priors = json.loads((target / "historical_priors.json").read_text())
+    raw = pd.DataFrame([
+        {"approved_cost_cr": 100.0, "sector": "Power", "implementing_agency": "Same agency", "planned_commissioning_date": "2028-01-01"},
+        {"approved_cost_cr": 100_000.0, "sector": "Power", "implementing_agency": "Same agency", "planned_commissioning_date": "2028-01-01"},
+    ])
+    model_inputs = apply_historical_priors(features(raw), priors)[FEATURES]
+    model = joblib.load(target / "cost_model.pkl")
+    predictions = _predict_regressor(model, model_inputs)
+    assert predictions[0] != predictions[1]
+    assert np.isfinite(predictions).all()

@@ -1,62 +1,135 @@
 {
   "selection_method": "latest-year temporal validation within the selected training range",
+  "cost_target_candidates": {
+    "raw": [
+      "catboost",
+      "lightgbm",
+      "xgboost",
+      "random_forest"
+    ],
+    "shifted_log1p": [
+      "catboost_shifted_log"
+    ],
+    "huber": [
+      "catboost_huber_d8",
+      "catboost_huber_d10"
+    ],
+    "quantile": [
+      "catboost_quantile"
+    ]
+  },
+  "catboost_search_space": {
+    "depth": [
+      4,
+      6,
+      8,
+      10
+    ],
+    "learning_rate": [
+      0.01,
+      0.03,
+      0.05,
+      0.1
+    ],
+    "iterations": [
+      500,
+      1000,
+      1500,
+      2000
+    ],
+    "l2_leaf_reg": [
+      5,
+      8,
+      12,
+      20
+    ],
+    "loss_function": [
+      "MAE",
+      "Huber",
+      "Quantile"
+    ]
+  },
   "cost_candidates": [
     {
       "model": "catboost",
-      "MAE": 45.9809
+      "MAE": 22.9704
     },
     {
       "model": "lightgbm",
-      "MAE": 36.4701
+      "MAE": 21.4312
     },
     {
       "model": "xgboost",
-      "MAE": 44.4238
+      "MAE": 19.6702
     },
     {
       "model": "random_forest",
-      "MAE": 43.0786
+      "MAE": 21.1284
+    },
+    {
+      "model": "catboost_shifted_log",
+      "MAE": 23.2769
+    },
+    {
+      "model": "catboost_mae_d4",
+      "MAE": 25.7833
+    },
+    {
+      "model": "catboost_mae_d6",
+      "MAE": 26.2495
+    },
+    {
+      "model": "catboost_huber_d8",
+      "MAE": 18.4711
+    },
+    {
+      "model": "catboost_huber_d10",
+      "MAE": 20.1865
+    },
+    {
+      "model": "catboost_quantile",
+      "MAE": 20.2748
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 42.7759
+      "MAE": 37.897
     }
   ],
   "delay_candidates": [
     {
       "model": "catboost",
-      "MAE": 435.8564
+      "MAE": 225.6097
     },
     {
       "model": "lightgbm",
-      "MAE": 420.7786
+      "MAE": 279.8791
     },
     {
       "model": "xgboost",
-      "MAE": 395.4755
+      "MAE": 302.428
     },
     {
       "model": "random_forest",
-      "MAE": 410.3046
+      "MAE": 250.7651
     },
     {
       "model": "two_stage_catboost",
-      "MAE": 376.3579
+      "MAE": 290.0783
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 422.5363
+      "MAE": 341.1228
     }
   ],
   "selected": {
-    "cost": "lightgbm",
-    "delay": "two_stage_catboost"
+    "cost": "catboost_huber_d8",
+    "delay": "catboost"
   },
   "delay_severity_classifier": {
     "model": "CatBoostClassifier MultiClass",
     "validation_year": 2015,
-    "accuracy": 0.0714,
-    "macro_f1": 0.0444,
+    "accuracy": 0.5,
+    "macro_f1": 0.2929,
     "classes": [
       "LOW",
       "MEDIUM",

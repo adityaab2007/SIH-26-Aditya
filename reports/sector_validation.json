@@ -1,0 +1,456 @@
+{
+  "model_version": "2001_2017",
+  "sectors": {
+    "Petroleum": {
+      "projects": 24,
+      "cost_mae": 21.744,
+      "delay_mae": 609.254,
+      "validation_period_only": true
+    },
+    "Road Transport And Highways": {
+      "projects": 19,
+      "cost_mae": 27.971,
+      "delay_mae": 1578.816,
+      "validation_period_only": true
+    },
+    "Highways And Infrastructure Development Corporation": {
+      "projects": 8,
+      "cost_mae": 22.674,
+      "delay_mae": 727.637,
+      "validation_period_only": true
+    },
+    "Power": {
+      "projects": 7,
+      "cost_mae": 19.115,
+      "delay_mae": 601.53,
+      "validation_period_only": true
+    },
+    "Ppp (Annuity)(National Highways Authority Of India) -": {
+      "projects": 7,
+      "cost_mae": 58.491,
+      "delay_mae": 1493.804,
+      "validation_period_only": true
+    },
+    "Urban Development": {
+      "projects": 6,
+      "cost_mae": 74.691,
+      "delay_mae": 1293.749,
+      "validation_period_only": true
+    },
+    "Epc(National Highways And Infrastructure Development": {
+      "projects": 5,
+      "cost_mae": 17.753,
+      "delay_mae": 139.946,
+      "validation_period_only": true
+    },
+    "Railways": {
+      "projects": 4,
+      "cost_mae": 105.268,
+      "delay_mae": 2099.601,
+      "validation_period_only": true
+    },
+    "Flash Report": {
+      "projects": 3,
+      "cost_mae": 30.368,
+      "delay_mae": 1182.263,
+      "validation_period_only": true
+    },
+    "Rate(Ministry Of Road Transport And Highways (State": {
+      "projects": 3,
+      "cost_mae": 54.632,
+      "delay_mae": 2741.65,
+      "validation_period_only": true
+    },
+    "Shoulders Configuration Of Nabarangpur-Kok (Ministry": {
+      "projects": 3,
+      "cost_mae": 126.632,
+      "delay_mae": 1629.547,
+      "validation_period_only": true
+    },
+    "Epc(Ministry Of Road Transport And Highways (State": {
+      "projects": 2,
+      "cost_mae": 54.28,
+      "delay_mae": 2349.359,
+      "validation_period_only": true
+    },
+    "Shoulders Configuration And Strengthening Of Anish": {
+      "projects": 2,
+      "cost_mae": 31.934,
+      "delay_mae": 1187.032,
+      "validation_period_only": true
+    },
+    "Steel": {
+      "projects": 2,
+      "cost_mae": 8.724,
+      "delay_mae": 455.693,
+      "validation_period_only": true
+    },
+    "Arunachal Pradesh Under Arunachal Pradesh Pa Item": {
+      "projects": 1,
+      "cost_mae": 114.611,
+      "delay_mae": 2443.919,
+      "validation_period_only": true
+    },
+    "At Gulbarga                    (Hindustan Steelwork": {
+      "projects": 1,
+      "cost_mae": 8.338,
+      "delay_mae": 925.841,
+      "validation_period_only": true
+    },
+    "Augmentation Of Rajasthan Border-Fatehpur-Sala Ppp": {
+      "projects": 1,
+      "cost_mae": 22.632,
+      "delay_mae": 239.015,
+      "validation_period_only": true
+    },
+    "B                            (Power Grid Corporation Of India": {
+      "projects": 1,
+      "cost_mae": 7.258,
+      "delay_mae": 434.844,
+      "validation_period_only": true
+    },
+    "Barauni Refinery                      (Indian Oil Corporation": {
+      "projects": 1,
+      "cost_mae": 16.996,
+      "delay_mae": 59.947,
+      "validation_period_only": true
+    },
+    "Bihar                           (Indian Oil Corporation Limited)": {
+      "projects": 1,
+      "cost_mae": 22.318,
+      "delay_mae": 62.659,
+      "validation_period_only": true
+    },
+    "Bot (Toll)(Ministry Of Road Transport And Highways (State": {
+      "projects": 1,
+      "cost_mae": 6.17,
+      "delay_mae": 577.674,
+      "validation_period_only": true
+    },
+    "Bridge Across River Ganga At Munger Ghat Near Munge": {
+      "projects": 1,
+      "cost_mae": 19.505,
+      "delay_mae": 157.51,
+      "validation_period_only": true
+    },
+    "Carriageway With Paved Shoulder Including Geo": {
+      "projects": 1,
+      "cost_mae": 4.44,
+      "delay_mae": 508.994,
+      "validation_period_only": true
+    },
+    "Chandigarh                        (Northern Railway) -": {
+      "projects": 1,
+      "cost_mae": 67.149,
+      "delay_mae": 7109.946,
+      "validation_period_only": true
+    },
+    "Civil Aviation": {
+      "projects": 1,
+      "cost_mae": 1.322,
+      "delay_mae": 656.956,
+      "validation_period_only": true
+    },
+    "Coal": {
+      "projects": 1,
+      "cost_mae": 12.939,
+      "delay_mae": 118.994,
+      "validation_period_only": true
+    },
+    "Configuration And Geometric Improvement From": {
+      "projects": 1,
+      "cost_mae": 20.745,
+      "delay_mae": 498.741,
+      "validation_period_only": true
+    },
+    "Corridor For Ipps In Chhattisgarh             (Power Grid": {
+      "projects": 1,
+      "cost_mae": 7.722,
+      "delay_mae": 797.957,
+      "validation_period_only": true
+    },
+    "Court Of India At Land Adjoining Pragati Maidan (Central": {
+      "projects": 1,
+      "cost_mae": 10.533,
+      "delay_mae": 40.712,
+      "validation_period_only": true
+    },
+    "Department Of Higher Education": {
+      "projects": 1,
+      "cost_mae": 0.276,
+      "delay_mae": 2276.458,
+      "validation_period_only": true
+    },
+    "Effluent Treatment Plant At Madhuban              (Oil India": {
+      "projects": 1,
+      "cost_mae": 37.047,
+      "delay_mae": 58.7,
+      "validation_period_only": true
+    },
+    "Ennore Port Connectivity                 (National Highways": {
+      "projects": 1,
+      "cost_mae": 33.519,
+      "delay_mae": 2835.266,
+      "validation_period_only": true
+    },
+    "Epc Mode                         Epc(Ministry Of Road": {
+      "projects": 1,
+      "cost_mae": 17.729,
+      "delay_mae": 2020.727,
+      "validation_period_only": true
+    },
+    "Facilities At Baitalpur Depot For                (Indian Oil": {
+      "projects": 1,
+      "cost_mae": 28.016,
+      "delay_mae": 609.58,
+      "validation_period_only": true
+    },
+    "Flexible Pavement On Khalghat To Sarwardewla Road": {
+      "projects": 1,
+      "cost_mae": 29.63,
+      "delay_mae": 45.578,
+      "validation_period_only": true
+    },
+    "Gulbarga                          (Hindustan Steelwork": {
+      "projects": 1,
+      "cost_mae": 7.139,
+      "delay_mae": 971.381,
+      "validation_period_only": true
+    },
+    "Haldia Refinery                     (Indian Oil Corporation": {
+      "projects": 1,
+      "cost_mae": 4.915,
+      "delay_mae": 119.222,
+      "validation_period_only": true
+    },
+    "Health And Family Welfare": {
+      "projects": 1,
+      "cost_mae": 2.201,
+      "delay_mae": 688.115,
+      "validation_period_only": true
+    },
+    "Ibrahimpatnam Hyderabad                (Central Public": {
+      "projects": 1,
+      "cost_mae": 13.609,
+      "delay_mae": 453.741,
+      "validation_period_only": true
+    },
+    "Its Extension Upto Patna And Muzaffarpur           (Indian Oil": {
+      "projects": 1,
+      "cost_mae": 12.453,
+      "delay_mae": 232.698,
+      "validation_period_only": true
+    },
+    "Kengesii- Musore (Swr)                    (South Western": {
+      "projects": 1,
+      "cost_mae": 42.847,
+      "delay_mae": 766.943,
+      "validation_period_only": true
+    },
+    "Koyali-Manmad-Ahmednagar-Solapur Pipeline         (Indian Oil": {
+      "projects": 1,
+      "cost_mae": 3.735,
+      "delay_mae": 8.206,
+      "validation_period_only": true
+    },
+    "Koyali-Manmad-Ahmednagar-Solapur Pipeline (Indian Oil": {
+      "projects": 1,
+      "cost_mae": 34.918,
+      "delay_mae": 613.244,
+      "validation_period_only": true
+    },
+    "Lane Standards To End Of Kamakhyanagar Bypas": {
+      "projects": 1,
+      "cost_mae": 51.705,
+      "delay_mae": 104.0,
+      "validation_period_only": true
+    },
+    "Lanes With Paved Side Shoulders Of Faridkot-Ko Epc() -": {
+      "projects": 1,
+      "cost_mae": 109.845,
+      "delay_mae": 1482.31,
+      "validation_period_only": true
+    },
+    "Limited And Ind-Barath Power(Madras) Limited L (Power": {
+      "projects": 1,
+      "cost_mae": 13.294,
+      "delay_mae": 762.156,
+      "validation_period_only": true
+    },
+    "Madhapur) In The State Of Odisha            (Ministry Of Road": {
+      "projects": 1,
+      "cost_mae": 13.042,
+      "delay_mae": 157.197,
+      "validation_period_only": true
+    },
+    "Maharashtra                         (Hindustan Petroleum": {
+      "projects": 1,
+      "cost_mae": 15.583,
+      "delay_mae": 246.008,
+      "validation_period_only": true
+    },
+    "Manali Refinery                        (Chennai Petroleum": {
+      "projects": 1,
+      "cost_mae": 24.479,
+      "delay_mae": 491.306,
+      "validation_period_only": true
+    },
+    "Meerut                          (Railway Electrification) -": {
+      "projects": 1,
+      "cost_mae": 13.293,
+      "delay_mae": 283.594,
+      "validation_period_only": true
+    },
+    "Mundra Umpp (Part-B)                      (Power Grid": {
+      "projects": 1,
+      "cost_mae": 14.765,
+      "delay_mae": 594.972,
+      "validation_period_only": true
+    },
+    "Noapara-Nscb Airport(Mtp)                 (Metropolitan": {
+      "projects": 1,
+      "cost_mae": 10.144,
+      "delay_mae": 2998.572,
+      "validation_period_only": true
+    },
+    "Nongstoin Tura State Road Under Phase A Of Sa Item": {
+      "projects": 1,
+      "cost_mae": 0.867,
+      "delay_mae": 57.7,
+      "validation_period_only": true
+    },
+    "Paved Shoulders From Existing                Epc(Ministry Of": {
+      "projects": 1,
+      "cost_mae": 44.697,
+      "delay_mae": 2275.551,
+      "validation_period_only": true
+    },
+    "Pkg-I)                         (National Highways Authority Of": {
+      "projects": 1,
+      "cost_mae": 5.924,
+      "delay_mae": 2396.637,
+      "validation_period_only": true
+    },
+    "Pkg-Iii)                  (National Highways Authority Of": {
+      "projects": 1,
+      "cost_mae": 26.69,
+      "delay_mae": 240.7,
+      "validation_period_only": true
+    },
+    "Pkg-Iv)                      (National Highways Authority Of": {
+      "projects": 1,
+      "cost_mae": 7.835,
+      "delay_mae": 417.739,
+      "validation_period_only": true
+    },
+    "Pkg-V)                       (National Highways Authority Of": {
+      "projects": 1,
+      "cost_mae": 29.829,
+      "delay_mae": 188.984,
+      "validation_period_only": true
+    },
+    "Plant (Psp)                      (Power Grid Corporation Of": {
+      "projects": 1,
+      "cost_mae": 33.035,
+      "delay_mae": 100.364,
+      "validation_period_only": true
+    },
+    "Pradesh                             Epc(Ministry Of Road": {
+      "projects": 1,
+      "cost_mae": 6.823,
+      "delay_mae": 246.521,
+      "validation_period_only": true
+    },
+    "Production Unit(Mops)                    (Oil & Natural Gas": {
+      "projects": 1,
+      "cost_mae": 72.695,
+      "delay_mae": 302.144,
+      "validation_period_only": true
+    },
+    "Refinery                            (Indian Oil Corporation": {
+      "projects": 1,
+      "cost_mae": 9.446,
+      "delay_mae": 77.009,
+      "validation_period_only": true
+    },
+    "Scheme Part-D                         (Power Grid": {
+      "projects": 1,
+      "cost_mae": 14.269,
+      "delay_mae": 698.325,
+      "validation_period_only": true
+    },
+    "Shoulder Configuration Of Nandakumar-Contai-Chan": {
+      "projects": 1,
+      "cost_mae": 31.864,
+      "delay_mae": 1430.205,
+      "validation_period_only": true
+    },
+    "Shoulder Of Abohar-Sitogunno-Dabwali Road Of Nh": {
+      "projects": 1,
+      "cost_mae": 47.718,
+      "delay_mae": 5.083,
+      "validation_period_only": true
+    },
+    "Shoulder Of Mudki-Jawahar Singh Wala Section Of": {
+      "projects": 1,
+      "cost_mae": 6.567,
+      "delay_mae": 376.131,
+      "validation_period_only": true
+    },
+    "Shoulders Configuration Of Pratapgarh-Padi (Ministry": {
+      "projects": 1,
+      "cost_mae": 50.936,
+      "delay_mae": 2479.41,
+      "validation_period_only": true
+    },
+    "Stations)                        (Eastern Railways) -": {
+      "projects": 1,
+      "cost_mae": 33.497,
+      "delay_mae": 2570.296,
+      "validation_period_only": true
+    },
+    "To Boudh) In The State Of Odisha        (Ministry Of Road": {
+      "projects": 1,
+      "cost_mae": 4.864,
+      "delay_mae": 1670.541,
+      "validation_period_only": true
+    },
+    "Top On Koyali-Manmad-Ahmednagar-Solapur Pipeli (Indian": {
+      "projects": 1,
+      "cost_mae": 25.424,
+      "delay_mae": 475.0,
+      "validation_period_only": true
+    },
+    "Tumkur (Pavagada) Karnataka Phase -Ii (Part Ii)      (Power": {
+      "projects": 1,
+      "cost_mae": 12.474,
+      "delay_mae": 309.93,
+      "validation_period_only": true
+    },
+    "Two Lane With Paved Shoulder And Gemetric Impr": {
+      "projects": 1,
+      "cost_mae": 33.88,
+      "delay_mae": 864.131,
+      "validation_period_only": true
+    },
+    "Udaipur                          (North Western Railway) -": {
+      "projects": 1,
+      "cost_mae": 49.701,
+      "delay_mae": 885.325,
+      "validation_period_only": true
+    },
+    "Under Phase-Xii                      (Hindustan Steelwork": {
+      "projects": 1,
+      "cost_mae": 87.492,
+      "delay_mae": 1246.663,
+      "validation_period_only": true
+    },
+    "Under Pmgsy-Jharkhand                (Hindustan": {
+      "projects": 1,
+      "cost_mae": 56.183,
+      "delay_mae": 785.694,
+      "validation_period_only": true
+    }
+  },
+  "policy": "Computed only from future held-out completed projects; training rows are excluded."
+}

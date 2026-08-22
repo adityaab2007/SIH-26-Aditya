@@ -1,0 +1,20 @@
+{
+  "projects": 303,
+  "minimum": -89.9701,
+  "maximum": 866.0,
+  "mean": 17.5045,
+  "median": -10.1583,
+  "standard_deviation": 109.3158,
+  "skew": 4.3707,
+  "percentiles": {
+    "1": -82.449,
+    "10": -50.7696,
+    "25": -27.2115,
+    "50": -10.1583,
+    "75": 20.4414,
+    "90": 100.1653,
+    "99": 494.3378
+  },
+  "iqr_outlier_projects": 34,
+  "policy": "Valid extreme outcomes are retained. Robust MAE/Huber/quantile and shifted-log candidates are compared by later-year temporal MAE."
+}

@@ -1,0 +1,24 @@
+{
+  "status": "calibration_warning",
+  "calibration_year": 2015,
+  "calibration_projects": 14,
+  "nominal_coverage_percentage": 80.0,
+  "cost": {
+    "scale": 1.5,
+    "coverage_percentage": 78.57
+  },
+  "delay": {
+    "scale": 1.0,
+    "coverage_percentage": 78.57
+  },
+  "confidence_percentage": 78.57,
+  "leakage_policy": "Scale factors are chosen on the latest training-window year and never on the final future holdout.",
+  "model_version": "2001_2015",
+  "holdout_observed": {
+    "projects": 110,
+    "cost_interval_coverage_percentage": 81.82,
+    "delay_interval_coverage_percentage": 50.0,
+    "joint_interval_coverage_percentage": 43.64
+  },
+  "display_policy": "Confidence is the earlier-year calibrated interval coverage, not an unsupported per-project probability."
+}
