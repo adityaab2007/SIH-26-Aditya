@@ -13,8 +13,8 @@ async function request(path, options = {}) {
   return response.json();
 }
 
-const selectedModel = () => localStorage.getItem('selected_validation_model') || '2001_2015';
-const withModel = (path, model = selectedModel()) => `${path}${path.includes('?') ? '&' : '?'}model=${encodeURIComponent(model)}`;
+const selectedModel = () => localStorage.getItem('selected_validation_model') || '';
+const withModel = (path, model = selectedModel()) => model ? `${path}${path.includes('?') ? '&' : '?'}model=${encodeURIComponent(model)}` : path;
 
 export const api = {
   health: () => request('/api/health'),
@@ -34,7 +34,7 @@ export const api = {
   modelImportance: () => request('/api/models/importance'),
   validationReport: (model) => request(withModel('/api/models/validation', model)),
   predictionValidation: (limit = 100, model) => request(withModel(`/api/models/prediction-validation?limit=${limit}`, model)),
-  setValidationModel: (model) => localStorage.setItem('selected_validation_model', model),
+  setValidationModel: (model) => localStorage.setItem('selected_validation_model', model || ''),
   getValidationModel: () => selectedModel(),
   simulationVersions: () => request('/api/model-simulations'),
   runSimulation: (version) => request(`/api/model-simulations/${encodeURIComponent(version)}/run`, { method: 'POST' }),
