@@ -34,6 +34,30 @@ def _group_name(name: str) -> str:
     return _clean_feature(name)
 
 
+def _shap_values(model, Xt: np.ndarray) -> np.ndarray:
+    """Return SHAP values for one transformed row across supported model families.
+
+    The registry can legitimately select a tree model or a linear baseline. Using a
+    tree-only explainer made explanations disappear whenever LogisticRegression won
+    a classifier comparison, so select the SHAP explainer from the trained model.
+    """
+    if hasattr(model, "tree_" ) or hasattr(model, "estimators_") or model.__class__.__module__.startswith(("xgboost", "catboost")):
+        values = shap.TreeExplainer(model).shap_values(Xt)
+    elif hasattr(model, "coef_"):
+        values = shap.LinearExplainer(model, Xt).shap_values(Xt)
+    else:
+        explanation = shap.Explainer(model, Xt)(Xt)
+        values = explanation.values
+
+    arr = np.asarray(values)
+    # Some binary classifiers return (samples, features, classes).
+    if arr.ndim == 3:
+        arr = arr[:, :, -1]
+    if arr.ndim == 2:
+        arr = arr[0]
+    return np.asarray(arr, dtype=float).reshape(-1)
+
+
 def local_shap(task: str, frame: pd.DataFrame, limit: int = 7) -> list[dict]:
     info = best_model_info(task)
     artifact = load_artifact(info["path"])
@@ -46,16 +70,11 @@ def local_shap(task: str, frame: pd.DataFrame, limit: int = 7) -> list[dict]:
         else:
             pre = artifact.named_steps["preprocess"]
             model = artifact.named_steps["model"]
-        Xt = pre.transform(X)
+        Xt = np.asarray(pre.transform(X))
         names = list(pre.get_feature_names_out())
-        explainer = shap.TreeExplainer(model)
-        values = explainer.shap_values(Xt)
-        arr = np.asarray(values)
-        if arr.ndim == 3:
-            arr = arr[:, :, -1]
-        if arr.ndim == 2:
-            arr = arr[0]
-        arr = np.asarray(arr).reshape(-1)
+        arr = _shap_values(model, Xt)
+        if len(arr) != len(names):
+            return []
 
         grouped = defaultdict(float)
         for name, value in zip(names, arr):
