@@ -1,16 +1,31 @@
-"""API-facing helpers for the real PAIMANA historical model simulations."""
+"""API-facing helpers for real PAIMANA historical model simulations."""
 from __future__ import annotations
 
+import hashlib
 import math
-import json
+import uuid
 from typing import Any
-from datetime import datetime, timezone
 
 import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.real_time_windows import FEATURES, WINDOWS, evaluate, labelled, model_dir, outcome_data, versions
+from backend.app.ml.real_time_windows import (
+    FEATURES,
+    _classifier,
+    _regressor,
+    evaluate,
+    labelled,
+    model_dir,
+    outcome_data,
+    versions,
+)
+
+# Live judge demo sessions are intentionally process-local. They contain fitted model
+# objects and held-out rows, while API responses keep actual outcomes server-side until
+# the explicit reveal step.
+_CUSTOM_SESSIONS: dict[str, dict] = {}
+_MAX_CUSTOM_SESSIONS = 20
 
 
 def _value(value: Any):
@@ -29,88 +44,263 @@ def available_versions() -> list[dict]:
     return versions()
 
 
-def _shap_factors(key: str, row: pd.Series) -> list[dict]:
-    """Return local SHAP contributions from the selected real-data cost model."""
-    model = joblib.load(model_dir(key) / "cost_model.pkl")
+def available_data_years() -> list[dict]:
+    frame = labelled(outcome_data())
+    counts = frame.groupby("completion_year").size().sort_index()
+    return [{"year": int(year), "completed_projects": int(count)} for year, count in counts.items()]
+
+
+def _shap_factors_for_model(model, row: pd.Series) -> list[dict]:
+    """Return local SHAP contributions without exposing target fields."""
     try:
         import shap
+
         transformed = model.named_steps["preprocess"].transform(pd.DataFrame([row[FEATURES]]))
-        values = shap.TreeExplainer(model.named_steps["model"]).shap_values(transformed.toarray() if hasattr(transformed, "toarray") else transformed)
+        values = shap.TreeExplainer(model.named_steps["model"]).shap_values(
+            transformed.toarray() if hasattr(transformed, "toarray") else transformed
+        )
         names = model.named_steps["preprocess"].get_feature_names_out()
         values = np.asarray(values)[0]
         result = []
         for name, impact in sorted(zip(names, values), key=lambda item: abs(item[1]), reverse=True)[:5]:
-            result.append({"feature": str(name).replace("numeric__", "").replace("category__", ""), "impact": round(float(impact), 4), "direction": "increases" if impact >= 0 else "reduces"})
+            result.append(
+                {
+                    "feature": str(name).replace("numeric__", "").replace("category__", ""),
+                    "impact": round(float(impact), 4),
+                    "direction": "increases" if impact >= 0 else "reduces",
+                }
+            )
         return result
     except Exception:
-        # A truthful fallback for platforms where the optional SHAP backend cannot load.
         return [{"feature": "approved_cost_cr", "impact": 0.0, "direction": "not available"}]
 
 
-def _test_data(key: str) -> pd.DataFrame:
-    if key not in WINDOWS:
-        raise KeyError(key)
-    window = WINDOWS[key]
-    data = labelled(outcome_data())
-    actual_end = min(window.test_end, int(data.completion_year.max()))
-    result = data[data.completion_year.between(window.test_start, actual_end)].sort_values(["completion_date", "project_name"]).reset_index(drop=True)
-    if result.empty:
-        raise ValueError(f"No official completed-project outcomes are available for {window.test_start}-{actual_end}.")
-    return result
-
-
-def candidate_projects(key: str) -> list[dict]:
-    rows = _test_data(key)
-    return [{
-        "record_index": int(index), "project_id": _value(row.project_id) or "Not published", "project_name": _value(row.project_name),
-        "sector": _value(row.sector), "approved_cost_cr": _value(row.approved_cost_cr), "planned_commissioning_date": _value(row.planned_commissioning_date),
-    } for index, row in rows.iterrows()]
-
-
-def _metrics(key: str) -> dict:
-    path = model_dir(key) / "evaluation_results.json"
-    if path.exists():
-        return json.loads(path.read_text())
-    return evaluate(key, save=True)["metrics"]
-
-
-def run_project(key: str, record_index: int) -> dict:
-    rows = _test_data(key)
-    if record_index < 0 or record_index >= len(rows):
-        raise ValueError("Selected project is not in this model's official evaluation cohort.")
-    row = rows.iloc[record_index]
-    X = pd.DataFrame([row[FEATURES]])
-    cost_model = joblib.load(model_dir(key) / "cost_model.pkl")
-    delay_model = joblib.load(model_dir(key) / "delay_model.pkl")
-    risk_model = joblib.load(model_dir(key) / "risk_model.pkl")
-    predicted_cost = float(cost_model.predict(X)[0])
-    predicted_delay = max(0.0, float(delay_model.predict(X)[0]))
-    predicted_risk = int(risk_model.predict(X)[0])
-    actual_cost = float(row.actual_cost_overrun_percentage)
-    actual_delay = float(row.actual_delay_days)
-    item = {
-        "record_index": int(record_index), "project_id": _value(row.project_id) or "Not published", "project_name": _value(row.project_name), "sector": _value(row.sector),
-        "predicted_cost_overrun": round(predicted_cost, 4), "actual_cost_overrun": round(actual_cost, 4), "cost_error": round(predicted_cost - actual_cost, 4),
-        "predicted_delay_days": round(predicted_delay, 4), "actual_delay_days": round(actual_delay, 4), "delay_error": round(predicted_delay - actual_delay, 4),
-        "predicted_risk": "HIGH" if predicted_risk else "LOW", "actual_risk": "HIGH" if int(row.actual_risk) else "LOW",
-        "snapshot": {"approved_cost_cr": _value(row.approved_cost_cr), "current_cost_cr": None, "physical_progress_percentage": None, "expenditure_cr": None, "sector": _value(row.sector), "planned_commissioning_date": _value(row.planned_commissioning_date), "implementing_agency": _value(row.implementing_agency), "note": "This prediction is computed now from the selected model and the official fields available before the reported completion outcome. Current cost, progress, and expenditure were not reported in this completed-project source row."},
-        "shap_explanation": _shap_factors(key, row),
-    }
-    return {"version": key, "generated_at": datetime.now(timezone.utc).isoformat(), "metrics": _metrics(key), "item": item, "reveal_policy": "The API returns the official outcome only for this historical completed project. The interface keeps it hidden until Reveal Actual Outcome is selected."}
+def _shap_factors(key: str, row: pd.Series) -> list[dict]:
+    return _shap_factors_for_model(joblib.load(model_dir(key) / "cost_model.pkl"), row)
 
 
 def run(key: str) -> dict:
-    result = evaluate(key, save=False)
+    result = evaluate(key, save=True)
     frame = result["rows"].reset_index(drop=True)
     items = []
     for index, row in frame.iterrows():
-        items.append({
-            "record_index": int(index), "project_id": _value(row.project_id) or "Not published", "project_name": _value(row.project_name), "sector": _value(row.sector),
-            "completion_date": _value(row.completion_date), "approved_cost_cr": _value(row.approved_cost_cr),
-            "predicted_cost_overrun": _value(row.predicted_cost_overrun), "actual_cost_overrun": _value(row.actual_cost_overrun_percentage), "cost_error": _value(row.cost_error),
-            "predicted_delay_days": _value(row.predicted_delay_days), "actual_delay_days": _value(row.actual_delay_days), "delay_error": _value(row.delay_error),
-            "predicted_risk": "HIGH" if int(row.predicted_risk) else "LOW", "actual_risk": "HIGH" if int(row.actual_risk) else "LOW",
-            "snapshot": {"approved_cost_cr": _value(row.approved_cost_cr), "current_cost_cr": None, "physical_progress_percentage": None, "expenditure_cr": None, "sector": _value(row.sector), "note": "The completed-project archive reports approved cost and completion expenditure. Pre-completion current cost, progress, and expenditure were not reported in this source row."},
-            "shap_explanation": _shap_factors(key, row),
-        })
-    return {"version": key, "metrics": result["metrics"], "items": items, "reveal_policy": "Actual outcome values are present for the historical evaluation response but should remain hidden until the user selects Reveal Actual Outcome."}
+        items.append(
+            {
+                "record_index": int(index),
+                "project_id": _value(row.project_id) or "Not published",
+                "project_name": _value(row.project_name),
+                "sector": _value(row.sector),
+                "completion_date": _value(row.completion_date),
+                "approved_cost_cr": _value(row.approved_cost_cr),
+                "predicted_cost_overrun": _value(row.predicted_cost_overrun),
+                "actual_cost_overrun": _value(row.actual_cost_overrun_percentage),
+                "cost_error": _value(row.cost_error),
+                "predicted_delay_days": _value(row.predicted_delay_days),
+                "actual_delay_days": _value(row.actual_delay_days),
+                "delay_error": _value(row.delay_error),
+                "predicted_risk": "HIGH" if int(row.predicted_risk) else "LOW",
+                "actual_risk": "HIGH" if int(row.actual_risk) else "LOW",
+                "snapshot": {
+                    "approved_cost_cr": _value(row.approved_cost_cr),
+                    "current_cost_cr": None,
+                    "physical_progress_percentage": None,
+                    "expenditure_cr": None,
+                    "sector": _value(row.sector),
+                    "note": "The completed-project archive reports approved cost and completion expenditure. Pre-completion current cost, progress, and expenditure were not reported in this source row.",
+                },
+                "shap_explanation": _shap_factors(key, row),
+            }
+        )
+    return {
+        "version": key,
+        "metrics": result["metrics"],
+        "items": items,
+        "reveal_policy": "Actual outcome values are present for the historical evaluation response but should remain hidden until the user selects Reveal Actual Outcome.",
+    }
+
+
+def _fingerprint(frame: pd.DataFrame) -> str:
+    columns = [
+        "project_name",
+        "approved_cost_cr",
+        "planned_commissioning_date",
+        "reported_completion_expenditure_cr",
+        "completion_date",
+        "source_url",
+    ]
+    canonical = frame[columns].sort_values(columns[:2], kind="stable").to_csv(index=False, date_format="%Y-%m-%d")
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def train_custom(start_year: int, end_year: int) -> dict:
+    """Train a fresh model and hold every later completed project out of fitting."""
+    all_data = labelled(outcome_data()).sort_values(["completion_year", "project_name"], kind="stable").reset_index(drop=True)
+    if start_year > end_year:
+        raise ValueError("Training start year must be less than or equal to training end year.")
+
+    min_year = int(all_data.completion_year.min())
+    max_year = int(all_data.completion_year.max())
+    if end_year >= max_year:
+        raise ValueError(f"Training must end before {max_year} so at least one later held-out year remains for testing.")
+    if end_year < min_year or start_year > max_year:
+        raise ValueError(f"Training range must overlap available official completed-project data ({min_year}-{max_year}).")
+
+    train_data = all_data[all_data.completion_year.between(start_year, end_year)].copy()
+    if len(train_data) < 12:
+        raise ValueError(f"Selected range has only {len(train_data)} eligible completed projects; choose a wider range with at least 12.")
+
+    held_out = all_data[all_data.completion_year > end_year].copy().reset_index(drop=True)
+    if held_out.empty:
+        raise ValueError("No later completed projects are available for a leakage-free historical test.")
+
+    X = train_data[FEATURES]
+    cost = _regressor()
+    delay = _regressor(seed=26104)
+    risk = _classifier(train_data.actual_risk)
+    cost.fit(X, train_data.actual_cost_overrun_percentage)
+    delay.fit(X, train_data.actual_delay_days)
+    risk.fit(X, train_data.actual_risk)
+
+    held_out["record_index"] = np.arange(len(held_out), dtype=int)
+    session_id = uuid.uuid4().hex[:16]
+    _CUSTOM_SESSIONS[session_id] = {
+        "training_start": int(start_year),
+        "training_end": int(end_year),
+        "training_samples": int(len(train_data)),
+        "training_fingerprint": _fingerprint(train_data),
+        "cost_model": cost,
+        "delay_model": delay,
+        "risk_model": risk,
+        "held_out": held_out,
+        "predictions": {},
+    }
+    while len(_CUSTOM_SESSIONS) > _MAX_CUSTOM_SESSIONS:
+        oldest = next(iter(_CUSTOM_SESSIONS))
+        if oldest == session_id and len(_CUSTOM_SESSIONS) == 1:
+            break
+        _CUSTOM_SESSIONS.pop(oldest, None)
+
+    year_counts = held_out.groupby("completion_year").size().sort_index()
+    return {
+        "session_id": session_id,
+        "training_start": int(start_year),
+        "training_end": int(end_year),
+        "training_samples": int(len(train_data)),
+        "training_fingerprint_sha256": _CUSTOM_SESSIONS[session_id]["training_fingerprint"],
+        "features_used": FEATURES,
+        "data_source": "Official PAIMANA completed-project archive reports",
+        "eligible_test_years": [{"year": int(year), "projects": int(count)} for year, count in year_counts.items()],
+        "leakage_guard": f"Only projects completed in {start_year}-{end_year} were fitted. Test projects must be completed after {end_year}.",
+        "actual_outcomes_sent_to_browser": False,
+    }
+
+
+def _session(session_id: str) -> dict:
+    if session_id not in _CUSTOM_SESSIONS:
+        raise KeyError(session_id)
+    return _CUSTOM_SESSIONS[session_id]
+
+
+def custom_projects(session_id: str, year: int) -> dict:
+    session = _session(session_id)
+    if year <= session["training_end"]:
+        raise ValueError(f"Test year must be after the training cutoff ({session['training_end']}).")
+    frame = session["held_out"]
+    rows = frame[frame.completion_year == year]
+    if rows.empty:
+        raise ValueError(f"No held-out official completed projects are available for {year}.")
+    items = []
+    for _, row in rows.iterrows():
+        items.append(
+            {
+                "record_index": int(row.record_index),
+                "project_id": _value(row.project_id) or "Not published",
+                "project_name": _value(row.project_name),
+                "sector": _value(row.sector),
+                "implementing_agency": _value(row.implementing_agency),
+                "approved_cost_cr": _value(row.approved_cost_cr),
+                "planned_commissioning_year": _value(row.planned_commissioning_year),
+                "held_out_completion_year": int(row.completion_year),
+            }
+        )
+    return {
+        "session_id": session_id,
+        "year": int(year),
+        "items": items,
+        "actual_outcomes_sent_to_browser": False,
+        "note": "The held-out completion year is used only to select an unseen historical project; completion date and final expenditure are not model inputs.",
+    }
+
+
+def _session_row(session: dict, record_index: int) -> pd.Series:
+    frame = session["held_out"]
+    rows = frame[frame.record_index == record_index]
+    if rows.empty:
+        raise ValueError("Selected held-out project does not exist in this training session.")
+    return rows.iloc[0]
+
+
+def predict_custom(session_id: str, record_index: int) -> dict:
+    session = _session(session_id)
+    row = _session_row(session, record_index)
+    X = pd.DataFrame([row[FEATURES]])
+    predicted_cost = float(session["cost_model"].predict(X)[0])
+    predicted_delay = max(0.0, float(session["delay_model"].predict(X)[0]))
+    predicted_risk = int(session["risk_model"].predict(X)[0])
+    prediction = {
+        "predicted_cost_overrun": round(predicted_cost, 4),
+        "predicted_delay_days": round(predicted_delay, 4),
+        "predicted_risk": "HIGH" if predicted_risk else "LOW",
+    }
+    session["predictions"][int(record_index)] = prediction
+    return {
+        "session_id": session_id,
+        "record_index": int(record_index),
+        "project": {
+            "project_id": _value(row.project_id) or "Not published",
+            "project_name": _value(row.project_name),
+            "sector": _value(row.sector),
+            "implementing_agency": _value(row.implementing_agency),
+        },
+        "model_inputs": {
+            "approved_cost_cr": _value(row.approved_cost_cr),
+            "sector": _value(row.sector),
+            "implementing_agency": _value(row.implementing_agency),
+            "planned_commissioning_year": _value(row.planned_commissioning_year),
+        },
+        **prediction,
+        "shap_explanation": _shap_factors_for_model(session["cost_model"], row),
+        "audit": {
+            "training_start": session["training_start"],
+            "training_end": session["training_end"],
+            "training_samples": session["training_samples"],
+            "training_fingerprint_sha256": session["training_fingerprint"],
+            "project_excluded_from_training": int(row.completion_year) > session["training_end"],
+            "actual_outcomes_sent_to_browser": False,
+        },
+    }
+
+
+def reveal_custom(session_id: str, record_index: int) -> dict:
+    session = _session(session_id)
+    if int(record_index) not in session["predictions"]:
+        raise ValueError("Generate the AI prediction before revealing the official outcome.")
+    row = _session_row(session, record_index)
+    predicted = session["predictions"][int(record_index)]
+    actual_cost = float(row.actual_cost_overrun_percentage)
+    actual_delay = float(row.actual_delay_days)
+    actual_risk = "HIGH" if int(row.actual_risk) else "LOW"
+    return {
+        "session_id": session_id,
+        "record_index": int(record_index),
+        "actual_cost_overrun": round(actual_cost, 4),
+        "actual_delay_days": round(actual_delay, 4),
+        "actual_risk": actual_risk,
+        "cost_error_absolute_pp": round(abs(predicted["predicted_cost_overrun"] - actual_cost), 4),
+        "delay_error_absolute_days": round(abs(predicted["predicted_delay_days"] - actual_delay), 4),
+        "completion_date": _value(row.completion_date),
+        "reported_completion_expenditure_cr": _value(row.reported_completion_expenditure_cr),
+        "source_url": _value(row.source_url),
+        "source_label": "Official PAIMANA completed-project archive report",
+        "reveal_policy": "Actual fields were returned only after a prediction had been generated for this held-out project.",
+    }
