@@ -10,9 +10,10 @@ PROJECT_HISTORY = ROOT / "data" / "project_history.csv"
 CATEGORICAL_COLUMNS = ["sector", "ministry", "agency", "state"]
 TEMPORAL_FEATURES = [
     "original_cost", "current_estimated_cost", "monthly_expenditure", "physical_progress_percentage",
-    "monthly_cost_growth", "expenditure_velocity", "cost_revision_percentage", "progress_velocity",
-    "progress_delay", "expected_vs_actual_progress", "schedule_slippage", "milestone_delay_rate",
-    "sector_average_overrun", "agency_delay_history", *CATEGORICAL_COLUMNS,
+    "cost_growth_rate", "monthly_expenditure_growth", "cost_revision_percentage", "expenditure_vs_progress",
+    "progress_velocity", "progress_gap", "planned_vs_actual_progress", "elapsed_duration", "remaining_duration",
+    "schedule_slippage", "milestone_delay_rate", "sector_delay_average", "agency_delay_history",
+    "similar_project_overrun_rate", *CATEGORICAL_COLUMNS,
 ]
 
 
@@ -43,12 +44,21 @@ def engineer_temporal_features(history: pd.DataFrame) -> pd.DataFrame:
     planned_duration = ((df.planned_completion_date.dt.year - df.planned_start_date.dt.year) * 12 + (df.planned_completion_date.dt.month - df.planned_start_date.dt.month)).replace(0, np.nan)
     month_gap = ((df.month.dt.year - prior_month.dt.year) * 12 + (df.month.dt.month - prior_month.dt.month)).replace(0, np.nan)
     df["monthly_cost_growth"] = np.where(prior_cost > 0, (df.current_estimated_cost - prior_cost) / prior_cost * 100, 0.0)
+    df["cost_growth_rate"] = df["monthly_cost_growth"]
     df["expenditure_velocity"] = df.monthly_expenditure
+    prior_expenditure = grouped["monthly_expenditure"].shift(1)
+    df["monthly_expenditure_growth"] = np.where(prior_expenditure > 0, (df.monthly_expenditure - prior_expenditure) / prior_expenditure * 100, 0.0)
     df["cost_revision_percentage"] = np.where(df.original_cost > 0, (df.current_estimated_cost - df.original_cost) / df.original_cost * 100, 0.0)
     df["progress_velocity"] = np.where(month_gap > 0, (df.physical_progress_percentage - prior_progress) / month_gap, 0.0)
     expected = (elapsed / planned_duration * 100).clip(upper=100)
     df["expected_vs_actual_progress"] = df.physical_progress_percentage - expected
     df["progress_delay"] = (-df.expected_vs_actual_progress).clip(lower=0)
+    df["progress_gap"] = df["progress_delay"]
+    df["planned_vs_actual_progress"] = df["expected_vs_actual_progress"]
+    df["elapsed_duration"] = (df.month - df.planned_start_date).dt.days.clip(lower=0)
+    df["remaining_duration"] = (df.planned_completion_date - df.month).dt.days.clip(lower=0)
+    cumulative_expenditure = grouped["monthly_expenditure"].cumsum()
+    df["expenditure_vs_progress"] = np.where(df.physical_progress_percentage > 0, cumulative_expenditure / df.original_cost * 100 / df.physical_progress_percentage, 0.0)
     df["schedule_slippage"] = (df.revised_completion_date - df.planned_completion_date).dt.days.clip(lower=0).fillna(0)
     df["milestone_delay_rate"] = grouped["milestone_delay_days"].transform(lambda s: s.fillna(0).expanding().mean()).fillna(0)
 
@@ -56,11 +66,16 @@ def engineer_temporal_features(history: pd.DataFrame) -> pd.DataFrame:
     completed = df[df.actual_completion_date.notna()].copy()
     completed["final_overrun"] = np.where(completed.original_cost > 0, (completed.actual_cost - completed.original_cost) / completed.original_cost * 100, np.nan)
     completed["final_delay"] = (completed.actual_completion_date - completed.planned_completion_date).dt.days.clip(lower=0)
-    sector_values, agency_values = [], []
+    sector_values, agency_values, sector_delays, similar_rates = [], [], [], []
     for row in df.itertuples(index=False):
         past = completed[completed.actual_completion_date < row.month]
         sector_values.append(past.loc[past.sector == row.sector, "final_overrun"].mean())
         agency_values.append(past.loc[past.agency == row.agency, "final_delay"].mean())
+        peers = past.loc[past.sector == row.sector]
+        sector_delays.append(peers["final_delay"].mean())
+        similar_rates.append((peers["final_overrun"] >= 15).mean() if not peers.empty else np.nan)
     df["sector_average_overrun"] = pd.Series(sector_values, index=df.index).fillna(0.0)
     df["agency_delay_history"] = pd.Series(agency_values, index=df.index).fillna(0.0)
+    df["sector_delay_average"] = pd.Series(sector_delays, index=df.index).fillna(0.0)
+    df["similar_project_overrun_rate"] = pd.Series(similar_rates, index=df.index).fillna(0.0)
     return df

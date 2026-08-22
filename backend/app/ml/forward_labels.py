@@ -23,4 +23,6 @@ def build_forward_labels(snapshots: pd.DataFrame) -> pd.DataFrame:
         np.nan,
     )
     usable["future_schedule_extension_days"] = (usable.actual_completion_date - usable.planned_completion_date).dt.days
+    usable["future_cost_overrun_percentage"] = usable["future_cost_escalation_percentage"]
+    usable["future_delay_days"] = usable["future_schedule_extension_days"]
     return usable
