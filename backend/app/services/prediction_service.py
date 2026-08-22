@@ -7,7 +7,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.real_time_windows import FEATURES, _predict_regressor, active_version, features, model_dir, predict_quantiles
+from backend.app.ml.real_time_windows import FEATURES, RISK_LEVELS, _predict_regressor, active_version, apply_historical_priors, apply_sector_correction, features, model_dir, predict_quantiles
 from backend.app.services.data_service import get_project
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -64,14 +64,19 @@ def project_forecast(code: str) -> dict:
     target = model_dir(version)
     metadata = json.loads((target / "metadata.json").read_text())
     X = _model_inputs(project)
+    priors_path = target / "historical_priors.json"
+    if priors_path.exists():
+        X = apply_historical_priors(X, json.loads(priors_path.read_text()))[FEATURES]
     cost_model = joblib.load(target / "cost_model.pkl")
     delay_model = joblib.load(target / "delay_model.pkl")
     risk_model = joblib.load(target / "risk_model.pkl")
-    cost = float(_predict_regressor(cost_model, X)[0])
+    corrections_path = target / "sector_corrections.json"
+    corrections = json.loads(corrections_path.read_text()) if corrections_path.exists() else None
+    cost = float(apply_sector_correction(_predict_regressor(cost_model, X), X, corrections, "cost")[0])
     # A live forecast reports additional delay days.  The backtest retains
     # signed early/late completion outcomes, while a negative live estimate is
     # represented as no predicted delay rather than a negative delay duration.
-    delay = max(0.0, float(_predict_regressor(delay_model, X, delay_target=True)[0]))
+    delay = max(0.0, float(apply_sector_correction(_predict_regressor(delay_model, X, delay_target=True), X, corrections, "delay")[0]))
     uncertainty = joblib.load(target / "uncertainty_models.pkl") if (target / "uncertainty_models.pkl").exists() else None
     expected_range = None
     if uncertainty:
@@ -82,12 +87,14 @@ def project_forecast(code: str) -> dict:
             "delay_days": {label: round(float(values[0]), 1) for label, values in delay_q.items()},
         }
     risk_prediction = int(np.asarray(risk_model.predict(X), dtype=int).reshape(-1)[0])
-    probability = float(np.asarray(risk_model.predict_proba(X))[0][1]) if hasattr(risk_model, "predict_proba") and len(np.asarray(risk_model.predict_proba(X))[0]) > 1 else float(risk_prediction)
+    probabilities = np.asarray(risk_model.predict_proba(X), dtype=float)[0] if hasattr(risk_model, "predict_proba") else np.array([1.0])
+    probability = float(probabilities.max())
     planned = pd.to_datetime(project.original_end_date, errors="coerce")
     progress = pd.to_numeric(project.get("physical_progress_pct"), errors="coerce")
     revised = pd.to_numeric(project.get("revised_cost_cr"), errors="coerce")
     expenditure = pd.to_numeric(project.get("expenditure_cr"), errors="coerce")
     factors = _shap_factors_for_model(cost_model, X.iloc[0])
+    risk_factors = _shap_factors_for_model(risk_model, X.iloc[0])
     current_status = {
         "snapshot_month": pd.to_datetime(project.snapshot_date).strftime("%Y-%m-%d"),
         "physical_progress_percentage": None if pd.isna(progress) else round(float(progress), 1),
@@ -102,8 +109,8 @@ def project_forecast(code: str) -> dict:
         "predicted_delay_days": round(delay, 1), "predicted_cost_overrun": round(cost, 2),
         "current_progress": current_status["physical_progress_percentage"],
         "predicted_delay_months": round(delay / 30.4375, 1),
-        "risk_score": round(probability * 100, 1), "risk_level": "HIGH" if risk_prediction else "LOW",
-        "explanation": factors, "shap_explanation": factors, "cost_factors": factors, "delay_factors": _shap_factors_for_model(delay_model, X.iloc[0]),
+        "risk_score": round(probability * 100, 1), "risk_probability_percentage": round(probability * 100, 1), "risk_level": RISK_LEVELS[risk_prediction],
+        "explanation": factors, "shap_explanation": factors, "cost_factors": factors, "delay_factors": _shap_factors_for_model(delay_model, X.iloc[0]), "risk_factors": risk_factors,
         "best_models": {"cost": metadata.get("algorithms", {}).get("cost", "registered model"), "delay": metadata.get("algorithms", {}).get("delay", "registered model")},
         "expected_range": expected_range,
         "completion_probabilities": _completion_probabilities(target, X, planned),

@@ -3,54 +3,66 @@
   "cost_candidates": [
     {
       "model": "catboost",
-      "MAE": 16.0247
+      "MAE": 39.6828
     },
     {
       "model": "lightgbm",
-      "MAE": 19.5796
+      "MAE": 34.8828
     },
     {
       "model": "xgboost",
-      "MAE": 16.3314
+      "MAE": 41.0244
     },
     {
       "model": "random_forest",
-      "MAE": 16.1964
+      "MAE": 42.1627
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 17.7857
+      "MAE": 38.5149
     }
   ],
   "delay_candidates": [
     {
       "model": "catboost",
-      "MAE": 298.0928
+      "MAE": 290.9217
     },
     {
       "model": "lightgbm",
-      "MAE": 300.2179
+      "MAE": 300.6363
     },
     {
       "model": "xgboost",
-      "MAE": 300.4178
+      "MAE": 284.654
     },
     {
       "model": "random_forest",
-      "MAE": 380.8607
+      "MAE": 297.5881
     },
     {
       "model": "two_stage_catboost",
-      "MAE": 347.9947
+      "MAE": 284.1059
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 1755.8223
+      "MAE": 305.8052
     }
   ],
   "selected": {
-    "cost": "catboost",
-    "delay": "catboost"
+    "cost": "lightgbm",
+    "delay": "two_stage_catboost"
+  },
+  "delay_severity_classifier": {
+    "model": "CatBoostClassifier MultiClass",
+    "validation_year": 2017,
+    "accuracy": 0.5556,
+    "macro_f1": 0.2381,
+    "classes": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL"
+    ]
   },
   "stacking_policy": "CatBoost + LightGBM + XGBoost with LinearRegression meta-model is selected only when its later-year MAE beats every individual model."
 }

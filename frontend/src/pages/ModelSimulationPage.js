@@ -19,7 +19,8 @@ function predictionCard(prediction, actual = null) {
       <div class="detail-financial">
         <div><span>Predicted cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div>
         <div><span>Predicted delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div>
-        <div><span>Predicted risk</span><strong>${escape(prediction.predicted_risk)}</strong></div>
+        <div><span>Predicted risk</span><strong>${escape(prediction.predicted_risk)} · ${fixed(prediction.risk_probability_percentage, 1)}%</strong></div>
+        <div><span>Model confidence</span><strong>${fixed(prediction.model_confidence_percentage, 1)}%</strong></div>
         <div><span>Actual outcome sent yet?</span><strong>${prediction.audit.actual_outcomes_sent_to_browser ? 'Yes' : 'No'}</strong></div>
       </div>
       <h3>Inputs visible to the model</h3>

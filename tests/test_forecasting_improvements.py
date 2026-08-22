@@ -5,6 +5,8 @@ import pandas as pd
 from backend.app.ml.real_time_windows import (
     FEATURES,
     TARGET_COLUMNS,
+    features,
+    historical_prior_maps,
     label_quality_report,
     labelled,
     model_dir,
@@ -37,7 +39,47 @@ def test_feature_count_and_requested_feature_families_increased():
         "progress_deviation", "progress_velocity", "progress_acceleration",
         "planned_duration_days", "duration_ratio", "schedule_slippage_score",
         "complexity_score", "project_size_category", "ministry", "state",
+        "cost_acceleration", "progress_trend_6m", "progress_trend_12m",
+        "agency_historical_delay_rate", "agency_historical_cost_overrun_rate", "sector_risk_score",
     }.issubset(FEATURES)
+
+
+def test_historical_priors_are_fit_only_on_training_outcomes():
+    clean = labelled(outcome_data())
+    training = clean[clean.completion_year <= 2015].copy()
+    future = clean[clean.completion_year > 2015].copy()
+    before = historical_prior_maps(training)
+    future["actual_delay_days"] = 9_999_999
+    future["actual_cost_overrun_percentage"] = 9_999_999
+    after = historical_prior_maps(training)
+    assert before == after
+    assert before["training_end"] <= 2015
+    assert all(value < 9_999_999 for value in before["agency_delay"].values())
+
+
+def test_future_agency_does_not_enter_training_agency_statistics():
+    clean = labelled(outcome_data())
+    training = clean[clean.completion_year <= 2015].copy()
+    future = clean[clean.completion_year > 2015].copy()
+    future.loc[:, "implementing_agency"] = "Future-only agency"
+    priors = historical_prior_maps(training)
+    assert "Future-only agency" not in priors["agency_delay"]
+    assert "Future-only agency" not in priors["agency_cost"]
+    assert priors["training_end"] == int(training.completion_year.max())
+
+
+def test_missing_lifecycle_history_stays_missing_instead_of_zero():
+    row = pd.DataFrame([{
+        "project_id": "one-snapshot", "approved_cost_cr": 100,
+        "planned_commissioning_date": "2028-01-01", "snapshot_date": "2026-01-01",
+        "physical_progress": 20, "sector": "Roads", "ministry": "Roads",
+        "implementing_agency": "Agency", "state": "State",
+    }])
+    engineered = features(row).iloc[0]
+    assert pd.isna(engineered.progress_trend_6m)
+    assert pd.isna(engineered.progress_trend_12m)
+    assert pd.isna(engineered.progress_acceleration)
+    assert pd.isna(engineered.cost_acceleration)
 
 
 def test_changing_training_window_changes_real_validation_metrics():
@@ -54,3 +96,7 @@ def test_final_model_shap_and_uncertainty_use_registered_features():
     assert result["expected_range"]
     assert result["expected_range"]["delay_days"]["p10"] <= result["expected_range"]["delay_days"]["p90"]
     assert result["features_used"] == FEATURES
+    for target_name in ("cost", "delay", "risk"):
+        payload = json.loads((model_dir("2001_2015") / "shap" / f"{target_name}_shap_importance.json").read_text())
+        assert payload["features"]
+        assert all(item["feature"] in FEATURES for item in payload["features"])

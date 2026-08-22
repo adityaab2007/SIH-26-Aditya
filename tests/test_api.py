@@ -15,7 +15,8 @@ def test_temporal_forecast_contract_and_actual_factors():
     assert response.status_code == 200
     data = response.json()
     assert {"project_name", "current_status", "predicted_cost_overrun_percentage", "predicted_delay_days", "risk_score", "risk_level", "explanation"}.issubset(data)
-    assert data["risk_level"] in {"LOW", "MEDIUM", "HIGH"}
+    assert data["risk_level"] in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
+    assert 0 <= data["risk_probability_percentage"] <= 100
     assert data["predicted_delay_days"] >= 0
     assert data["cost_factors"] or data["delay_factors"]
     assert all("feature" in factor and "impact" in factor for factor in data["explanation"])
@@ -52,6 +53,10 @@ def test_prediction_validation_artifacts_are_served():
     assert rows.status_code == 200
     first = rows.json()["items"][0]
     assert {"project_id", "project_name", "predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(first)
+    rolling = client.get("/api/models/rolling-validation")
+    assert rolling.status_code == 200
+    assert rolling.json()["fold_count"] == len(rolling.json()["folds"])
+    assert {"cost_MAE", "delay_MAE_days", "risk_f1"}.issubset(rolling.json()["folds"][0])
 
 
 def test_real_paimana_model_simulation_contract():
@@ -96,6 +101,9 @@ def test_judge_controlled_backtest_hides_actual_until_reveal():
     assert predicted["audit"]["actual_outcomes_sent_to_browser"] is False
     assert "actual_cost_overrun" not in predicted
     assert "actual_delay_days" not in predicted
+    assert predicted["predicted_risk"] in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
+    assert 0 <= predicted["risk_probability_percentage"] <= 100
+    assert 0 <= predicted["model_confidence_percentage"] <= 100
 
     reveal = client.post(f"/api/model-simulations/custom/{training['session_id']}/reveal", json=selection)
     assert reveal.status_code == 200

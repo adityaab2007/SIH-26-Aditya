@@ -36,3 +36,11 @@ def validation_payload(limit: int = 100, version: str | None = None) -> dict:
     safe = safe.where(~frame.isin([float("inf"), float("-inf")]), None)
     safe = safe.where(pd.notna(safe), None)
     return {"model_version": _version(version), "items": safe.to_dict(orient="records"), "total": int(len(all_rows))}
+
+
+def rolling_validation_report(version: str | None = None) -> dict:
+    selected = _version(version)
+    path = MODELS_DIR / selected / "rolling_validation_results.json" if selected else None
+    if not path or not path.exists():
+        return {"model_version": selected, "folds": [], "fold_count": 0, "status": "not_generated"}
+    return json.loads(path.read_text())

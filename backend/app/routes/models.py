@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from backend.app.services.model_service import model_table, global_importances
-from backend.app.services.validation_service import validation_payload, validation_report
+from backend.app.services.validation_service import rolling_validation_report, validation_payload, validation_report
 from backend.app.ml.real_time_windows import retrain
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -34,3 +34,8 @@ def validation(model_version: str | None = None, model: str | None = None):
 @router.get("/prediction-validation")
 def prediction_validation(limit: int = 100, model_version: str | None = None, model: str | None = None):
     return validation_payload(limit, model_version or model)
+
+
+@router.get("/rolling-validation")
+def rolling_validation(model_version: str | None = None, model: str | None = None):
+    return rolling_validation_report(model_version or model)
