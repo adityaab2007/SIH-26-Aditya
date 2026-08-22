@@ -1,0 +1,4 @@
+project_id,month,sector,ministry,state,original_cost,current_cost,expenditure,physical_progress,planned_completion_date,revised_completion_date
+P001,2025-01,Transport,Railways,Delhi,500000000,520000000,250000000,35,2026-12,2027-06
+P001,2025-06,Transport,Railways,Delhi,500000000,560000000,350000000,55,2026-12,2027-06
+P002,2025-01,Energy,Power,MP,300000000,310000000,120000000,40,2026-05,2026-08
