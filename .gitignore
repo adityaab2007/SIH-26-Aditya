@@ -13,6 +13,8 @@ models/*.joblib
 # Reproducible generated dataset outputs
 data/raw/*.csv
 data/processed/*.csv
+!data/processed/paimana_completed_outcomes.csv
+data/raw/paimana_completed_archive/
 models/global_feature_importance.json
 models/metrics.json
 models/registry.json

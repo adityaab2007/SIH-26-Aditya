@@ -4,14 +4,15 @@ InfraSight is deliberately designed around the statement's move from descriptive
 
 | SIH26103 direction | Implemented prototype |
 |---|---|
-| Statistical/predictive models | Linear/Logistic baselines + RF/XGBoost/CatBoost |
-| Compare AI/ML against conventional methods | Model Lab cross-validation table |
+| Real monitoring data ingestion | Official PAIMANA archive PDFs, hashes, manifest and normalized project-month table |
+| Statistical/predictive models | Leakage-safe temporal RF/XGBoost/CatBoost regressors plus retained snapshot baselines |
+| Compare AI/ML against conventional methods | Model Performance page with time-based validation/test MAE, RMSE and R2 |
 | Cost overrun | Classifier + regression |
 | Time overrun | Classifier + regression |
 | Risk score | Transparent project-priority score |
 | Early warning | Portfolio attention queue |
 | Benchmarking | Same-sector peer comparison |
-| Driver analysis | SHAP contribution view |
+| Driver analysis | Per-forecast SHAP contributions from the selected temporal artifacts |
 | AI monitoring dashboard | Dashboard + drilldown |
 | Project intelligence assistant | Grounded local analytics assistant |
 | Open-source tooling | Python/FastAPI/sklearn/XGBoost/CatBoost/SHAP |

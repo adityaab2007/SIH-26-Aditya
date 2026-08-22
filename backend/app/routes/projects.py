@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from backend.app.services.benchmark_service import peer_benchmark
 from backend.app.services.data_service import list_projects, row_to_dict, sectors, get_project
-from backend.app.services.prediction_service import project_prediction
+from backend.app.services.prediction_service import project_forecast, project_prediction
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -21,6 +21,13 @@ def project(code: str):
 def prediction(code: str):
     try:
         return project_prediction(code)
+    except KeyError:
+        raise HTTPException(404, "Project not found")
+
+@router.get("/{code}/forecast")
+def forecast(code: str):
+    try:
+        return project_forecast(code)
     except KeyError:
         raise HTTPException(404, "Project not found")
 

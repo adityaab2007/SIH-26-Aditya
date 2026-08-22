@@ -10,12 +10,14 @@ InfraSight AI is an end-to-end prototype for **Smart India Hackathon 2026 proble
 
 - **Portfolio command dashboard** over the real curated PAIMANA subset.
 - **Project explorer** with sector/search filters and source links.
-- **Schedule risk baseline** trained with Logistic Regression, Random Forest, XGBoost and CatBoost.
-- **Cost risk baseline** trained with the same four classifier families.
-- **Schedule extension regression** with Linear Regression, Random Forest, XGBoost and CatBoost.
-- **Cost escalation regression** with the same four regressor families.
-- **Automatic model selection** from cross-validated results rather than assuming one algorithm wins.
-- **Project-level SHAP explanations** for the selected tree classifiers.
+- **Official archive ingestion** with immutable PDFs, SHA-256 manifesting and nullable normalization.
+- **Real longitudinal archive table** with 4,692 project-month observations across 1,844 official project codes.
+- **Leakage-safe temporal features and labels** with project-level, time-based cohorts.
+- **Cost and delay regression** across Random Forest, XGBoost and CatBoost with automatic selection.
+- **Project-level SHAP explanations** from the selected forecasting artifacts.
+- **Historical-cutoff verification** using older completed projects for fitting and 2025–26 completions for evaluation.
+- **Project Forecast, Model Performance and Prediction Accuracy** judging flows.
+- **Model Simulation** with real PAIMANA completed-project windows: 2001–15 → 2016–21 and 2015–21 → 2022–24 (2025–28 stay forecast-only until official outcomes are published).
 - **Priority / intervention queue** combining model risk signals with financial exposure.
 - **Peer benchmarking** against similar projects in the same sector.
 - **Historical Time Machine** using real monthly PAIMANA/Flash Report snapshots.
@@ -30,6 +32,8 @@ The reproducible dataset seed builds:
 
 - **96** PAIMANA May 2026 project rows with surfaced official project codes.
 - **14** official historical snapshots across selected high-value projects.
+- **6** original 2024–25 PAIMANA archive PDFs retained unchanged with hashes.
+- **4,692** normalized official archive observations across **1,844** project codes; **1,490** projects have multiple snapshots.
 - **11** represented sectors.
 - roughly **₹5.67 lakh crore** of original approved project cost in the included rows.
 
@@ -38,44 +42,51 @@ Primary source surfaces:
 - PAIMANA Public Dashboard: `https://ipm.mospi.gov.in/Home/PublicDashboard`
 - PAIMANA high-value project surface: `https://ipm.mospi.gov.in/Home/GetHighlyValue`
 - PAIMANA / MoSPI monthly Flash Reports, including March 2026.
+- PAIMANA Project Monitoring Archive: `https://paimana-proj.mospi.gov.in/ReportPage/ArchiveProjectMonitoring`
 
-See [`docs/data-provenance.md`](docs/data-provenance.md) for the exact provenance and limitations.
+See [`docs/data_pipeline.md`](docs/data_pipeline.md) and [`docs/data-provenance.md`](docs/data-provenance.md) for extraction details and limitations.
+
+## SIH forecasting demo
+
+The judging flow is available at **Project Forecast**. It selects a project, loads its most recent longitudinal snapshot, and shows predicted cost escalation, delay, risk level, and feature-level SHAP factors through `GET /api/projects/{project_id}/forecast`.
+
+`data/project_history.csv` is a deterministic synthetic monthly demonstration dataset, documented in [`docs/data_source.md`](docs/data_source.md). It demonstrates the replaceable PAIMANA/OCMS-compatible schema and must be replaced with an authorised monthly export before operational use. Train it with:
+
+```bash
+python scripts/generate_project_history.py  # demo data only
+python -m backend.app.ml.train
+```
 
 ## Current model results
 
-These are **real cross-validated metrics from the included dataset**, not placeholder numbers.
+Model selection uses a project-level time split: training projects started through 2023, validation projects in 2024–25, and test projects from 2026. The latest test-cohort results are recorded in `models/model_metrics.json`; negative R² values remain visible instead of being hidden.
 
-### Classification baselines
+The separate cutoff backtest is stricter: verification models fit 25 projects completed through 2024, then evaluate 20 unseen projects completed in 2025–26.
 
-| Task | Best model | Rows | ROC-AUC | F1 |
-|---|---|---:|---:|---:|
-| Observed schedule overrun > 90 days | XGBoost | 70 | **0.8952** | **0.9531** |
-| Observed cost overrun > 5% | XGBoost | 56 | **0.8511** | 0.7000 |
+| Backtest target | MAE | RMSE | R² | Mean accuracy |
+|---|---:|---:|---:|---:|
+| Final cost overrun | 2.332 pp | 3.418 pp | 0.8234 | 94.2% |
+| Final delay | 20.957 days | 25.640 days | 0.8614 | 93.63% |
 
-### Regression baselines
+Elevated-risk classification achieves 85.0% accuracy and 0.8571 F1 on that held-out cohort. These metrics use the documented synthetic completion trajectories, not the official archive rows.
 
-| Task | Best model | Rows | MAE | R² |
-|---|---|---:|---:|---:|
-| Observed schedule extension (days) | Random Forest | 70 | **269.91 days** | **0.5496** |
-| Observed cost escalation (%) | Random Forest | 56 | **23.02 percentage points** | **0.4302** |
+### Forecasting boundary
 
-The linear schedule model performs poorly on this small heterogeneous subset, which is intentionally visible in Model Lab rather than hidden. The evaluation run for all 16 model artifacts is recorded in [`models/training_output.txt`](models/training_output.txt); fresh runs regenerate machine-readable metrics/registry files locally.
+The archive ingestion and longitudinal monitoring observations are real. PAIMANA's public ongoing-project reports do not consistently publish project-level final actual cost and actual completion, so the repository does not fabricate those labels. The bundled final-outcome models therefore remain a **demonstration trained on deterministic synthetic completion trajectories**. Replace them with an authorized PAIMANA/OCMS completed-project export before operational use.
 
-### Important forecasting distinction
+## Real historical model simulation
 
-The currently included trained artifacts are **baseline overrun-intelligence models over the real May 2026 snapshot**. They are useful for proving the complete data → feature → model → explanation → API → UI pipeline, but they are **not represented as a fully forward-validated six-month forecasting model**.
+The **Model Simulation** page is separate from the older demonstration forecast. It uses only `data/processed/paimana_completed_outcomes.csv`, extracted from official PAIMANA completed-project archive tables. It never reads `data/project_history.csv`.
 
-The production SIH step is to ingest the larger OCMS + PAIMANA monthly archive and train on labels of the form:
-
-```text
-project state at month T
-        ↓
-will deadline shift >90 days by T+6?
-will cost increase >5% by T+6?
-how many days / % will it move?
+```bash
+PYTHONPATH=. python scripts/ingest_paimana_completed_reports.py --from-year 2001 --to-year 2025
+PYTHONPATH=. python train.py --start-year 2001 --end-year 2015
+PYTHONPATH=. python train.py --start-year 2015 --end-year 2021
+PYTHONPATH=. python evaluate_model.py --model 2001_2015
+PYTHONPATH=. python evaluate_model.py --model 2015_2021
 ```
 
-The repository already contains [`backend/app/ml/forward_labels.py`](backend/app/ml/forward_labels.py) for generating those leakage-safe future labels once the archive is expanded.
+Reported completion expenditure and completion month are targets only; they never become model inputs. The V2 reliability report only scores the official outcomes available through 2024. It excludes 2025–2028 from metrics until PAIMANA publishes recorded completion outcomes.
 
 ## Architecture
 
@@ -118,6 +129,13 @@ pip install -r requirements.txt
 ./scripts/run_local.sh          # rebuilds real-data CSVs and trains missing model artifacts automatically
 ```
 
+To refresh official archive inputs explicitly:
+
+```bash
+python scripts/ingest_paimana_archive.py
+python scripts/ingest_paimana_archive.py --local-only  # reproducible offline normalization
+```
+
 Open:
 
 ```text
@@ -140,7 +158,7 @@ playwright install chromium
 python tests/browser_smoke.py
 ```
 
-The development container used for this build applies a policy that blocks Chromium from directly navigating loopback URLs. In that environment the test was run with the exact localhost responses proxied into Chromium. This passed across **Dashboard → real Rajasthan Refinery project → Scenario Explorer → Time Machine → Model Lab** with zero browser console/page errors.
+The browser smoke covers the primary judging path across **Dashboard → Project Forecast → Model Performance → Prediction Accuracy**, plus project/history/scenario views.
 
 ## Real test case: Rajasthan Refinery (`701263`)
 
@@ -155,24 +173,18 @@ From the official PAIMANA row:
 - Observed cost escalation: **84.2%**
 - Observed schedule extension: **1,338 days / ~3.7 years**
 
-The selected baseline models currently return:
-
-- schedule risk signal: **99.34%**
-- cost risk signal: **92.60%**
-- review-priority score: **96.5 / 100 — Critical**
-
-These model signals are explicitly labelled as baseline overrun intelligence, while the observed cost/schedule values are separately displayed as facts.
+The Forecast screen keeps those observed facts separate from the synthetic-demo future forecast and labels the model scope directly in the UI.
 
 ## SIH26103 mapping
 
 | Problem-statement outcome | InfraSight module |
 |---|---|
-| Cost Overrun Prediction Model | Cost classifier + regression pipeline |
-| Time Overrun Prediction Model | Schedule classifier + regression pipeline |
+| Cost Overrun Prediction Model | Temporal XGBoost/Random Forest/CatBoost regression pipeline |
+| Time Overrun Prediction Model | Temporal XGBoost/Random Forest/CatBoost regression pipeline |
 | Project Risk Scoring Framework | Portfolio review-priority engine |
 | Early Warning Alert System | Early Warnings queue |
 | Benchmarking & Comparative Analytics | Sector peer benchmarking |
-| Cost Escalation Driver Analysis | Local SHAP driver view |
+| Cost Escalation Driver Analysis | Local SHAP driver view from selected forecast models |
 | AI-powered Monitoring Dashboard | Dashboard + project intelligence pages |
 | LLM-enabled Project Intelligence Assistant | Grounded analytics interface now; optional LLM adapter can be added after core analytics validation |
 | Documentation & reproducibility | This repository + docs + tests |
@@ -186,6 +198,6 @@ These model signals are explicitly labelled as baseline overrun intelligence, wh
 - No risk number is generated by an LLM.
 - Every showcased project retains its official source URL.
 
-## Next SIH milestone
+## Operationalization milestone
 
-The highest-value next step is expanding the longitudinal archive. Once sufficient monthly records are parsed, retrain with grouped/time-based validation so a project’s future snapshots can never leak into its own training history. That enables the full “freeze month T → predict T+6 → reveal actual outcome” Time Machine envisioned by SIH26103.
+Obtain an authorized completed-project PAIMANA/OCMS export containing final actual cost and actual completion dates. Feed it through the existing normalized schema, then rerun the temporal training and cutoff verification before presenting the model as production evidence.

@@ -10,19 +10,35 @@ if [[ ! -f data/raw/paimana_projects_may_2026.csv || ! -f data/raw/paimana_high_
   python scripts/seed_official_data.py
 fi
 
-# Keep the repository source-first: trained binaries are reproducible and ignored by git.
+# Keep the repository source-first: temporal demo data and binaries are reproducible.
+if [[ ! -f data/project_history.csv ]]; then
+  echo "[InfraSight] Temporal demonstration history not found. Generating it..."
+  python scripts/generate_project_history.py
+fi
+
+if [[ ! -f data/processed/model_dataset.csv ]]; then
+  echo "[InfraSight] Processed PAIMANA snapshot not found. Building it..."
+  python scripts/build_model_dataset.py
+fi
+
+if [[ ! -f data/processed/project_monthly_history.csv && -f data/raw/paimana_archive/manifest.json ]]; then
+  echo "[InfraSight] Normalizing checked-in official PAIMANA archive reports..."
+  python scripts/ingest_paimana_archive.py --local-only
+fi
+
 REQUIRED=(
-  models/schedule_classifier_xgboost.joblib
-  models/cost_classifier_xgboost.joblib
-  models/schedule_regressor_random_forest.joblib
-  models/cost_regressor_random_forest.joblib
+  models/cost_model.pkl
+  models/delay_model.pkl
+  models/model_metrics.json
+  models/registry.json
+  models/global_feature_importance.json
 )
 missing=0
 for artifact in "${REQUIRED[@]}"; do
   if [[ ! -f "$artifact" ]]; then missing=1; break; fi
 done
 if [[ "$missing" -eq 1 ]]; then
-  echo "[InfraSight] Trained artifacts not found. Training all model families from the real PAIMANA subset..."
+  echo "[InfraSight] Temporal forecast artifacts not found. Training model candidates..."
   python scripts/train_models.py
 fi
 

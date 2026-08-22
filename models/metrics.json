@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "dataset_rows": 4698,
+    "dataset_kind": "deterministic synthetic longitudinal demonstration data; official archive observations are separately ingested without fabricated final outcomes",
+    "validation_timestamp_utc": "2026-08-22T11:08:29.584503+00:00",
+    "split_strategy": "time-based, project-level planned-start-year split: train <=2023, validation 2024-2025, test >=2026",
+    "leakage_policy": "features use snapshot/past values only; sector and agency outcomes use projects completed before snapshot month",
+    "prediction_vs_actual": [
+      {
+        "project_id": "611716",
+        "month": "2025-01-01",
+        "target": "cost_model",
+        "predicted": 40.62,
+        "actual": 45.0,
+        "absolute_error": 4.38
+      },
+      {
+        "project_id": "611716",
+        "month": "2025-01-01",
+        "target": "delay_model",
+        "predicted": 378.43,
+        "actual": 374.0,
+        "absolute_error": 4.43
+      }
+    ],
+    "backtesting": {
+      "records": 20,
+      "report": "validation_report.json",
+      "rows": "data/processed/prediction_validation.csv"
+    }
+  },
+  "cost_model": {
+    "candidates": {
+      "xgboost": {
+        "validation": {
+          "MAE": 3.798,
+          "RMSE": 4.515,
+          "R2": 0.7164
+        },
+        "test": {
+          "MAE": 3.21,
+          "RMSE": 3.912,
+          "R2": -0.7007
+        }
+      },
+      "random_forest": {
+        "validation": {
+          "MAE": 4.742,
+          "RMSE": 5.706,
+          "R2": 0.5471
+        },
+        "test": {
+          "MAE": 4.19,
+          "RMSE": 5.13,
+          "R2": -1.9242
+        }
+      },
+      "catboost": {
+        "validation": {
+          "MAE": 3.846,
+          "RMSE": 4.525,
+          "R2": 0.7152
+        },
+        "test": {
+          "MAE": 0.8,
+          "RMSE": 1.161,
+          "R2": 0.8503
+        }
+      }
+    },
+    "best_model": "xgboost",
+    "MAE": 3.21,
+    "RMSE": 3.912,
+    "R2": -0.7007,
+    "target": "future_cost_escalation_percentage"
+  },
+  "delay_model": {
+    "candidates": {
+      "xgboost": {
+        "validation": {
+          "MAE": 40.699,
+          "RMSE": 46.386,
+          "R2": 0.538
+        },
+        "test": {
+          "MAE": 54.8,
+          "RMSE": 56.693,
+          "R2": -2.8218
+        }
+      },
+      "random_forest": {
+        "validation": {
+          "MAE": 42.166,
+          "RMSE": 51.947,
+          "R2": 0.4206
+        },
+        "test": {
+          "MAE": 33.007,
+          "RMSE": 33.368,
+          "R2": -0.3239
+        }
+      },
+      "catboost": {
+        "validation": {
+          "MAE": 39.397,
+          "RMSE": 45.716,
+          "R2": 0.5513
+        },
+        "test": {
+          "MAE": 50.769,
+          "RMSE": 53.325,
+          "R2": -2.3811
+        }
+      }
+    },
+    "best_model": "catboost",
+    "MAE": 50.769,
+    "RMSE": 53.325,
+    "R2": -2.3811,
+    "target": "future_schedule_extension_days"
+  }
+}

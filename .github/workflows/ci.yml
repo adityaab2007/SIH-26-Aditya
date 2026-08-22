@@ -23,9 +23,6 @@ jobs:
       - name: Python syntax check
         run: python -m compileall -q backend scripts tests
       - name: Frontend syntax check
-        run: |
-          node --check frontend/src/app.js
-          node --check frontend/src/pages/ModelValidationPage.js
-          node --check frontend/src/services/api.js
+        run: npm run build --prefix frontend
       - name: Run tests
         run: pytest -q

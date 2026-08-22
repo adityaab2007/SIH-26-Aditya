@@ -12,13 +12,15 @@ The prototype is tested at four layers.
 - MoSPI source domains;
 - historical codes map back to current project master rows.
 
+It also verifies the immutable official archive manifest, normalized monthly-history schema, multiple observations per project, official project-code shape, and null preservation for unavailable fields.
+
 ## 2. Model artifacts
 
-`tests/test_models.py` verifies all **16** artifacts and validates metric ranges.
+`tests/test_models.py` verifies temporal cost/delay artifacts, time-split metrics, future-label formulas, and cutoff backtest arithmetic.
 
 ## 3. API integration
 
-`tests/test_api.py` covers health, portfolio, model metrics, scenario disclaimer, and a real Rajasthan Refinery prediction.
+`tests/test_api.py` covers health, exact forecast contract, SHAP factors, validation APIs, history and model metrics.
 
 ## 4. Browser smoke test
 
@@ -28,6 +30,8 @@ The prototype is tested at four layers.
 - Rajasthan Refinery project page;
 - Scenario Explorer;
 - Time Machine;
-- Model Lab.
+- Project Forecast;
+- Model Performance; and
+- Prediction Accuracy.
 
 It asserts key visible values and captures screenshots. The build container has an administrator policy blocking Chromium direct loopback navigation, so the test supports `INFRASIGHT_BROWSER_PROXY=1`, which serves the **exact live localhost responses** into Playwright. Normal developer machines use direct localhost navigation.

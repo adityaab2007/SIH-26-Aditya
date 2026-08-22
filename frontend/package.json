@@ -1,0 +1,6 @@
+{
+  "name": "infrasight-ui",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node --check src/app.js && node --check src/pages/ForecastPage.js && node --check src/pages/ModelLabPage.js && node --check src/pages/PredictionAccuracyPage.js" }
+}

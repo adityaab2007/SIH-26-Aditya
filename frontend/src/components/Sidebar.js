@@ -1,9 +1,11 @@
 const NAV = [
   ['dashboard','Dashboard','⌂'],
   ['projects','Projects','▦'],
+  ['forecast','Project Forecast','◉'],
+  ['prediction-accuracy','Prediction Accuracy','◌'],
   ['time-machine','Time Machine','◷'],
   ['models','Model Lab','⌁'],
-  ['validation','Model Validation','✓'],
+  ['model-simulation','Model Simulation','◫'],
   ['alerts','Early Warnings','△'],
   ['scenario','Scenario Explorer','⇄'],
   ['data-quality','Data Quality','✓'],

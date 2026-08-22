@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "records": 20,
+    "training_projects": 25,
+    "evaluation_projects": 20,
+    "temporal_holdout": "verification models fit only projects completed through 2024; metrics use projects completed in 2025-2026",
+    "cutoff_policy": "one snapshot per completed project, frozen at least 90 days or the final quarter of lifecycle before actual completion",
+    "future_information_policy": "predictions use only features available at the selected prediction date; evaluation projects are excluded from verification-model fitting",
+    "confidence_definition": "percentage of required temporal model features available at the cutoff"
+  },
+  "cost_model": {
+    "MAE": 2.332,
+    "RMSE": 3.418,
+    "R2": 0.8234,
+    "accuracy_percentage": 94.2
+  },
+  "delay_model": {
+    "MAE": 20.957,
+    "RMSE": 25.64,
+    "R2": 0.8614,
+    "accuracy_percentage": 93.63
+  },
+  "risk_classification": {
+    "definition": "elevated risk when cost overrun is at least 40% or delay is at least 365 days",
+    "accuracy": 0.85,
+    "precision": 0.9,
+    "recall": 0.8182,
+    "f1": 0.8571,
+    "confusion_matrix": {
+      "true_negative": 8,
+      "false_positive": 1,
+      "false_negative": 2,
+      "true_positive": 9
+    }
+  }
+}

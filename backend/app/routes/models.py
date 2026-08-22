@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from backend.app.services.model_service import model_table, global_importances
+from backend.app.services.validation_service import validation_payload, validation_report
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 
@@ -10,3 +11,11 @@ def metrics():
 @router.get("/importance")
 def importance():
     return global_importances()
+
+@router.get("/validation")
+def validation():
+    return validation_report()
+
+@router.get("/prediction-validation")
+def prediction_validation(limit: int = 100):
+    return validation_payload(limit)
