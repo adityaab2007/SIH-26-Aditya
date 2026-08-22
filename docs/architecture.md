@@ -16,10 +16,28 @@ Browser page
   → feature component
 ```
 
+## Data path
+
+```text
+Official PAIMANA archive index
+  → host-validated PDF downloader
+  → immutable PDFs + SHA-256 manifest
+  → layout-preserving report parser
+  → project_monthly_history.csv
+
+Documented completion trajectories
+  → leakage-safe feature/label generation
+  → project-level temporal split
+  → RF / XGBoost / CatBoost selection
+  → cost_model.pkl + delay_model.pkl
+  → forecast API + SHAP + validation dashboards
+```
+
 ## Backend boundaries
 
 - `routes/`: HTTP shape only; minimal business logic.
 - `services/data_service.py`: project and history repositories.
+- `services/paimana_ingestion_service.py`: official archive discovery, immutable download, parsing and normalized monthly-history output.
 - `services/model_service.py`: artifact registry and prediction primitives.
 - `services/prediction_service.py`: one-project risk/priority orchestration.
 - `services/explanation_service.py`: local SHAP contributions.
@@ -28,6 +46,7 @@ Browser page
 - `services/portfolio_service.py`: vectorized portfolio-level scoring.
 - `services/assistant_service.py`: deterministic grounded portfolio queries.
 - `ml/`: data engineering and model training, kept out of API modules.
+- `ml/backtest.py`: cutoff-date verification with older-completion fitting and newer-completion evaluation.
 
 ## Frontend boundaries
 

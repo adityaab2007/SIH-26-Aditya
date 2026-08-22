@@ -11,6 +11,12 @@ Projects are assigned once to a **time-based, project-level** cohort by planned-
 
 The selected XGBoost, Random Forest, and CatBoost regressors are written to `models/cost_model.pkl` and `models/delay_model.pkl`. `models/model_metrics.json` records MAE, RMSE and R2 for every candidate, plus a held-out prediction-versus-actual example.
 
+## Historical prediction verification
+
+`backend/app/ml/backtest.py` creates a project-level historical verification record with a strict temporal holdout. Verification models are fitted only on projects completed through 2024. Projects completed in 2025–26 are excluded from fitting, frozen at least 90 days (or the final quarter of the lifecycle) before actual completion, predicted from that snapshot only, and compared with final cost and completion afterwards.
+
+The generated `data/processed/prediction_validation.csv` contains the frozen prediction date, predicted/actual cost overrun and delay, and signed errors. `models/validation_report.json` records cost/delay MAE, RMSE, R2, average per-project accuracy, and elevated-risk classification metrics. Dashboard confidence is the cutoff feature-completeness percentage; it is not a probability of correctness.
+
 ## Legacy current-snapshot baselines
 
 The included May 2026 snapshot supports observed-state labels:

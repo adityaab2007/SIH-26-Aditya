@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from backend.app.services.paimana_ingestion_service import build_monthly_history, ingest_latest_archive
 
 if __name__ == "__main__":

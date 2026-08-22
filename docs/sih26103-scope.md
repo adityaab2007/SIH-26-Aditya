@@ -4,6 +4,7 @@ InfraSight is deliberately designed around the statement's move from descriptive
 
 | SIH26103 direction | Implemented prototype |
 |---|---|
+| Real monitoring data ingestion | Official PAIMANA archive PDFs, hashes, manifest and normalized project-month table |
 | Statistical/predictive models | Leakage-safe temporal RF/XGBoost/CatBoost regressors plus retained snapshot baselines |
 | Compare AI/ML against conventional methods | Model Performance page with time-based validation/test MAE, RMSE and R2 |
 | Cost overrun | Classifier + regression |

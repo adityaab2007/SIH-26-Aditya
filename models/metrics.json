@@ -2,7 +2,7 @@
   "metadata": {
     "dataset_rows": 4698,
     "dataset_kind": "deterministic synthetic longitudinal demonstration data; official archive observations are separately ingested without fabricated final outcomes",
-    "validation_timestamp_utc": "2026-08-22T11:04:37.748281+00:00",
+    "validation_timestamp_utc": "2026-08-22T11:08:29.584503+00:00",
     "split_strategy": "time-based, project-level planned-start-year split: train <=2023, validation 2024-2025, test >=2026",
     "leakage_policy": "features use snapshot/past values only; sector and agency outcomes use projects completed before snapshot month",
     "prediction_vs_actual": [
