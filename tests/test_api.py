@@ -46,18 +46,19 @@ def test_prediction_validation_artifacts_are_served():
     assert report.status_code == 200
     payload = report.json()
     assert payload["cost_model"]["MAE"] >= 0
-    assert {"accuracy", "precision", "recall", "f1"}.issubset(payload["risk_classification"])
+    risk = payload.get("risk_model", payload.get("risk_classification"))
+    assert {"accuracy", "precision", "recall", "f1"}.issubset(risk)
     rows = client.get("/api/models/prediction-validation?limit=5")
     assert rows.status_code == 200
     first = rows.json()["items"][0]
-    assert {"project_id", "prediction_date", "predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(first)
+    assert {"project_id", "project_name", "predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(first)
 
 
 def test_real_paimana_model_simulation_contract():
     versions = client.get("/api/model-simulations")
     assert versions.status_code == 200
     payload = versions.json()
-    assert {item["key"] for item in payload["items"]} == {"2001_2015", "2015_2021"}
+    assert {"2001_2015", "2015_2021"}.issubset({item["key"] for item in payload["items"]})
     assert payload["data_years"]
     simulation = client.post("/api/model-simulations/2001_2015/run")
     assert simulation.status_code == 200

@@ -1,23 +1,37 @@
 from __future__ import annotations
 
 import json
-from functools import lru_cache
-
 import pandas as pd
 
 from backend.app.core.config import MODELS_DIR, PROCESSED_DIR
+from backend.app.ml.real_time_windows import active_version
 
 
-@lru_cache(maxsize=1)
-def validation_report() -> dict:
+def _version(version: str | None = None) -> str | None:
+    return version or active_version()
+
+
+def validation_report(version: str | None = None) -> dict:
+    selected = _version(version)
+    path = MODELS_DIR / selected / "evaluation_results.json" if selected else None
+    if path and path.exists():
+        return json.loads(path.read_text())
     return json.loads((MODELS_DIR / "validation_report.json").read_text())
 
 
-@lru_cache(maxsize=1)
-def validation_rows() -> pd.DataFrame:
+def validation_rows(version: str | None = None) -> pd.DataFrame:
+    selected = _version(version)
+    if selected:
+        for name in ("prediction_validation.csv", "evaluation_results.csv"):
+            path = MODELS_DIR / selected / name
+            if path.exists():
+                return pd.read_csv(path, dtype={"project_id": str})
     return pd.read_csv(PROCESSED_DIR / "prediction_validation.csv", dtype={"project_id": str})
 
 
-def validation_payload(limit: int = 100) -> dict:
-    frame = validation_rows().head(max(1, min(limit, 500)))
-    return {"items": frame.where(pd.notna(frame), None).to_dict(orient="records"), "total": int(len(validation_rows()))}
+def validation_payload(limit: int = 100, version: str | None = None) -> dict:
+    all_rows = validation_rows(version)
+    frame = all_rows.head(max(1, min(limit, 500)))
+    safe = frame.replace([float("inf"), float("-inf")], pd.NA).astype(object)
+    safe = safe.where(pd.notna(safe), None)
+    return {"model_version": _version(version), "items": safe.to_dict(orient="records"), "total": int(len(all_rows))}

@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
+import re
 
 import joblib
 import numpy as np
@@ -24,6 +26,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 ROOT = Path(__file__).resolve().parents[3]
 OUTCOMES = ROOT / "data" / "processed" / "paimana_completed_outcomes.csv"
 MODELS = ROOT / "models"
+TIME_WINDOW_REGISTRY = MODELS / "time_window_registry.json"
 FEATURES = ["approved_cost_cr", "sector", "implementing_agency", "planned_commissioning_year"]
 NUMERIC = ["approved_cost_cr", "planned_commissioning_year"]
 CATEGORICAL = ["sector", "implementing_agency"]
@@ -42,6 +45,38 @@ WINDOWS = {
     "2001_2015": Window("v1", 2001, 2015, 2016, 2021),
     "2015_2021": Window("v2", 2015, 2021, 2022, 2028),
 }
+KEY_PATTERN = re.compile(r"^\d{4}_\d{4}$")
+
+
+def version_key(start_year: int, end_year: int) -> str:
+    return f"{int(start_year)}_{int(end_year)}"
+
+
+def window_for(key: str, metadata: dict | None = None) -> Window:
+    """Resolve registered and newly generated time windows without hardcoding them."""
+    if metadata:
+        return Window(key, int(metadata["training_start"]), int(metadata["training_end"]), int(metadata["test_start"]), int(metadata["test_end"]))
+    if key in WINDOWS:
+        return WINDOWS[key]
+    if not KEY_PATTERN.fullmatch(key):
+        raise KeyError(key)
+    start, end = (int(value) for value in key.split("_"))
+    if start > end:
+        raise KeyError(key)
+    actual_end = int(labelled(outcome_data()).completion_year.max())
+    return Window(key, start, end, end + 1, actual_end)
+
+
+def active_version() -> str | None:
+    if not TIME_WINDOW_REGISTRY.exists():
+        # The supplied registered baseline is a generated time-window artifact,
+        # not the legacy global validation report.
+        return "2001_2015" if (MODELS / "2001_2015" / "evaluation_results.json").exists() else None
+    return json.loads(TIME_WINDOW_REGISTRY.read_text()).get("active_model_version")
+
+
+def _set_active_version(key: str) -> None:
+    TIME_WINDOW_REGISTRY.write_text(json.dumps({"active_model_version": key, "updated_at": datetime.now(timezone.utc).isoformat()}, indent=2))
 
 
 def outcome_data() -> pd.DataFrame:
@@ -93,13 +128,12 @@ def _classifier(y: pd.Series, seed: int = 26103) -> Pipeline:
 
 
 def model_dir(key: str) -> Path:
-    if key not in WINDOWS:
-        raise KeyError(key)
+    window_for(key)
     return MODELS / key
 
 
 def train(key: str) -> dict:
-    window = WINDOWS[key]
+    window = window_for(key)
     all_data = labelled(outcome_data())
     train_data = all_data[all_data.completion_year.between(window.training_start, window.training_end)].copy()
     if len(train_data) < 12:
@@ -116,7 +150,7 @@ def train(key: str) -> dict:
     # The preprocessing scaler is also persisted explicitly for registry compatibility.
     joblib.dump(cost.named_steps["preprocess"], target / "scaler.pkl")
     metadata = {
-        "model_version": window.version,
+        "model_version": key,
         "training_start": window.training_start,
         "training_end": window.training_end,
         "test_start": window.test_start,
@@ -127,6 +161,7 @@ def train(key: str) -> dict:
         "data_source": "Official PAIMANA completed-project archive reports",
         "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
         "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "status": "trained",
     }
     (target / "metadata.json").write_text(json.dumps(metadata, indent=2))
@@ -141,7 +176,7 @@ def _safe_mape(actual: np.ndarray, predicted: np.ndarray) -> float:
 def evaluate(key: str, save: bool = True) -> dict:
     target = model_dir(key)
     metadata = json.loads((target / "metadata.json").read_text())
-    window = WINDOWS[key]
+    window = window_for(key, metadata)
     all_data = labelled(outcome_data())
     actual_end = min(window.test_end, int(all_data.completion_year.max()))
     test_data = all_data[all_data.completion_year.between(window.test_start, actual_end)].copy()
@@ -156,24 +191,49 @@ def evaluate(key: str, save: bool = True) -> dict:
     test_data["delay_error"] = test_data.predicted_delay_days - test_data.actual_delay_days
     cost_y = test_data.actual_cost_overrun_percentage.to_numpy(); cost_p = test_data.predicted_cost_overrun.to_numpy()
     delay_y = test_data.actual_delay_days.to_numpy(); delay_p = test_data.predicted_delay_days.to_numpy()
+    cost_mae = float(mean_absolute_error(cost_y, cost_p))
+    delay_mae = float(mean_absolute_error(delay_y, delay_p))
+    cost_scale = max(float(np.mean(np.abs(cost_y))), 1e-9)
+    delay_scale = max(float(np.mean(np.abs(delay_y))), 1e-9)
     metrics = {
-        "cost_model": {"MAE": round(float(mean_absolute_error(cost_y, cost_p)), 3), "RMSE": round(float(mean_squared_error(cost_y, cost_p) ** .5), 3), "MAPE": round(_safe_mape(cost_y, cost_p), 3)},
-        "delay_model": {"MAE_days": round(float(mean_absolute_error(delay_y, delay_p)), 3), "RMSE_days": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3)},
+        "model_version": key,
+        "cost_model": {"MAE": round(cost_mae, 3), "RMSE": round(float(mean_squared_error(cost_y, cost_p) ** .5), 3), "MAPE": round(_safe_mape(cost_y, cost_p), 3), "accuracy_percentage": round(max(0.0, 100 * (1 - cost_mae / cost_scale)), 2)},
+        "delay_model": {"MAE": round(delay_mae, 3), "MAE_days": round(delay_mae, 3), "RMSE": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "RMSE_days": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "accuracy_percentage": round(max(0.0, 100 * (1 - delay_mae / delay_scale)), 2)},
         "risk_model": {"accuracy": round(float(accuracy_score(test_data.actual_risk, test_data.predicted_risk)), 4), "precision": round(float(precision_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4), "recall": round(float(recall_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4), "f1": round(float(f1_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4)},
         "metadata": {**metadata, "evaluated_test_start": window.test_start, "evaluated_test_end": actual_end, "pending_actual_outcomes": list(range(actual_end + 1, window.test_end + 1)), "testing_samples": int(len(test_data)), "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."},
     }
     columns = ["project_id", "project_name", "sector", "implementing_agency", "planned_commissioning_year", "completion_date", "approved_cost_cr", "reported_completion_expenditure_cr", "predicted_cost_overrun", "actual_cost_overrun_percentage", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error", "predicted_risk", "actual_risk"]
-    rows = test_data[columns].sort_values(["completion_date", "project_name"])
+    rows = test_data[columns].sort_values(["completion_date", "project_name"]).rename(columns={"actual_cost_overrun_percentage": "actual_cost_overrun"})
     if save:
         rows.to_csv(target / "evaluation_results.csv", index=False)
+        rows.to_csv(target / "prediction_validation.csv", index=False)
         (target / "evaluation_results.json").write_text(json.dumps(metrics, indent=2))
     return {"metrics": metrics, "rows": rows}
 
 
+def retrain(start_year: int, end_year: int) -> dict:
+    """Persist a newly selected historical window and its future-only evaluation."""
+    key = version_key(start_year, end_year)
+    available_end = int(labelled(outcome_data()).completion_year.max())
+    if end_year >= available_end:
+        raise ValueError(f"Training must end before {available_end} so an unseen future period remains.")
+    metadata = train(key)
+    result = evaluate(key, save=True)
+    _set_active_version(key)
+    return {
+        "status": "success", "model_version": key,
+        "training_years": f"{metadata['training_start']}-{metadata['training_end']}",
+        "testing_years": f"{metadata['test_start']}-{metadata['test_end']}",
+        "metrics": result["metrics"], "training_samples": metadata["training_samples"],
+        "testing_samples": result["metrics"]["metadata"]["testing_samples"],
+    }
+
+
 def versions() -> list[dict]:
     result = []
-    for key, window in WINDOWS.items():
-        metadata_path = model_dir(key) / "metadata.json"
-        metadata = json.loads(metadata_path.read_text()) if metadata_path.exists() else {"status": "not_trained"}
-        result.append({"key": key, **metadata, "training_label": f"{window.training_start}-{window.training_end}", "testing_label": f"{window.test_start}-{window.test_end}"})
+    for target in sorted(MODELS.iterdir() if MODELS.exists() else [], key=lambda path: path.name):
+        if not target.is_dir() or not KEY_PATTERN.fullmatch(target.name) or not (target / "metadata.json").exists():
+            continue
+        metadata = json.loads((target / "metadata.json").read_text())
+        result.append({"key": target.name, **metadata, "training_label": f"{metadata['training_start']}-{metadata['training_end']}", "testing_label": f"{metadata['test_start']}-{metadata['test_end']}", "active": target.name == active_version()})
     return result

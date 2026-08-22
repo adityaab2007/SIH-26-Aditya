@@ -93,7 +93,7 @@ def run(key: str) -> dict:
                 "completion_date": _value(row.completion_date),
                 "approved_cost_cr": _value(row.approved_cost_cr),
                 "predicted_cost_overrun": _value(row.predicted_cost_overrun),
-                "actual_cost_overrun": _value(row.actual_cost_overrun_percentage),
+                "actual_cost_overrun": _value(row.actual_cost_overrun),
                 "cost_error": _value(row.cost_error),
                 "predicted_delay_days": _value(row.predicted_delay_days),
                 "actual_delay_days": _value(row.actual_delay_days),

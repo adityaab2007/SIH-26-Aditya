@@ -29,8 +29,9 @@ export const api = {
   peers: (code) => request(`/api/projects/${encodeURIComponent(code)}/peers`),
   modelMetrics: () => request('/api/models/metrics'),
   modelImportance: () => request('/api/models/importance'),
-  validationReport: () => request('/api/models/validation'),
-  predictionValidation: (limit = 100) => request(`/api/models/prediction-validation?limit=${limit}`),
+  validationReport: (modelVersion = null) => request(`/api/models/validation${modelVersion ? `?model_version=${encodeURIComponent(modelVersion)}` : ''}`),
+  predictionValidation: (limit = 100, modelVersion = null) => request(`/api/models/prediction-validation?limit=${limit}${modelVersion ? `&model_version=${encodeURIComponent(modelVersion)}` : ''}`),
+  retrainModel: (startYear, endYear) => request('/api/models/retrain', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }) }),
   simulationVersions: () => request('/api/model-simulations'),
   runSimulation: (version) => request(`/api/model-simulations/${encodeURIComponent(version)}/run`, { method: 'POST' }),
   trainCustomSimulation: (startYear, endYear) => request('/api/model-simulations/custom/train', {
