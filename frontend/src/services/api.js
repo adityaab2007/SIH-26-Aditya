@@ -33,6 +33,16 @@ export const api = {
   predictionValidation: (limit = 100) => request(`/api/models/prediction-validation?limit=${limit}`),
   simulationVersions: () => request('/api/model-simulations'),
   runSimulation: (version) => request(`/api/model-simulations/${encodeURIComponent(version)}/run`, { method: 'POST' }),
+  trainCustomSimulation: (startYear, endYear) => request('/api/model-simulations/custom/train', {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }),
+  }),
+  customSimulationProjects: (sessionId, year) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
+  predictCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/predict`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
+  }),
+  revealCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/reveal`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
+  }),
   historyList: () => request('/api/history'),
   history: (code) => request(`/api/history/${encodeURIComponent(code)}`),
   scenario: (payload) => request('/api/scenario', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) }),
