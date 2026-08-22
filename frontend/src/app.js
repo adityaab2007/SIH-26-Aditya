@@ -4,6 +4,7 @@ import { ProjectsPage } from './pages/ProjectsPage.js';
 import { ProjectDetailPage } from './pages/ProjectDetailPage.js';
 import { TimeMachinePage } from './pages/TimeMachinePage.js';
 import { ModelLabPage } from './pages/ModelLabPage.js';
+import { ModelValidationPage } from './pages/ModelValidationPage.js';
 import { AlertsPage } from './pages/AlertsPage.js';
 import { ScenarioPage } from './pages/ScenarioPage.js';
 import { DataQualityPage } from './pages/DataQualityPage.js';
@@ -15,6 +16,7 @@ const routes = {
   projects: ProjectsPage,
   'time-machine': TimeMachinePage,
   models: ModelLabPage,
+  validation: ModelValidationPage,
   alerts: AlertsPage,
   scenario: ScenarioPage,
   'data-quality': DataQualityPage,
