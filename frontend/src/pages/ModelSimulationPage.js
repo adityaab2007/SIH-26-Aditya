@@ -1,27 +1,187 @@
 import { api } from '../services/api.js';
-import { horizontalBars, lineChart } from '../components/charts.js';
+import { horizontalBars } from '../components/charts.js';
 
 const fixed = (value, digits = 2) => Number(value || 0).toFixed(digits);
 const escape = (value = '') => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
-const errorBuckets = (rows, key) => [[0, 10], [10, 30], [30, 60], [60, Infinity]].map(([from, to]) => ({ label: `${from}–${to === Infinity ? '∞' : to}`, value: rows.filter((row) => Math.abs(Number(row[key])) >= from && Math.abs(Number(row[key])) < to).length }));
+const officialUrl = (value = '') => String(value).startsWith('https://paimana-proj.mospi.gov.in/') ? String(value) : '';
 
-function sortableTable(rows, reveal) {
-  return `<div class="table-wrap"><table class="data-table" id="simulation-table"><thead><tr><th data-sort="project_id">Project ↕</th><th data-sort="sector">Sector ↕</th><th data-sort="predicted_cost_overrun">Predicted cost ↕</th><th data-sort="actual_cost_overrun">Actual cost ↕</th><th data-sort="cost_error">Cost error ↕</th><th data-sort="predicted_delay_days">Predicted delay ↕</th><th data-sort="actual_delay_days">Actual delay ↕</th><th data-sort="delay_error">Delay error ↕</th><th>Risk</th></tr></thead><tbody>${rows.map((row) => `<tr><td><strong>${escape(row.project_id)}</strong><small>${escape(row.project_name)}</small></td><td>${escape(row.sector)}</td><td>${fixed(row.predicted_cost_overrun)}%</td><td>${reveal ? `${fixed(row.actual_cost_overrun)}%` : 'Hidden'}</td><td>${reveal ? `${fixed(row.cost_error)} pp` : '—'}</td><td>${fixed(row.predicted_delay_days)} days</td><td>${reveal ? `${fixed(row.actual_delay_days)} days` : 'Hidden'}</td><td>${reveal ? `${fixed(row.delay_error)} days` : '—'}</td><td>${row.predicted_risk}${reveal ? ` / ${row.actual_risk}` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+function yearOptions(years, selected) {
+  return years.map((item) => `<option value="${item.year}" ${item.year === selected ? 'selected' : ''}>${item.year} · ${item.completed_projects} completed projects</option>`).join('');
+}
+
+function predictionCard(prediction, actual = null) {
+  const source = actual ? officialUrl(actual.source_url) : '';
+  return `<div class="model-grid">
+    <section class="panel">
+      <span class="kicker">AI prediction generated first</span>
+      <h2>${escape(prediction.project.project_name)}</h2>
+      <div class="detail-financial">
+        <div><span>Predicted cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div>
+        <div><span>Predicted delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div>
+        <div><span>Predicted risk</span><strong>${escape(prediction.predicted_risk)}</strong></div>
+        <div><span>Actual outcome sent yet?</span><strong>${prediction.audit.actual_outcomes_sent_to_browser ? 'Yes' : 'No'}</strong></div>
+      </div>
+      <h3>Inputs visible to the model</h3>
+      <div class="detail-financial">
+        <div><span>Approved cost</span><strong>₹${fixed(prediction.model_inputs.approved_cost_cr)} Cr</strong></div>
+        <div><span>Sector</span><strong>${escape(prediction.model_inputs.sector)}</strong></div>
+        <div><span>Implementing agency</span><strong>${escape(prediction.model_inputs.implementing_agency || 'Not reported')}</strong></div>
+        <div><span>Planned commissioning year</span><strong>${escape(prediction.model_inputs.planned_commissioning_year)}</strong></div>
+      </div>
+    </section>
+    <section class="panel">
+      <span class="kicker">Explainability</span>
+      <h2>Why the model predicted this</h2>
+      ${horizontalBars(prediction.shap_explanation.map((factor) => ({ label: `${factor.feature} (${factor.direction})`, value: Math.abs(factor.impact) })), { format: (v) => fixed(v, 3) })}
+      <div class="notice compact"><strong>Leakage audit:</strong> This project is excluded from the training years: ${prediction.audit.project_excluded_from_training ? 'YES' : 'NO'}.</div>
+    </section>
+  </div>
+  ${actual ? `<section class="panel"><span class="kicker">Official outcome revealed after prediction</span><h2>Prediction vs actual</h2><div class="detail-financial"><div><span>AI cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div><div><span>Actual cost overrun</span><strong>${fixed(actual.actual_cost_overrun)}%</strong></div><div><span>Absolute cost error</span><strong>${fixed(actual.cost_error_absolute_pp)} pp</strong></div><div><span>AI delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div><div><span>Actual delay</span><strong>${fixed(actual.actual_delay_days)} days</strong></div><div><span>Absolute delay error</span><strong>${fixed(actual.delay_error_absolute_days)} days</strong></div><div><span>AI / actual risk</span><strong>${escape(prediction.predicted_risk)} / ${escape(actual.actual_risk)}</strong></div><div><span>Recorded completion</span><strong>${escape(actual.completion_date)}</strong></div></div><div class="notice compact"><strong>Reveal audit:</strong> ${escape(actual.reveal_policy)}</div>${source ? `<a class="secondary-btn" href="${escape(source)}" target="_blank" rel="noopener noreferrer">Open official PAIMANA source</a>` : ''}</section>` : '<div class="notice compact"><strong>Actual outcome is still hidden.</strong> Click Reveal Actual Outcome only after the judge has seen the AI prediction.</div>'}`;
 }
 
 export async function ModelSimulationPage(root) {
-  const versions = await api.simulationVersions();
-  root.innerHTML = `<header class="page-head"><div><span class="kicker">Official completed-project archive</span><h1>Model Simulation</h1><p>This simulation predicts future outcomes using only information available at the selected historical point.</p></div></header><div class="notice"><strong>No synthetic data:</strong> outcome metrics use official PAIMANA completed-project reports. V2 years without recorded completed outcomes stay forecast-only and are excluded from reliability metrics.</div><section class="panel"><div class="filters"><label>Training period <select id="simulation-version">${versions.items.map((version) => `<option value="${version.key}">${version.training_label} Model</option>`).join('')}</select></label><button class="primary-btn" id="run-simulation">Run Historical Forecast</button><button class="secondary-btn" id="reveal-actual" disabled>Reveal Actual Outcome</button></div><div id="simulation-window" class="notice compact"></div><div id="simulation-output" class="loading">Choose a model window, then run the historical forecast.</div></section>`;
-  const select = root.querySelector('#simulation-version'); const output = root.querySelector('#simulation-output'); const revealButton = root.querySelector('#reveal-actual'); let state = null; let reveal = false;
-  const drawWindow = () => { const version = versions.items.find((item) => item.key === select.value); root.querySelector('#simulation-window').innerHTML = `<strong>Training data:</strong> ${version.training_label} · <strong>Testing data:</strong> ${version.testing_label}. ${version.available_actual_end ? `Official outcomes are available through ${version.available_actual_end}.` : ''}`; };
-  const draw = () => {
-    const { metrics, items } = state;
-    output.innerHTML = `<div class="stat-grid"><article class="stat-card blue"><span class="stat-eyebrow">Cost MAE</span><strong class="stat-value">${fixed(metrics.cost_model.MAE)} pp</strong><small>RMSE ${fixed(metrics.cost_model.RMSE)} · MAPE ${fixed(metrics.cost_model.MAPE)}%</small></article><article class="stat-card amber"><span class="stat-eyebrow">Delay MAE</span><strong class="stat-value">${fixed(metrics.delay_model.MAE_days)} days</strong><small>RMSE ${fixed(metrics.delay_model.RMSE_days)} days</small></article><article class="stat-card green"><span class="stat-eyebrow">Risk F1</span><strong class="stat-value">${fixed(metrics.risk_model.f1 * 100, 1)}%</strong><small>Accuracy ${fixed(metrics.risk_model.accuracy * 100, 1)}%</small></article></div><div class="model-grid"><section class="panel"><h3>Cost overrun comparison</h3><h4>AI predicted</h4>${lineChart(items.map((row) => ({ label: row.project_id, value: row.predicted_cost_overrun })), { suffix: '%' })}${reveal ? `<h4>Official recorded outcome</h4>${lineChart(items.map((row) => ({ label: row.project_id, value: row.actual_cost_overrun })), { suffix: '%' })}` : ''}</section><section class="panel"><h3>Delay comparison</h3><h4>AI predicted</h4>${lineChart(items.map((row) => ({ label: row.project_id, value: row.predicted_delay_days })), { suffix: ' days' })}${reveal ? `<h4>Official recorded outcome</h4>${lineChart(items.map((row) => ({ label: row.project_id, value: row.actual_delay_days })), { suffix: ' days' })}` : ''}</section></div>${reveal ? `<div class="model-grid"><section class="panel"><h3>Cost error distribution</h3>${horizontalBars(errorBuckets(items, 'cost_error'), { format: (v) => `${v} projects` })}</section><section class="panel"><h3>Delay error distribution</h3>${horizontalBars(errorBuckets(items, 'delay_error'), { format: (v) => `${v} projects` })}</section></div>` : '<div class="notice compact">Predictions are shown first. Reveal the official recorded outcome to compare errors.</div>'}<section class="panel"><div class="panel-head"><div><span class="kicker">${items.length} official completed projects</span><h2>Prediction vs actual comparison</h2></div></div>${sortableTable(items, reveal)}</section><section class="panel"><div class="panel-head"><div><span class="kicker">Selected completed-project record</span><h2>Individual project forecast</h2></div></div><select id="simulation-project">${items.map((row, index) => `<option value="${index}">${escape(row.project_id)} · ${escape(row.project_name)}</option>`).join('')}</select><div id="simulation-project-detail"></div></section>`;
-    const projectDetail = () => { const row = items[Number(root.querySelector('#simulation-project').value)]; root.querySelector('#simulation-project-detail').innerHTML = `<div class="detail-summary"><div class="detail-financial"><div><span>Approved cost</span><strong>₹${fixed(row.snapshot.approved_cost_cr)} Cr</strong></div><div><span>Sector</span><strong>${escape(row.snapshot.sector)}</strong></div><div><span>AI cost overrun</span><strong>${fixed(row.predicted_cost_overrun)}%</strong></div><div><span>AI delay</span><strong>${fixed(row.predicted_delay_days)} days</strong></div></div></div><div class="notice compact">${escape(row.snapshot.note)}</div><h3>SHAP explanation</h3>${horizontalBars(row.shap_explanation.map((factor) => ({ label: `${factor.feature} (${factor.direction})`, value: Math.abs(factor.impact) })), { format: (v) => fixed(v, 3) })}${reveal ? `<div class="notice compact"><strong>Official outcome:</strong> ${fixed(row.actual_cost_overrun)}% reported cost overrun; ${fixed(row.actual_delay_days)} days reported delay. Errors: ${fixed(row.cost_error)} pp and ${fixed(row.delay_error)} days.</div>` : ''}`; };
-    root.querySelector('#simulation-project').addEventListener('change', projectDetail); projectDetail();
-    root.querySelectorAll('#simulation-table th[data-sort]').forEach((head) => head.addEventListener('click', () => { const key = head.dataset.sort; items.sort((a, b) => String(a[key]).localeCompare(String(b[key]), undefined, { numeric: true })); draw(); }));
+  const catalog = await api.simulationVersions();
+  const years = catalog.data_years || [];
+  if (!years.length) throw new Error('No official completed-project years are available.');
+
+  const yearNumbers = years.map((item) => item.year);
+  const defaultStart = yearNumbers[0];
+  const preferredEnd = yearNumbers.filter((year) => year <= 2015).at(-1);
+  const defaultEnd = preferredEnd || yearNumbers[Math.max(0, Math.floor(yearNumbers.length / 2) - 1)];
+
+  root.innerHTML = `<header class="page-head"><div><span class="kicker">Judge-controlled historical backtest</span><h1>Live Model Verification</h1><p>Choose the years used for training, retrain the model live, then test any official project from a later year. The browser does not receive the actual outcome until you reveal it.</p></div></header>
+  <div class="notice"><strong>Why later years only?</strong> A valid historical forecast must train on the past and test on the future. Projects completed during or before the training cutoff cannot be used as the judge-selected test case.</div>
+  <section class="panel">
+    <div class="panel-head"><div><span class="kicker">Step 1</span><h2>Choose training years and retrain</h2></div></div>
+    <div class="filters">
+      <label>Training start year<select id="custom-start">${yearOptions(years, defaultStart)}</select></label>
+      <label>Training end year<select id="custom-end">${yearOptions(years, defaultEnd)}</select></label>
+      <button class="primary-btn" id="custom-train">Retrain Model Live</button>
+    </div>
+    <div id="training-receipt" class="notice compact">No custom model has been trained in this demo session yet.</div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><div><span class="kicker">Step 2</span><h2>Judge chooses an unseen year and project</h2></div></div>
+    <div class="filters">
+      <label>Held-out test year<select id="custom-test-year" disabled><option>Retrain first</option></select></label>
+      <label>Official held-out project<select id="custom-project" disabled><option>Select a test year first</option></select></label>
+      <button class="secondary-btn" id="random-project" disabled>Pick Random Unseen Project</button>
+      <button class="primary-btn" id="custom-predict" disabled>Generate AI Prediction</button>
+      <button class="secondary-btn" id="custom-reveal" disabled>Reveal Actual Outcome</button>
+    </div>
+    <div id="held-out-note" class="notice compact">After retraining, only projects completed after the selected training end year will be offered here.</div>
+  </section>
+  <div id="custom-output"></div>`;
+
+  const start = root.querySelector('#custom-start');
+  const end = root.querySelector('#custom-end');
+  const trainButton = root.querySelector('#custom-train');
+  const receipt = root.querySelector('#training-receipt');
+  const testYear = root.querySelector('#custom-test-year');
+  const project = root.querySelector('#custom-project');
+  const randomButton = root.querySelector('#random-project');
+  const predictButton = root.querySelector('#custom-predict');
+  const revealButton = root.querySelector('#custom-reveal');
+  const heldOutNote = root.querySelector('#held-out-note');
+  const output = root.querySelector('#custom-output');
+
+  let session = null;
+  let projectRows = [];
+  let prediction = null;
+  let actual = null;
+
+  const resetPrediction = () => {
+    prediction = null;
+    actual = null;
+    revealButton.disabled = true;
+    output.innerHTML = '';
   };
-  drawWindow(); select.addEventListener('change', drawWindow);
-  root.querySelector('#run-simulation').addEventListener('click', async () => { output.innerHTML = '<div class="loading">Running selected historical model on unseen official outcomes…</div>'; reveal = false; revealButton.disabled = true; try { state = await api.runSimulation(select.value); revealButton.disabled = false; draw(); } catch (error) { output.innerHTML = `<div class="error-state">${escape(error.message)}</div>`; } });
-  revealButton.addEventListener('click', () => { reveal = true; draw(); });
+
+  const loadProjects = async () => {
+    if (!session || !testYear.value) return;
+    resetPrediction();
+    project.disabled = true;
+    predictButton.disabled = true;
+    randomButton.disabled = true;
+    heldOutNote.innerHTML = '<div class="loading">Loading held-out official projects…</div>';
+    try {
+      const response = await api.customSimulationProjects(session.session_id, Number(testYear.value));
+      projectRows = response.items;
+      project.innerHTML = projectRows.map((row) => `<option value="${row.record_index}">${escape(row.project_id)} · ${escape(row.project_name)}</option>`).join('');
+      project.disabled = !projectRows.length;
+      predictButton.disabled = !projectRows.length;
+      randomButton.disabled = !projectRows.length;
+      heldOutNote.innerHTML = `<strong>${projectRows.length} held-out projects available for ${escape(response.year)}.</strong> ${escape(response.note)} No actual cost, delay, completion date, or final expenditure has been sent to this page.`;
+    } catch (error) {
+      projectRows = [];
+      project.innerHTML = '<option>No projects available</option>';
+      heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
+    }
+  };
+
+  const generatePrediction = async () => {
+    if (!session || project.disabled) return;
+    resetPrediction();
+    predictButton.disabled = true;
+    output.innerHTML = '<div class="loading">Generating prediction using the freshly trained model…</div>';
+    try {
+      prediction = await api.predictCustomSimulation(session.session_id, Number(project.value));
+      revealButton.disabled = false;
+      output.innerHTML = predictionCard(prediction);
+    } catch (error) {
+      output.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
+    } finally {
+      predictButton.disabled = false;
+    }
+  };
+
+  trainButton.addEventListener('click', async () => {
+    resetPrediction();
+    const startYear = Number(start.value);
+    const endYear = Number(end.value);
+    if (startYear > endYear) {
+      receipt.innerHTML = '<div class="error-state">Training start year cannot be after training end year.</div>';
+      return;
+    }
+    trainButton.disabled = true;
+    testYear.disabled = true;
+    project.disabled = true;
+    predictButton.disabled = true;
+    randomButton.disabled = true;
+    receipt.innerHTML = '<div class="loading">Retraining cost, delay, and risk models from official historical records…</div>';
+    try {
+      session = await api.trainCustomSimulation(startYear, endYear);
+      const eligible = session.eligible_test_years || [];
+      testYear.innerHTML = eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} held-out projects</option>`).join('');
+      testYear.disabled = !eligible.length;
+      receipt.innerHTML = `<strong>Fresh model trained.</strong> ${session.training_samples} official completed projects from ${session.training_start}-${session.training_end}. <strong>Features:</strong> ${session.features_used.map(escape).join(', ')}.<br><strong>Training-data SHA-256:</strong> <code>${escape(session.training_fingerprint_sha256)}</code><br><strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.`;
+      if (eligible.length) await loadProjects();
+    } catch (error) {
+      session = null;
+      receipt.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
+    } finally {
+      trainButton.disabled = false;
+    }
+  });
+
+  testYear.addEventListener('change', loadProjects);
+  project.addEventListener('change', resetPrediction);
+  predictButton.addEventListener('click', generatePrediction);
+  randomButton.addEventListener('click', async () => {
+    if (!projectRows.length) return;
+    const chosen = projectRows[Math.floor(Math.random() * projectRows.length)];
+    project.value = String(chosen.record_index);
+    await generatePrediction();
+  });
+  revealButton.addEventListener('click', async () => {
+    if (!session || !prediction) return;
+    revealButton.disabled = true;
+    try {
+      actual = await api.revealCustomSimulation(session.session_id, prediction.record_index);
+      output.innerHTML = predictionCard(prediction, actual);
+    } catch (error) {
+      output.innerHTML += `<div class="error-state">${escape(error.message)}</div>`;
+      revealButton.disabled = false;
+    }
+  });
 }
