@@ -3,49 +3,49 @@
   "cost_candidates": [
     {
       "model": "catboost",
-      "MAE": 45.9809
+      "MAE": 39.6828
     },
     {
       "model": "lightgbm",
-      "MAE": 36.4701
+      "MAE": 34.8828
     },
     {
       "model": "xgboost",
-      "MAE": 44.4238
+      "MAE": 41.0244
     },
     {
       "model": "random_forest",
-      "MAE": 43.0786
+      "MAE": 42.1627
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 42.7759
+      "MAE": 38.5149
     }
   ],
   "delay_candidates": [
     {
       "model": "catboost",
-      "MAE": 435.8564
+      "MAE": 290.9217
     },
     {
       "model": "lightgbm",
-      "MAE": 420.7786
+      "MAE": 300.6363
     },
     {
       "model": "xgboost",
-      "MAE": 395.4755
+      "MAE": 284.654
     },
     {
       "model": "random_forest",
-      "MAE": 410.3046
+      "MAE": 297.5881
     },
     {
       "model": "two_stage_catboost",
-      "MAE": 376.3579
+      "MAE": 284.1059
     },
     {
       "model": "temporal_stacking_catboost_lightgbm_xgboost",
-      "MAE": 422.5363
+      "MAE": 305.8052
     }
   ],
   "selected": {
@@ -54,9 +54,9 @@
   },
   "delay_severity_classifier": {
     "model": "CatBoostClassifier MultiClass",
-    "validation_year": 2015,
-    "accuracy": 0.0714,
-    "macro_f1": 0.0444,
+    "validation_year": 2017,
+    "accuracy": 0.5556,
+    "macro_f1": 0.2381,
     "classes": [
       "LOW",
       "MEDIUM",

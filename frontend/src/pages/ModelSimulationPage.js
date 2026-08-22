@@ -11,6 +11,7 @@ function yearOptions(years, selected) {
 
 function predictionCard(prediction, actual = null) {
   const source = actual ? officialUrl(actual.source_url) : '';
+  const range = prediction.expected_range;
   return `<div class="model-grid">
     <section class="panel">
       <span class="kicker">AI prediction generated first</span>
@@ -18,7 +19,8 @@ function predictionCard(prediction, actual = null) {
       <div class="detail-financial">
         <div><span>Predicted cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div>
         <div><span>Predicted delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div>
-        <div><span>Predicted risk</span><strong>${escape(prediction.predicted_risk)}</strong></div>
+        <div><span>Predicted risk</span><strong>${escape(prediction.predicted_risk)} · ${fixed(prediction.risk_probability_percentage, 1)}%</strong></div>
+        <div><span>Model confidence</span><strong>${fixed(prediction.model_confidence_percentage, 1)}%</strong></div>
         <div><span>Actual outcome sent yet?</span><strong>${prediction.audit.actual_outcomes_sent_to_browser ? 'Yes' : 'No'}</strong></div>
       </div>
       <h3>Inputs visible to the model</h3>
@@ -28,6 +30,7 @@ function predictionCard(prediction, actual = null) {
         <div><span>Implementing agency</span><strong>${escape(prediction.model_inputs.implementing_agency || 'Not reported')}</strong></div>
         <div><span>Planned commissioning year</span><strong>${escape(prediction.model_inputs.planned_commissioning_year)}</strong></div>
       </div>
+      ${range ? `<div class="notice compact"><strong>Uncertainty range:</strong> Cost P10–P90 ${fixed(range.cost_overrun_percentage.p10)}% to ${fixed(range.cost_overrun_percentage.p90)}%; delay P10–P90 ${fixed(range.delay_days.p10)} to ${fixed(range.delay_days.p90)} days.</div>` : ''}
     </section>
     <section class="panel">
       <span class="kicker">Explainability</span>

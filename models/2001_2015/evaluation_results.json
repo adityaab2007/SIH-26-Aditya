@@ -1,24 +1,32 @@
 {
   "model_version": "2001_2015",
   "cost_model": {
-    "MAE": 23.629,
-    "RMSE": 49.584,
-    "MAPE": 130.379,
-    "accuracy_percentage": 56.45
-  },
-  "delay_model": {
-    "MAE": 907.315,
-    "MAE_days": 907.315,
-    "RMSE": 1256.407,
-    "RMSE_days": 1256.407,
-    "log_target_RMSE": 6.8104,
+    "MAE": 32.759,
+    "RMSE": 60.15,
+    "R2": -0.11,
+    "MAPE": 195.662,
     "accuracy_percentage": 0.0
   },
+  "delay_model": {
+    "MAE": 715.037,
+    "MAE_days": 715.037,
+    "RMSE": 1074.201,
+    "RMSE_days": 1074.201,
+    "R2": -0.1454,
+    "log_target_RMSE": 0.9706,
+    "accuracy_percentage": 38.37
+  },
   "risk_model": {
-    "accuracy": 0.64,
-    "precision": 0.9072,
-    "recall": 0.6197,
-    "f1": 0.7364
+    "classes": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL"
+    ],
+    "accuracy": 0.6,
+    "precision": 0.15,
+    "recall": 0.25,
+    "f1": 0.1875
   },
   "metadata": {
     "model_version": "2001_2015",
@@ -26,59 +34,323 @@
     "training_end": 2015,
     "test_start": 2016,
     "test_end": 2021,
+    "testing_start": 2016,
+    "testing_end": 2021,
     "available_actual_end": 2024,
     "features_used": [
       "approved_cost_cr",
+      "approved_cost_log",
+      "planned_commissioning_year",
+      "planned_commissioning_month",
+      "revised_cost_cr",
+      "current_expenditure_cr",
+      "physical_progress",
+      "planned_duration_days",
+      "elapsed_duration_days",
+      "cost_escalation_percentage",
+      "budget_stress_index",
+      "expenditure_ratio",
+      "cost_growth_velocity",
+      "cost_acceleration",
+      "cost_revision_count",
+      "progress_deviation",
+      "progress_velocity",
+      "progress_acceleration",
+      "progress_trend_6m",
+      "progress_trend_12m",
+      "duration_ratio",
+      "schedule_slippage_score",
+      "milestone_delay_count",
+      "complexity_score",
+      "agency_historical_delay_rate",
+      "agency_historical_cost_overrun_rate",
+      "sector_risk_score",
       "sector",
+      "ministry",
       "implementing_agency",
-      "planned_commissioning_year"
+      "state",
+      "project_size_category"
     ],
+    "feature_count": 32,
     "feature_availability": {
-      "available": [
+      "available_when_published_at_cutoff": [
         "approved_cost_cr",
-        "sector",
-        "implementing_agency",
-        "planned_commissioning_year"
-      ],
-      "not_used_without_precompletion_snapshots": [
+        "approved_cost_log",
+        "planned_commissioning_year",
+        "planned_commissioning_month",
         "revised_cost_cr",
-        "expenditure_cr",
-        "physical_progress_pct",
+        "current_expenditure_cr",
+        "physical_progress",
+        "planned_duration_days",
+        "elapsed_duration_days",
+        "cost_escalation_percentage",
+        "budget_stress_index",
+        "expenditure_ratio",
+        "cost_growth_velocity",
+        "cost_acceleration",
+        "cost_revision_count",
         "progress_deviation",
+        "progress_velocity",
+        "progress_acceleration",
+        "progress_trend_6m",
+        "progress_trend_12m",
         "duration_ratio",
-        "milestone_delay_count"
-      ]
+        "schedule_slippage_score",
+        "milestone_delay_count",
+        "complexity_score",
+        "agency_historical_delay_rate",
+        "agency_historical_cost_overrun_rate",
+        "sector_risk_score",
+        "sector",
+        "ministry",
+        "implementing_agency",
+        "state",
+        "project_size_category"
+      ],
+      "historical_archive_missingness_policy": "Unavailable as-of fields remain NaN/Not reported. No fuzzy joins, zero fills, or synthetic behaviour values are used."
+    },
+    "model_type": {
+      "cost": "lightgbm",
+      "delay": "two_stage_catboost",
+      "risk": "catboost_classifier"
+    },
+    "model_algorithm": {
+      "cost": "lightgbm",
+      "delay": "two_stage_catboost",
+      "risk": "CatBoostClassifier MultiClass"
     },
     "algorithms": {
-      "cost": "CatBoostRegressor(MAE)",
-      "delay": "CatBoostRegressor(log1p delay, MAE)",
+      "cost": "lightgbm",
+      "delay": "two_stage_catboost",
       "risk": "CatBoostClassifier"
     },
-    "best_parameters": {
-      "cost": {
-        "iterations": 300,
-        "depth": 5,
-        "learning_rate": 0.05,
-        "l2_leaf_reg": 4.0
-      },
-      "delay": {
-        "iterations": 300,
-        "depth": 5,
-        "learning_rate": 0.05,
-        "l2_leaf_reg": 4.0
+    "validation_method": "latest-year temporal selection plus future-year holdout and expanding rolling validation",
+    "outlier_policy": "Invalid labels are rejected by explicit rules. Valid extremes remain, with MAE/Huber objectives, log1p delay, and robust sample weighting.",
+    "label_quality": {
+      "source_rows": 800,
+      "invalid_cost_labels_removed": 294,
+      "invalid_delay_labels_removed": 276,
+      "valid_joint_labels": 459,
+      "cost_policy": "approved_cost > 0; final cost present and > 0; -90% <= overrun <= 1000%",
+      "delay_policy": "both dates present and actual completion is not before planned completion",
+      "missing_targets_filled_with_zero": false
+    },
+    "uncertainty": {
+      "method": "CatBoost quantile regression",
+      "quantiles": [
+        0.1,
+        0.5,
+        0.9
+      ]
+    },
+    "delay_severity": {
+      "classes": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "thresholds_days": {
+        "LOW": "<90",
+        "MEDIUM": "90-364",
+        "HIGH": "365-729",
+        "CRITICAL": ">=730"
       }
     },
-    "outlier_policy": "Cost uses CatBoost MAE loss. Delay is trained on log1p(delay days) and converted back to days for evaluation; no official record is deleted.",
-    "training_samples": 550,
+    "sector_correction_experiment": {
+      "cost": {
+        "enabled": true,
+        "target": "actual_cost_overrun_percentage",
+        "validation_year": 2015,
+        "correction_year": 2014,
+        "baseline_mae": 36.4701,
+        "corrected_mae": 24.3832,
+        "corrections": {
+          "Other": -29.073083251691003,
+          "Petroleum": -11.268739312223216,
+          "Power": -11.640761156757994,
+          "Roads": -2.2154629179586407
+        },
+        "policy": "Residual correction is enabled only when learned on an earlier year and improves the next unseen completion year."
+      },
+      "delay": {
+        "enabled": false,
+        "target": "actual_delay_days",
+        "validation_year": 2015,
+        "correction_year": 2014,
+        "baseline_mae": 376.3579,
+        "corrected_mae": 406.2631,
+        "corrections": {},
+        "policy": "Residual correction is enabled only when learned on an earlier year and improves the next unseen completion year."
+      }
+    },
+    "shap_available": true,
+    "feature_importance": {
+      "cost": [
+        {
+          "feature": "agency_historical_cost_overrun_rate",
+          "importance": 0.997482
+        },
+        {
+          "feature": "agency_historical_delay_rate",
+          "importance": 0.001239
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.000688
+        },
+        {
+          "feature": "sector",
+          "importance": 0.000403
+        },
+        {
+          "feature": "planned_commissioning_year",
+          "importance": 0.000189
+        },
+        {
+          "feature": "approved_cost_log",
+          "importance": 0.0
+        },
+        {
+          "feature": "planned_commissioning_month",
+          "importance": 0.0
+        },
+        {
+          "feature": "revised_cost_cr",
+          "importance": 0.0
+        },
+        {
+          "feature": "current_expenditure_cr",
+          "importance": 0.0
+        },
+        {
+          "feature": "physical_progress",
+          "importance": 0.0
+        }
+      ],
+      "delay": [
+        {
+          "feature": "agency_historical_delay_rate",
+          "importance": 0.783555
+        },
+        {
+          "feature": "project_size_category",
+          "importance": 0.0459
+        },
+        {
+          "feature": "agency_historical_cost_overrun_rate",
+          "importance": 0.043879
+        },
+        {
+          "feature": "planned_commissioning_year",
+          "importance": 0.037933
+        },
+        {
+          "feature": "sector_risk_score",
+          "importance": 0.029307
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.02112
+        },
+        {
+          "feature": "complexity_score",
+          "importance": 0.014932
+        },
+        {
+          "feature": "approved_cost_log",
+          "importance": 0.009328
+        },
+        {
+          "feature": "planned_commissioning_month",
+          "importance": 0.007642
+        },
+        {
+          "feature": "implementing_agency",
+          "importance": 0.006403
+        }
+      ],
+      "risk": [
+        {
+          "feature": "agency_historical_delay_rate",
+          "importance": 0.885762
+        },
+        {
+          "feature": "project_size_category",
+          "importance": 0.045137
+        },
+        {
+          "feature": "agency_historical_cost_overrun_rate",
+          "importance": 0.01954
+        },
+        {
+          "feature": "planned_commissioning_year",
+          "importance": 0.014822
+        },
+        {
+          "feature": "sector_risk_score",
+          "importance": 0.013554
+        },
+        {
+          "feature": "complexity_score",
+          "importance": 0.007951
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.004822
+        },
+        {
+          "feature": "approved_cost_log",
+          "importance": 0.004803
+        },
+        {
+          "feature": "planned_commissioning_month",
+          "importance": 0.002205
+        },
+        {
+          "feature": "implementing_agency",
+          "importance": 0.001403
+        }
+      ]
+    },
+    "survival_experiment": {
+      "status": "available",
+      "model": "Cox proportional hazards",
+      "duration": "non-negative delay days + 1",
+      "event": "official completion",
+      "features": [
+        "approved_cost_log",
+        "planned_commissioning_year",
+        "planned_commissioning_month",
+        "complexity_score"
+      ],
+      "use_policy": "Advanced probability experiment only; it does not replace cost/delay models."
+    },
+    "training_samples": 279,
     "data_source": "Official PAIMANA completed-project archive reports",
     "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
-    "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
-    "created_at": "2026-08-22T19:12:59.462175+00:00",
+    "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only. Agency/sector priors are fitted from training rows only; training rows use leave-one-out priors.",
+    "created_at": "2026-08-22T20:19:50.174034+00:00",
     "status": "trained",
     "evaluated_test_start": 2016,
     "evaluated_test_end": 2021,
     "pending_actual_outcomes": [],
-    "testing_samples": 175,
-    "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."
+    "testing_samples": 110,
+    "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics.",
+    "rolling_validation_scores": {
+      "model_version": "2001_2015",
+      "fold_count": 20,
+      "average_cost_mae": 52.407,
+      "average_delay_mae_days": 666.043,
+      "best_cost_mae": 19.973,
+      "worst_cost_mae": 130.528,
+      "best_delay_mae_days": 284.106,
+      "worst_delay_mae_days": 1019.647,
+      "average_risk_accuracy": 0.3676,
+      "average_risk_precision": 0.1051,
+      "average_risk_recall": 0.2667,
+      "average_risk_f1": 0.143,
+      "policy": "Each fold trains only on completion years before its test year. No future outcomes are used in fitting."
+    }
   }
 }

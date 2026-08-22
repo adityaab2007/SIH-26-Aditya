@@ -34,6 +34,7 @@ export const api = {
   modelImportance: () => request('/api/models/importance'),
   validationReport: (modelVersion = selectedModel()) => request(withModel('/api/models/validation', modelVersion)),
   predictionValidation: (limit = 100, modelVersion = selectedModel()) => request(withModel(`/api/models/prediction-validation?limit=${limit}`, modelVersion)),
+  rollingValidation: (modelVersion = selectedModel()) => request(withModel('/api/models/rolling-validation', modelVersion)),
   retrainModel: (startYear, endYear) => request('/api/models/retrain', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }) }),
   setValidationModel: (model) => localStorage.setItem('selected_validation_model', model || ''),
   getValidationModel: () => selectedModel(),

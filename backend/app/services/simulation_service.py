@@ -12,16 +12,22 @@ import pandas as pd
 
 from backend.app.ml.real_time_windows import (
     FEATURES,
+    RISK_LEVELS,
     _classifier,
     _fit_classifier,
     _fit_regressor,
     _predict_regressor,
     _regressor,
     evaluate,
+    add_leave_one_out_training_priors,
+    apply_historical_priors,
+    historical_prior_maps,
     labelled,
     model_dir,
     outcome_data,
     versions,
+    version_key,
+    predict_quantiles,
 )
 
 # Live judge demo sessions are intentionally process-local. They contain fitted model
@@ -53,16 +59,27 @@ def available_data_years() -> list[dict]:
     return [{"year": int(year), "completed_projects": int(count)} for year, count in counts.items()]
 
 
-def _shap_factors_for_model(model, row: pd.Series) -> list[dict]:
+def _shap_factors_for_model(model, row: pd.Series, feature_names: list[str] | None = None) -> list[dict]:
     """Return local SHAP contributions without exposing target fields."""
     try:
+        names_used = feature_names or FEATURES
+        if hasattr(model, "severity_model"):
+            model = model.severity_model
+        elif hasattr(model, "models") and model.models:
+            model = model.models[0]
         if model.__class__.__module__.startswith("catboost"):
-            from catboost import Pool
-            values = model.get_feature_importance(Pool(pd.DataFrame([row[FEATURES]]), cat_features=[FEATURES.index("sector"), FEATURES.index("implementing_agency")]), type="ShapValues")[0][:-1]
-            return [{"feature": feature, "impact": round(float(impact), 4), "direction": "increases" if impact >= 0 else "reduces"} for feature, impact in sorted(zip(FEATURES, values), key=lambda item: abs(item[1]), reverse=True)[:5]]
+            categorical = [index for index, name in enumerate(names_used) if name in {"sector", "ministry", "implementing_agency", "state", "project_size_category"}]
+            one_row = pd.DataFrame([row[names_used]])
+            shap_values = np.asarray(model.get_feature_importance(Pool(one_row, cat_features=categorical), type="ShapValues"), dtype=float)
+            if shap_values.ndim == 3:
+                predicted_class = int(np.asarray(model.predict(one_row), dtype=int).reshape(-1)[0])
+                values = shap_values[0, predicted_class, :-1]
+            else:
+                values = shap_values[0, :-1]
+            return [{"feature": feature, "impact": round(float(impact), 4), "direction": "increases" if impact >= 0 else "reduces"} for feature, impact in sorted(zip(names_used, values), key=lambda item: abs(item[1]), reverse=True)[:5]]
         import shap
 
-        transformed = model.named_steps["preprocess"].transform(pd.DataFrame([row[FEATURES]]))
+        transformed = model.named_steps["preprocess"].transform(pd.DataFrame([row[names_used]]))
         values = shap.TreeExplainer(model.named_steps["model"]).shap_values(
             transformed.toarray() if hasattr(transformed, "toarray") else transformed
         )
@@ -70,9 +87,14 @@ def _shap_factors_for_model(model, row: pd.Series) -> list[dict]:
         values = np.asarray(values)[0]
         result = []
         for name, impact in sorted(zip(names, values), key=lambda item: abs(item[1]), reverse=True)[:5]:
+            clean_name = str(name).replace("numeric__", "").replace("category__", "")
+            for categorical in ("sector", "ministry", "implementing_agency", "state", "project_size_category"):
+                if clean_name.startswith(f"{categorical}_"):
+                    clean_name = categorical
+                    break
             result.append(
                 {
-                    "feature": str(name).replace("numeric__", "").replace("category__", ""),
+                    "feature": clean_name,
                     "impact": round(float(impact), 4),
                     "direction": "increases" if impact >= 0 else "reduces",
                 }
@@ -83,7 +105,9 @@ def _shap_factors_for_model(model, row: pd.Series) -> list[dict]:
 
 
 def _shap_factors(key: str, row: pd.Series) -> list[dict]:
-    return _shap_factors_for_model(joblib.load(model_dir(key) / "cost_model.pkl"), row)
+    target = model_dir(key)
+    metadata = __import__("json").loads((target / "metadata.json").read_text())
+    return _shap_factors_for_model(joblib.load(target / "cost_model.pkl"), row, metadata.get("features_used", FEATURES))
 
 
 def run(key: str) -> dict:
@@ -105,8 +129,8 @@ def run(key: str) -> dict:
                 "predicted_delay_days": _value(row.predicted_delay_days),
                 "actual_delay_days": _value(row.actual_delay_days),
                 "delay_error": _value(row.delay_error),
-                "predicted_risk": "HIGH" if int(row.predicted_risk) else "LOW",
-                "actual_risk": "HIGH" if int(row.actual_risk) else "LOW",
+                "predicted_risk": RISK_LEVELS[int(row.predicted_risk)],
+                "actual_risk": RISK_LEVELS[int(row.actual_risk)],
                 "snapshot": {
                     "approved_cost_cr": _value(row.approved_cost_cr),
                     "current_cost_cr": None,
@@ -160,13 +184,32 @@ def train_custom(start_year: int, end_year: int) -> dict:
     if held_out.empty:
         raise ValueError("No later completed projects are available for a leakage-free historical test.")
 
-    X = train_data[FEATURES]
-    cost = _regressor()
-    delay = _regressor(seed=26104)
-    risk = _classifier(train_data.actual_risk)
-    _fit_regressor(cost, X, train_data.actual_cost_overrun_percentage)
-    _fit_regressor(delay, X, train_data.actual_delay_days, delay_target=True)
-    _fit_classifier(risk, X, train_data.actual_risk)
+    target = model_dir(version_key(start_year, end_year))
+    metadata_path = target / "metadata.json"
+    compatible_registry = False
+    if metadata_path.exists():
+        registry_metadata = __import__("json").loads(metadata_path.read_text())
+        compatible_registry = registry_metadata.get("features_used") == FEATURES
+    if compatible_registry and all((target / name).exists() for name in ("cost_model.pkl", "delay_model.pkl", "risk_model.pkl")):
+        cost = joblib.load(target / "cost_model.pkl")
+        delay = joblib.load(target / "delay_model.pkl")
+        risk = joblib.load(target / "risk_model.pkl")
+        uncertainty = joblib.load(target / "uncertainty_models.pkl") if (target / "uncertainty_models.pkl").exists() else None
+        priors_path = target / "historical_priors.json"
+        if priors_path.exists():
+            held_out = apply_historical_priors(held_out, __import__("json").loads(priors_path.read_text()))
+    else:
+        priors = historical_prior_maps(train_data)
+        held_out = apply_historical_priors(held_out, priors)
+        train_data = add_leave_one_out_training_priors(train_data)
+        X = train_data[FEATURES]
+        cost = _regressor()
+        delay = _regressor(seed=26104)
+        risk = _classifier(train_data.actual_risk)
+        _fit_regressor(cost, X, train_data.actual_cost_overrun_percentage)
+        _fit_regressor(delay, X, train_data.actual_delay_days, delay_target=True)
+        _fit_classifier(risk, X, train_data.actual_risk)
+        uncertainty = None
 
     held_out["record_index"] = np.arange(len(held_out), dtype=int)
     session_id = uuid.uuid4().hex[:16]
@@ -178,6 +221,7 @@ def train_custom(start_year: int, end_year: int) -> dict:
         "cost_model": cost,
         "delay_model": delay,
         "risk_model": risk,
+        "uncertainty_models": uncertainty,
         "held_out": held_out,
         "predictions": {},
     }
@@ -254,11 +298,25 @@ def predict_custom(session_id: str, record_index: int) -> dict:
     predicted_cost = float(_predict_regressor(session["cost_model"], X)[0])
     predicted_delay = float(_predict_regressor(session["delay_model"], X, delay_target=True)[0])
     predicted_risk = int(np.asarray(session["risk_model"].predict(X), dtype=int).reshape(-1)[0])
+    probabilities = np.asarray(session["risk_model"].predict_proba(X), dtype=float)[0] if hasattr(session["risk_model"], "predict_proba") else np.array([1.0])
     prediction = {
         "predicted_cost_overrun": round(predicted_cost, 4),
         "predicted_delay_days": round(predicted_delay, 4),
-        "predicted_risk": "HIGH" if predicted_risk else "LOW",
+        "predicted_risk": RISK_LEVELS[predicted_risk],
+        "risk_probability_percentage": round(float(probabilities.max()) * 100, 1),
     }
+    if session.get("uncertainty_models"):
+        cost_range = predict_quantiles(session["uncertainty_models"]["cost"], X, delay_target=False)
+        delay_range = predict_quantiles(session["uncertainty_models"]["delay"], X, delay_target=True)
+        prediction["expected_range"] = {
+            "cost_overrun_percentage": {label: round(float(values[0]), 4) for label, values in cost_range.items()},
+            "delay_days": {label: round(float(values[0]), 4) for label, values in delay_range.items()},
+        }
+        cost_width = max(float(cost_range["p90"][0] - cost_range["p10"][0]), 0.0)
+        delay_width = max(float(delay_range["p90"][0] - delay_range["p10"][0]), 0.0)
+        cost_confidence = 100 / (1 + cost_width / (abs(float(cost_range["p50"][0])) + 10))
+        delay_confidence = 100 / (1 + delay_width / (abs(float(delay_range["p50"][0])) + 90))
+        prediction["model_confidence_percentage"] = round((cost_confidence + delay_confidence) / 2, 1)
     session["predictions"][int(record_index)] = prediction
     return {
         "session_id": session_id,
@@ -269,12 +327,7 @@ def predict_custom(session_id: str, record_index: int) -> dict:
             "sector": _value(row.sector),
             "implementing_agency": _value(row.implementing_agency),
         },
-        "model_inputs": {
-            "approved_cost_cr": _value(row.approved_cost_cr),
-            "sector": _value(row.sector),
-            "implementing_agency": _value(row.implementing_agency),
-            "planned_commissioning_year": _value(row.planned_commissioning_year),
-        },
+        "model_inputs": {feature: _value(row.get(feature)) for feature in FEATURES},
         **prediction,
         "shap_explanation": _shap_factors_for_model(session["cost_model"], row),
         "audit": {
@@ -296,7 +349,7 @@ def reveal_custom(session_id: str, record_index: int) -> dict:
     predicted = session["predictions"][int(record_index)]
     actual_cost = float(row.actual_cost_overrun_percentage)
     actual_delay = float(row.actual_delay_days)
-    actual_risk = "HIGH" if int(row.actual_risk) else "LOW"
+    actual_risk = RISK_LEVELS[int(row.actual_risk)]
     return {
         "session_id": session_id,
         "record_index": int(record_index),
