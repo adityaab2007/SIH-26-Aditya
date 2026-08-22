@@ -36,3 +36,10 @@ def test_backtest_rows_are_cutoff_predictions():
     assert not validation.empty
     assert {"project_id", "prediction_date", "predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(validation)
     assert (validation.cost_error.round(8) == (validation.predicted_cost_overrun - validation.actual_cost_overrun).round(8)).all()
+
+
+def test_official_completed_archive_includes_older_available_years():
+    outcomes = pd.read_csv(ROOT / "data" / "processed" / "paimana_completed_outcomes.csv")
+    years = pd.to_datetime(outcomes["completion_date"], errors="coerce").dt.year.dropna().astype(int)
+    assert years.min() == 2001
+    assert set(range(2001, 2009)).issubset(set(years))
