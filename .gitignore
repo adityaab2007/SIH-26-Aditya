@@ -16,3 +16,4 @@ data/processed/*.csv
 models/global_feature_importance.json
 models/metrics.json
 models/registry.json
+models/backtest.json
