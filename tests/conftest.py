@@ -8,10 +8,11 @@ RAW = ROOT / 'data' / 'raw' / 'paimana_projects_may_2026.csv'
 PROCESSED = ROOT / 'data' / 'processed' / 'model_dataset.csv'
 HISTORY = ROOT / 'data' / 'project_history.csv'
 MODEL_ARTIFACTS = [
-    ROOT / 'models' / 'cost_model.pkl',
-    ROOT / 'models' / 'delay_model.pkl',
-    ROOT / 'models' / 'registry.json',
-    ROOT / 'models' / 'global_feature_importance.json',
+    ROOT / 'models' / 'time_window_registry.json',
+    ROOT / 'models' / '2001_2017' / 'cost_model.pkl',
+    ROOT / 'models' / '2001_2017' / 'delay_model.pkl',
+    ROOT / 'models' / '2001_2017' / 'risk_model.pkl',
+    ROOT / 'models' / '2001_2017' / 'metadata.json',
 ]
 
 if not RAW.exists():
@@ -21,4 +22,12 @@ if not PROCESSED.exists():
 if not HISTORY.exists():
     subprocess.run([sys.executable, str(ROOT / 'scripts' / 'generate_project_history.py')], cwd=ROOT, check=True)
 if any(not artifact.exists() for artifact in MODEL_ARTIFACTS):
-    subprocess.run([sys.executable, '-m', 'backend.app.ml.train'], cwd=ROOT, check=True)
+    subprocess.run(
+        [
+            sys.executable,
+            '-c',
+            'from backend.app.ml.real_time_windows import retrain; retrain(2001, 2017)',
+        ],
+        cwd=ROOT,
+        check=True,
+    )
