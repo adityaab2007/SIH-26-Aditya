@@ -92,6 +92,8 @@ def outcome_data() -> pd.DataFrame:
 
 def features(frame: pd.DataFrame) -> pd.DataFrame:
     result = frame.copy()
+    for column in ["completion_date", "planned_commissioning_date"]:
+        result[column] = pd.to_datetime(result[column], errors="coerce")
     result["approved_cost_cr"] = pd.to_numeric(result["approved_cost_cr"], errors="coerce")
     result["planned_commissioning_year"] = result["planned_commissioning_date"].dt.year
     result["completion_year"] = result["completion_date"].dt.year
@@ -102,13 +104,15 @@ def features(frame: pd.DataFrame) -> pd.DataFrame:
 
 def labelled(frame: pd.DataFrame) -> pd.DataFrame:
     result = features(frame)
-    result["actual_cost_overrun_percentage"] = np.where(
-        result["approved_cost_cr"] > 0,
-        (pd.to_numeric(result["reported_completion_expenditure_cr"], errors="coerce") - result["approved_cost_cr"]) / result["approved_cost_cr"] * 100,
-        np.nan,
-    )
-    result["actual_delay_days"] = (result["completion_date"] - result["planned_commissioning_date"]).dt.days
-    result["actual_delay_days"] = result["actual_delay_days"].clip(lower=0)
+    final_cost = pd.to_numeric(result["reported_completion_expenditure_cr"], errors="coerce")
+    valid_cost = result["approved_cost_cr"].gt(0) & final_cost.notna()
+    valid_dates = result["completion_date"].notna() & result["planned_commissioning_date"].notna()
+    # Never turn a missing outcome into a zero target. Early completion remains
+    # negative schedule variance, exactly as recorded by the official dates.
+    result["actual_cost_overrun_percentage"] = np.nan
+    result.loc[valid_cost, "actual_cost_overrun_percentage"] = ((final_cost[valid_cost] - result.loc[valid_cost, "approved_cost_cr"]) / result.loc[valid_cost, "approved_cost_cr"]) * 100
+    result["actual_delay_days"] = np.nan
+    result.loc[valid_dates, "actual_delay_days"] = (result.loc[valid_dates, "completion_date"] - result.loc[valid_dates, "planned_commissioning_date"]).dt.days
     result["actual_risk"] = ((result["actual_cost_overrun_percentage"] >= 5) | (result["actual_delay_days"] >= 90)).astype(int)
     return result.dropna(subset=["approved_cost_cr", "planned_commissioning_year", "actual_cost_overrun_percentage", "actual_delay_days"])
 
@@ -138,7 +142,7 @@ def _classifier(y: pd.Series, seed: int = 26103):
 
 
 def _fit_regressor(model, X: pd.DataFrame, y: pd.Series, *, delay_target: bool = False) -> None:
-    target = np.log1p(np.maximum(0, y)) if delay_target else y
+    target = np.sign(y) * np.log1p(np.abs(y)) if delay_target else y
     model.fit(X, target, cat_features=CAT_FEATURE_INDICES)
 
 
@@ -147,8 +151,8 @@ def _predict_regressor(model, X: pd.DataFrame, *, delay_target: bool = False) ->
     # Existing registry artifacts before this upgrade predict delay directly;
     # only CatBoost delay models are fitted on log1p(delay).
     if delay_target and model.__class__.__module__.startswith("catboost"):
-        return np.maximum(0, np.expm1(np.clip(values, 0, 20)))
-    return np.maximum(0, values) if delay_target else values
+        return np.sign(values) * np.expm1(np.clip(np.abs(values), 0, 20))
+    return values
 
 
 def _fit_classifier(model, X: pd.DataFrame, y: pd.Series) -> None:
@@ -269,7 +273,7 @@ def evaluate(key: str, save: bool = True) -> dict:
     metrics = {
         "model_version": key,
         "cost_model": {"MAE": round(cost_mae, 3), "RMSE": round(float(mean_squared_error(cost_y, cost_p) ** .5), 3), "MAPE": round(_safe_mape(cost_y, cost_p), 3), "accuracy_percentage": round(max(0.0, 100 * (1 - cost_mae / cost_scale)), 2)},
-        "delay_model": {"MAE": round(delay_mae, 3), "MAE_days": round(delay_mae, 3), "RMSE": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "RMSE_days": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "log_target_RMSE": round(float(mean_squared_error(np.log1p(delay_y), np.log1p(delay_p)) ** .5), 4), "accuracy_percentage": round(max(0.0, 100 * (1 - delay_mae / delay_scale)), 2)},
+        "delay_model": {"MAE": round(delay_mae, 3), "MAE_days": round(delay_mae, 3), "RMSE": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "RMSE_days": round(float(mean_squared_error(delay_y, delay_p) ** .5), 3), "log_target_RMSE": round(float(mean_squared_error(np.sign(delay_y) * np.log1p(np.abs(delay_y)), np.sign(delay_p) * np.log1p(np.abs(delay_p))) ** .5), 4), "accuracy_percentage": round(max(0.0, 100 * (1 - delay_mae / delay_scale)), 2)},
         "risk_model": {"accuracy": round(float(accuracy_score(test_data.actual_risk, test_data.predicted_risk)), 4), "precision": round(float(precision_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4), "recall": round(float(recall_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4), "f1": round(float(f1_score(test_data.actual_risk, test_data.predicted_risk, zero_division=0)), 4)},
         "metadata": {**metadata, "evaluated_test_start": window.test_start, "evaluated_test_end": actual_end, "pending_actual_outcomes": list(range(actual_end + 1, window.test_end + 1)), "testing_samples": int(len(test_data)), "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."},
     }
