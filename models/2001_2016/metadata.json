@@ -1,0 +1,20 @@
+{
+  "model_version": "2001_2016",
+  "training_start": 2001,
+  "training_end": 2016,
+  "test_start": 2017,
+  "test_end": 2024,
+  "available_actual_end": 2024,
+  "features_used": [
+    "approved_cost_cr",
+    "sector",
+    "implementing_agency",
+    "planned_commissioning_year"
+  ],
+  "training_samples": 618,
+  "data_source": "Official PAIMANA completed-project archive reports",
+  "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
+  "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
+  "created_at": "2026-08-22T18:34:24.701344+00:00",
+  "status": "trained"
+}

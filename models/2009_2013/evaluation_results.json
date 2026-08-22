@@ -1,0 +1,47 @@
+{
+  "model_version": "2009_2013",
+  "cost_model": {
+    "MAE": 32.471,
+    "RMSE": 51.642,
+    "MAPE": 244.574,
+    "accuracy_percentage": 41.55
+  },
+  "delay_model": {
+    "MAE": 758.922,
+    "MAE_days": 758.922,
+    "RMSE": 1233.103,
+    "RMSE_days": 1233.103,
+    "accuracy_percentage": 7.7
+  },
+  "risk_model": {
+    "accuracy": 0.7573,
+    "precision": 0.9069,
+    "recall": 0.743,
+    "f1": 0.8168
+  },
+  "metadata": {
+    "model_version": "2009_2013",
+    "training_start": 2009,
+    "training_end": 2013,
+    "test_start": 2014,
+    "test_end": 2024,
+    "available_actual_end": 2024,
+    "features_used": [
+      "approved_cost_cr",
+      "sector",
+      "implementing_agency",
+      "planned_commissioning_year"
+    ],
+    "training_samples": 149,
+    "data_source": "Official PAIMANA completed-project archive reports",
+    "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
+    "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
+    "created_at": "2026-08-22T18:22:26.390662+00:00",
+    "status": "trained",
+    "evaluated_test_start": 2014,
+    "evaluated_test_end": 2024,
+    "pending_actual_outcomes": [],
+    "testing_samples": 342,
+    "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."
+  }
+}

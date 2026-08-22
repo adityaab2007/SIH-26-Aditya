@@ -1,0 +1,75 @@
+{
+  "selection_method": "latest-year temporal validation within the selected training range",
+  "cost_candidates": [
+    {
+      "parameters": {
+        "iterations": 300,
+        "depth": 5,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 4.0
+      },
+      "MAE": 7.5082
+    },
+    {
+      "parameters": {
+        "iterations": 450,
+        "depth": 6,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 6.0
+      },
+      "MAE": 7.4938
+    },
+    {
+      "parameters": {
+        "iterations": 550,
+        "depth": 7,
+        "learning_rate": 0.03,
+        "l2_leaf_reg": 8.0
+      },
+      "MAE": 7.8858
+    }
+  ],
+  "delay_candidates": [
+    {
+      "parameters": {
+        "iterations": 300,
+        "depth": 5,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 4.0
+      },
+      "MAE": 286.0021
+    },
+    {
+      "parameters": {
+        "iterations": 450,
+        "depth": 6,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 6.0
+      },
+      "MAE": 278.9331
+    },
+    {
+      "parameters": {
+        "iterations": 550,
+        "depth": 7,
+        "learning_rate": 0.03,
+        "l2_leaf_reg": 8.0
+      },
+      "MAE": 286.1989
+    }
+  ],
+  "selected": {
+    "cost": {
+      "iterations": 450,
+      "depth": 6,
+      "learning_rate": 0.05,
+      "l2_leaf_reg": 6.0
+    },
+    "delay": {
+      "iterations": 450,
+      "depth": 6,
+      "learning_rate": 0.05,
+      "l2_leaf_reg": 6.0
+    }
+  }
+}
