@@ -7,7 +7,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.real_time_windows import FEATURES, RISK_LEVELS, _predict_regressor, active_version, apply_historical_priors, apply_sector_correction, features, model_dir, predict_quantiles
+from backend.app.ml.real_time_windows import FEATURES, RISK_LEVELS, _predict_regressor, active_version, apply_historical_priors, apply_sector_correction, features, model_dir, predict_quantiles, scale_quantile_range
 from backend.app.services.data_service import get_project
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -35,7 +35,7 @@ def _model_inputs(project: pd.Series) -> pd.DataFrame:
         "snapshot_date": project.get("snapshot_date"),
         "revised_completion_date": project.get("revised_end_date"),
     }])
-    return features(raw)[FEATURES]
+    return features(raw)
 
 
 def _completion_probabilities(target, X: pd.DataFrame, planned: pd.Timestamp) -> list[dict]:
@@ -66,7 +66,8 @@ def project_forecast(code: str) -> dict:
     X = _model_inputs(project)
     priors_path = target / "historical_priors.json"
     if priors_path.exists():
-        X = apply_historical_priors(X, json.loads(priors_path.read_text()))[FEATURES]
+        X = apply_historical_priors(X, json.loads(priors_path.read_text()))
+    X = X[metadata.get("features_used", FEATURES)]
     cost_model = joblib.load(target / "cost_model.pkl")
     delay_model = joblib.load(target / "delay_model.pkl")
     risk_model = joblib.load(target / "risk_model.pkl")
@@ -82,6 +83,10 @@ def project_forecast(code: str) -> dict:
     if uncertainty:
         cost_q = predict_quantiles(uncertainty["cost"], X, delay_target=False)
         delay_q = predict_quantiles(uncertainty["delay"], X, delay_target=True)
+        calibration_path = target / "confidence_calibration.json"
+        calibration = json.loads(calibration_path.read_text()) if calibration_path.exists() else {}
+        cost_q = scale_quantile_range(cost_q, float(calibration.get("cost", {}).get("scale", 1.0)))
+        delay_q = scale_quantile_range(delay_q, float(calibration.get("delay", {}).get("scale", 1.0)))
         expected_range = {
             "cost_overrun_percentage": {label: round(float(values[0]), 2) for label, values in cost_q.items()},
             "delay_days": {label: round(float(values[0]), 1) for label, values in delay_q.items()},
@@ -110,6 +115,8 @@ def project_forecast(code: str) -> dict:
         "current_progress": current_status["physical_progress_percentage"],
         "predicted_delay_months": round(delay / 30.4375, 1),
         "risk_score": round(probability * 100, 1), "risk_probability_percentage": round(probability * 100, 1), "risk_level": RISK_LEVELS[risk_prediction],
+        "model_confidence_percentage": round(float(calibration.get("confidence_percentage", 0.0)), 1) if uncertainty else None,
+        "confidence_calibration_status": calibration.get("status", "unavailable") if uncertainty else "unavailable",
         "explanation": factors, "shap_explanation": factors, "cost_factors": factors, "delay_factors": _shap_factors_for_model(delay_model, X.iloc[0]), "risk_factors": risk_factors,
         "best_models": {"cost": metadata.get("algorithms", {}).get("cost", "registered model"), "delay": metadata.get("algorithms", {}).get("delay", "registered model")},
         "expected_range": expected_range,

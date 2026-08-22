@@ -88,7 +88,11 @@ def local_importance(bundle):
 
 
 def main():
-    MODELS.mkdir(parents=True, exist_ok=True)
+    raise RuntimeError(
+        "This legacy deterministic demonstration trainer is disabled. "
+        "Train official PAIMANA models through backend.app.ml.real_time_windows.retrain()."
+    )
+    MODELS.mkdir(parents=True, exist_ok=True)  # pragma: no cover - retained for historical reference
     history = load_project_history()
     labelled = build_forward_labels(engineer_temporal_features(history)).dropna(subset=["future_cost_escalation_percentage", "future_schedule_extension_days"])
     splits = project_time_split(labelled)

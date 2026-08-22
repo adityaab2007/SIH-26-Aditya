@@ -20,15 +20,15 @@ function predictionCard(prediction, actual = null) {
         <div><span>Predicted cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div>
         <div><span>Predicted delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div>
         <div><span>Predicted risk</span><strong>${escape(prediction.predicted_risk)} · ${fixed(prediction.risk_probability_percentage, 1)}%</strong></div>
-        <div><span>Model confidence</span><strong>${fixed(prediction.model_confidence_percentage, 1)}%</strong></div>
+        <div><span>Model confidence</span><strong>${fixed(prediction.model_confidence_percentage, 1)}% · ${escape(prediction.confidence_calibration_status || 'unavailable').replaceAll('_', ' ')}</strong></div>
         <div><span>Actual outcome sent yet?</span><strong>${prediction.audit.actual_outcomes_sent_to_browser ? 'Yes' : 'No'}</strong></div>
       </div>
       <h3>Inputs visible to the model</h3>
       <div class="detail-financial">
         <div><span>Approved cost</span><strong>₹${fixed(prediction.model_inputs.approved_cost_cr)} Cr</strong></div>
         <div><span>Sector</span><strong>${escape(prediction.model_inputs.sector)}</strong></div>
-        <div><span>Implementing agency</span><strong>${escape(prediction.model_inputs.implementing_agency || 'Not reported')}</strong></div>
-        <div><span>Planned commissioning year</span><strong>${escape(prediction.model_inputs.planned_commissioning_year)}</strong></div>
+        <div><span>Sector average delay</span><strong>${fixed(prediction.model_inputs.sector_average_delay)} days</strong></div>
+        <div><span>Sector average cost overrun</span><strong>${fixed(prediction.model_inputs.sector_average_cost_overrun)}%</strong></div>
       </div>
       ${range ? `<div class="notice compact"><strong>Uncertainty range:</strong> Cost P10–P90 ${fixed(range.cost_overrun_percentage.p10)}% to ${fixed(range.cost_overrun_percentage.p90)}%; delay P10–P90 ${fixed(range.delay_days.p10)} to ${fixed(range.delay_days.p90)} days.</div>` : ''}
     </section>
@@ -158,7 +158,8 @@ export async function ModelSimulationPage(root) {
       const eligible = session.eligible_test_years || [];
       testYear.innerHTML = eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} held-out projects</option>`).join('');
       testYear.disabled = !eligible.length;
-      receipt.innerHTML = `<strong>Model ${escape(registryRun.model_version)} trained and registered.</strong> Training: ${escape(registryRun.training_years)} · testing: ${escape(registryRun.testing_years)}. <strong>Fresh metrics:</strong> cost MAE ${fixed(registryRun.metrics.cost_model.MAE)} pp · delay MAE ${fixed(registryRun.metrics.delay_model.MAE_days)} days · risk F1 ${fixed(registryRun.metrics.risk_model.f1 * 100, 1)}%. <strong>Rolling validation:</strong> ${registryRun.rolling_validation.fold_count} folds · average cost MAE ${fixed(registryRun.rolling_validation.average_cost_mae)} pp · average delay MAE ${fixed(registryRun.rolling_validation.average_delay_mae_days)} days. <a href="#/prediction-accuracy">Open dynamic Prediction Accuracy</a><br><strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.`;
+      const quality = registryRun.metrics.metadata.feature_quality || {};
+      receipt.innerHTML = `<strong>Model ${escape(registryRun.model_version)} trained and registered.</strong> Training: ${escape(registryRun.training_years)} · testing: ${escape(registryRun.testing_years)}. <strong>Fresh metrics:</strong> cost MAE ${fixed(registryRun.metrics.cost_model.MAE)} pp · delay MAE ${fixed(registryRun.metrics.delay_model.MAE_days)} days · risk F1 ${fixed(registryRun.metrics.risk_model.f1 * 100, 1)}%. <strong>Feature quality:</strong> ${registryRun.metrics.metadata.feature_count} used · ${quality.removed_invalid_feature_count || 0} removed · ${fixed(quality.data_quality_score, 1)}% quality. <strong>Confidence:</strong> ${escape(registryRun.metrics.confidence_calibration?.status || 'unavailable').replaceAll('_', ' ')}. <strong>Rolling validation:</strong> ${registryRun.rolling_validation.fold_count} folds · average cost MAE ${fixed(registryRun.rolling_validation.average_cost_mae)} pp · average delay MAE ${fixed(registryRun.rolling_validation.average_delay_mae_days)} days. <a href="#/prediction-accuracy">Open dynamic Prediction Accuracy</a><br><strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.`;
       if (eligible.length) await loadProjects();
     } catch (error) {
       session = null;

@@ -5,132 +5,24 @@
   "training_samples": 303,
   "features": [
     {
-      "feature": "agency_historical_delay_rate",
-      "importance": 0.880184
+      "feature": "sector",
+      "importance": 0.399605
+    },
+    {
+      "feature": "sector_average_delay",
+      "importance": 0.187462
     },
     {
       "feature": "project_size_category",
-      "importance": 0.061343
-    },
-    {
-      "feature": "agency_historical_cost_overrun_rate",
-      "importance": 0.018833
-    },
-    {
-      "feature": "sector_risk_score",
-      "importance": 0.01299
-    },
-    {
-      "feature": "planned_commissioning_month",
-      "importance": 0.006327
-    },
-    {
-      "feature": "planned_commissioning_year",
-      "importance": 0.005009
-    },
-    {
-      "feature": "approved_cost_log",
-      "importance": 0.004892
+      "importance": 0.153591
     },
     {
       "feature": "approved_cost_cr",
-      "importance": 0.00482
+      "importance": 0.136455
     },
     {
-      "feature": "complexity_score",
-      "importance": 0.004296
-    },
-    {
-      "feature": "implementing_agency",
-      "importance": 0.001307
-    },
-    {
-      "feature": "revised_cost_cr",
-      "importance": 0.0
-    },
-    {
-      "feature": "current_expenditure_cr",
-      "importance": 0.0
-    },
-    {
-      "feature": "physical_progress",
-      "importance": 0.0
-    },
-    {
-      "feature": "planned_duration_days",
-      "importance": 0.0
-    },
-    {
-      "feature": "elapsed_duration_days",
-      "importance": 0.0
-    },
-    {
-      "feature": "cost_escalation_percentage",
-      "importance": 0.0
-    },
-    {
-      "feature": "budget_stress_index",
-      "importance": 0.0
-    },
-    {
-      "feature": "expenditure_ratio",
-      "importance": 0.0
-    },
-    {
-      "feature": "cost_growth_velocity",
-      "importance": 0.0
-    },
-    {
-      "feature": "cost_acceleration",
-      "importance": 0.0
-    },
-    {
-      "feature": "cost_revision_count",
-      "importance": 0.0
-    },
-    {
-      "feature": "progress_deviation",
-      "importance": 0.0
-    },
-    {
-      "feature": "progress_velocity",
-      "importance": 0.0
-    },
-    {
-      "feature": "progress_acceleration",
-      "importance": 0.0
-    },
-    {
-      "feature": "progress_trend_6m",
-      "importance": 0.0
-    },
-    {
-      "feature": "progress_trend_12m",
-      "importance": 0.0
-    },
-    {
-      "feature": "duration_ratio",
-      "importance": 0.0
-    },
-    {
-      "feature": "schedule_slippage_score",
-      "importance": 0.0
-    },
-    {
-      "feature": "milestone_delay_count",
-      "importance": 0.0
-    },
-    {
-      "feature": "sector",
-      "importance": 0.0
-    },
-    {
-      "feature": "ministry",
-      "importance": 0.0
-    },
-    {
-      "feature": "state",
-      "importance": 0.0
+      "feature": "sector_average_cost_overrun",
+      "importance": 0.122886
     }
   ]
 }

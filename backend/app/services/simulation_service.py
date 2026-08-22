@@ -28,6 +28,7 @@ from backend.app.ml.real_time_windows import (
     versions,
     version_key,
     predict_quantiles,
+    scale_quantile_range,
 )
 
 # Live judge demo sessions are intentionally process-local. They contain fitted model
@@ -63,6 +64,8 @@ def _shap_factors_for_model(model, row: pd.Series, feature_names: list[str] | No
     """Return local SHAP contributions without exposing target fields."""
     try:
         names_used = feature_names or FEATURES
+        if model.__class__.__name__ == "ShiftedLogCostModel":
+            model = model.model
         if hasattr(model, "severity_model"):
             model = model.severity_model
         elif hasattr(model, "models") and model.models:
@@ -111,7 +114,7 @@ def _shap_factors(key: str, row: pd.Series) -> list[dict]:
 
 
 def run(key: str) -> dict:
-    result = evaluate(key, save=True)
+    result = evaluate(key, save=False)
     frame = result["rows"].reset_index(drop=True)
     items = []
     for index, row in frame.iterrows():
@@ -195,6 +198,8 @@ def train_custom(start_year: int, end_year: int) -> dict:
         delay = joblib.load(target / "delay_model.pkl")
         risk = joblib.load(target / "risk_model.pkl")
         uncertainty = joblib.load(target / "uncertainty_models.pkl") if (target / "uncertainty_models.pkl").exists() else None
+        calibration_path = target / "confidence_calibration.json"
+        calibration = __import__("json").loads(calibration_path.read_text()) if calibration_path.exists() else None
         priors_path = target / "historical_priors.json"
         if priors_path.exists():
             held_out = apply_historical_priors(held_out, __import__("json").loads(priors_path.read_text()))
@@ -210,6 +215,7 @@ def train_custom(start_year: int, end_year: int) -> dict:
         _fit_regressor(delay, X, train_data.actual_delay_days, delay_target=True)
         _fit_classifier(risk, X, train_data.actual_risk)
         uncertainty = None
+        calibration = None
 
     held_out["record_index"] = np.arange(len(held_out), dtype=int)
     session_id = uuid.uuid4().hex[:16]
@@ -222,6 +228,7 @@ def train_custom(start_year: int, end_year: int) -> dict:
         "delay_model": delay,
         "risk_model": risk,
         "uncertainty_models": uncertainty,
+        "confidence_calibration": calibration,
         "held_out": held_out,
         "predictions": {},
     }
@@ -308,15 +315,15 @@ def predict_custom(session_id: str, record_index: int) -> dict:
     if session.get("uncertainty_models"):
         cost_range = predict_quantiles(session["uncertainty_models"]["cost"], X, delay_target=False)
         delay_range = predict_quantiles(session["uncertainty_models"]["delay"], X, delay_target=True)
+        calibration = session.get("confidence_calibration") or {}
+        cost_range = scale_quantile_range(cost_range, float(calibration.get("cost", {}).get("scale", 1.0)))
+        delay_range = scale_quantile_range(delay_range, float(calibration.get("delay", {}).get("scale", 1.0)))
         prediction["expected_range"] = {
             "cost_overrun_percentage": {label: round(float(values[0]), 4) for label, values in cost_range.items()},
             "delay_days": {label: round(float(values[0]), 4) for label, values in delay_range.items()},
         }
-        cost_width = max(float(cost_range["p90"][0] - cost_range["p10"][0]), 0.0)
-        delay_width = max(float(delay_range["p90"][0] - delay_range["p10"][0]), 0.0)
-        cost_confidence = 100 / (1 + cost_width / (abs(float(cost_range["p50"][0])) + 10))
-        delay_confidence = 100 / (1 + delay_width / (abs(float(delay_range["p50"][0])) + 90))
-        prediction["model_confidence_percentage"] = round((cost_confidence + delay_confidence) / 2, 1)
+        prediction["model_confidence_percentage"] = round(float(calibration.get("confidence_percentage", 0.0)), 1)
+        prediction["confidence_calibration_status"] = calibration.get("status", "unavailable")
     session["predictions"][int(record_index)] = prediction
     return {
         "session_id": session_id,

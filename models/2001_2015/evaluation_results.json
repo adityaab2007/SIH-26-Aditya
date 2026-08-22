@@ -1,20 +1,20 @@
 {
   "model_version": "2001_2015",
   "cost_model": {
-    "MAE": 32.759,
-    "RMSE": 60.15,
-    "R2": -0.11,
-    "MAPE": 195.662,
-    "accuracy_percentage": 0.0
+    "MAE": 28.119,
+    "RMSE": 57.216,
+    "R2": -0.0044,
+    "MAPE": 247.617,
+    "accuracy_percentage": 9.45
   },
   "delay_model": {
-    "MAE": 715.037,
-    "MAE_days": 715.037,
-    "RMSE": 1074.201,
-    "RMSE_days": 1074.201,
-    "R2": -0.1454,
-    "log_target_RMSE": 0.9706,
-    "accuracy_percentage": 38.37
+    "MAE": 854.788,
+    "MAE_days": 854.788,
+    "RMSE": 1282.268,
+    "RMSE_days": 1282.268,
+    "R2": -0.6321,
+    "log_target_RMSE": 1.3356,
+    "accuracy_percentage": 26.33
   },
   "risk_model": {
     "classes": [
@@ -23,10 +23,10 @@
       "HIGH",
       "CRITICAL"
     ],
-    "accuracy": 0.6,
-    "precision": 0.15,
-    "recall": 0.25,
-    "f1": 0.1875
+    "accuracy": 0.1636,
+    "precision": 0.1153,
+    "recall": 0.361,
+    "f1": 0.1663
   },
   "metadata": {
     "model_version": "2001_2015",
@@ -39,89 +39,40 @@
     "available_actual_end": 2024,
     "features_used": [
       "approved_cost_cr",
-      "approved_cost_log",
-      "planned_commissioning_year",
-      "planned_commissioning_month",
-      "revised_cost_cr",
-      "current_expenditure_cr",
-      "physical_progress",
-      "planned_duration_days",
-      "elapsed_duration_days",
-      "cost_escalation_percentage",
-      "budget_stress_index",
-      "expenditure_ratio",
-      "cost_growth_velocity",
-      "cost_acceleration",
-      "cost_revision_count",
-      "progress_deviation",
-      "progress_velocity",
-      "progress_acceleration",
-      "progress_trend_6m",
-      "progress_trend_12m",
-      "duration_ratio",
-      "schedule_slippage_score",
-      "milestone_delay_count",
-      "complexity_score",
-      "agency_historical_delay_rate",
-      "agency_historical_cost_overrun_rate",
-      "sector_risk_score",
+      "sector_average_delay",
+      "sector_average_cost_overrun",
       "sector",
-      "ministry",
-      "implementing_agency",
-      "state",
       "project_size_category"
     ],
-    "feature_count": 32,
+    "feature_count": 5,
+    "feature_quality": {
+      "data_quality_score": 81.43,
+      "removed_invalid_feature_count": 20,
+      "report": "feature_quality_report.json"
+    },
     "feature_availability": {
       "available_when_published_at_cutoff": [
         "approved_cost_cr",
-        "approved_cost_log",
-        "planned_commissioning_year",
-        "planned_commissioning_month",
-        "revised_cost_cr",
-        "current_expenditure_cr",
-        "physical_progress",
-        "planned_duration_days",
-        "elapsed_duration_days",
-        "cost_escalation_percentage",
-        "budget_stress_index",
-        "expenditure_ratio",
-        "cost_growth_velocity",
-        "cost_acceleration",
-        "cost_revision_count",
-        "progress_deviation",
-        "progress_velocity",
-        "progress_acceleration",
-        "progress_trend_6m",
-        "progress_trend_12m",
-        "duration_ratio",
-        "schedule_slippage_score",
-        "milestone_delay_count",
-        "complexity_score",
-        "agency_historical_delay_rate",
-        "agency_historical_cost_overrun_rate",
-        "sector_risk_score",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
         "sector",
-        "ministry",
-        "implementing_agency",
-        "state",
         "project_size_category"
       ],
       "historical_archive_missingness_policy": "Unavailable as-of fields remain NaN/Not reported. No fuzzy joins, zero fills, or synthetic behaviour values are used."
     },
     "model_type": {
-      "cost": "lightgbm",
-      "delay": "two_stage_catboost",
+      "cost": "catboost_huber_d8",
+      "delay": "catboost",
       "risk": "catboost_classifier"
     },
     "model_algorithm": {
-      "cost": "lightgbm",
-      "delay": "two_stage_catboost",
+      "cost": "catboost_huber_d8",
+      "delay": "catboost",
       "risk": "CatBoostClassifier MultiClass"
     },
     "algorithms": {
-      "cost": "lightgbm",
-      "delay": "two_stage_catboost",
+      "cost": "catboost_huber_d8",
+      "delay": "catboost",
       "risk": "CatBoostClassifier"
     },
     "validation_method": "latest-year temporal selection plus future-year holdout and expanding rolling validation",
@@ -143,6 +94,22 @@
         0.9
       ]
     },
+    "confidence_calibration": {
+      "status": "calibrated_on_prior_year",
+      "calibration_year": 2015,
+      "calibration_projects": 14,
+      "nominal_coverage_percentage": 80.0,
+      "cost": {
+        "scale": 1.5,
+        "coverage_percentage": 78.57
+      },
+      "delay": {
+        "scale": 1.0,
+        "coverage_percentage": 78.57
+      },
+      "confidence_percentage": 78.57,
+      "leakage_policy": "Scale factors are chosen on the latest training-window year and never on the final future holdout."
+    },
     "delay_severity": {
       "classes": [
         "LOW",
@@ -159,157 +126,146 @@
     },
     "sector_correction_experiment": {
       "cost": {
-        "enabled": true,
+        "enabled": false,
         "target": "actual_cost_overrun_percentage",
         "validation_year": 2015,
         "correction_year": 2014,
-        "baseline_mae": 36.4701,
-        "corrected_mae": 24.3832,
-        "corrections": {
-          "Other": -29.073083251691003,
-          "Petroleum": -11.268739312223216,
-          "Power": -11.640761156757994,
-          "Roads": -2.2154629179586407
-        },
+        "baseline_mae": 20.8513,
+        "corrected_mae": 21.5497,
+        "corrections": {},
         "policy": "Residual correction is enabled only when learned on an earlier year and improves the next unseen completion year."
       },
       "delay": {
-        "enabled": false,
+        "enabled": true,
         "target": "actual_delay_days",
         "validation_year": 2015,
         "correction_year": 2014,
-        "baseline_mae": 376.3579,
-        "corrected_mae": 406.2631,
-        "corrections": {},
+        "baseline_mae": 297.7769,
+        "corrected_mae": 284.8497,
+        "corrections": {
+          "Other": 63.55809887636021,
+          "Petroleum": 83.95542975178509,
+          "Power": 141.94339563500972,
+          "Roads": -48.72438726901919
+        },
         "policy": "Residual correction is enabled only when learned on an earlier year and improves the next unseen completion year."
       }
     },
     "shap_available": true,
+    "shap_validation": {
+      "model_version": "2001_2015",
+      "targets": {
+        "cost": {
+          "top_features": [
+            "sector",
+            "approved_cost_cr",
+            "sector_average_delay",
+            "sector_average_cost_overrun",
+            "project_size_category"
+          ],
+          "meaningful_expected_factors": [
+            "approved_cost_cr",
+            "sector_average_cost_overrun"
+          ],
+          "status": "validated"
+        },
+        "delay": {
+          "top_features": [
+            "sector",
+            "sector_average_delay",
+            "approved_cost_cr",
+            "sector_average_cost_overrun",
+            "project_size_category"
+          ],
+          "meaningful_expected_factors": [
+            "sector_average_delay",
+            "approved_cost_cr"
+          ],
+          "status": "validated"
+        },
+        "risk": {
+          "top_features": [
+            "sector",
+            "sector_average_delay",
+            "project_size_category",
+            "sector_average_cost_overrun",
+            "approved_cost_cr"
+          ],
+          "meaningful_expected_factors": [
+            "sector_average_delay",
+            "sector_average_cost_overrun",
+            "approved_cost_cr"
+          ],
+          "status": "validated"
+        }
+      },
+      "validated": true
+    },
     "feature_importance": {
       "cost": [
         {
-          "feature": "agency_historical_cost_overrun_rate",
-          "importance": 0.997482
-        },
-        {
-          "feature": "agency_historical_delay_rate",
-          "importance": 0.001239
+          "feature": "sector",
+          "importance": 0.435659
         },
         {
           "feature": "approved_cost_cr",
-          "importance": 0.000688
+          "importance": 0.219042
         },
         {
-          "feature": "sector",
-          "importance": 0.000403
+          "feature": "sector_average_delay",
+          "importance": 0.15442
         },
         {
-          "feature": "planned_commissioning_year",
-          "importance": 0.000189
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.130601
         },
         {
-          "feature": "approved_cost_log",
-          "importance": 0.0
-        },
-        {
-          "feature": "planned_commissioning_month",
-          "importance": 0.0
-        },
-        {
-          "feature": "revised_cost_cr",
-          "importance": 0.0
-        },
-        {
-          "feature": "current_expenditure_cr",
-          "importance": 0.0
-        },
-        {
-          "feature": "physical_progress",
-          "importance": 0.0
+          "feature": "project_size_category",
+          "importance": 0.060278
         }
       ],
       "delay": [
         {
-          "feature": "agency_historical_delay_rate",
-          "importance": 0.783555
+          "feature": "sector",
+          "importance": 0.461745
         },
         {
-          "feature": "project_size_category",
-          "importance": 0.0459
-        },
-        {
-          "feature": "agency_historical_cost_overrun_rate",
-          "importance": 0.043879
-        },
-        {
-          "feature": "planned_commissioning_year",
-          "importance": 0.037933
-        },
-        {
-          "feature": "sector_risk_score",
-          "importance": 0.029307
+          "feature": "sector_average_delay",
+          "importance": 0.209836
         },
         {
           "feature": "approved_cost_cr",
-          "importance": 0.02112
+          "importance": 0.13783
         },
         {
-          "feature": "complexity_score",
-          "importance": 0.014932
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.116433
         },
         {
-          "feature": "approved_cost_log",
-          "importance": 0.009328
-        },
-        {
-          "feature": "planned_commissioning_month",
-          "importance": 0.007642
-        },
-        {
-          "feature": "implementing_agency",
-          "importance": 0.006403
+          "feature": "project_size_category",
+          "importance": 0.074156
         }
       ],
       "risk": [
         {
-          "feature": "agency_historical_delay_rate",
-          "importance": 0.885762
+          "feature": "sector",
+          "importance": 0.394226
+        },
+        {
+          "feature": "sector_average_delay",
+          "importance": 0.192182
         },
         {
           "feature": "project_size_category",
-          "importance": 0.045137
+          "importance": 0.144249
         },
         {
-          "feature": "agency_historical_cost_overrun_rate",
-          "importance": 0.01954
-        },
-        {
-          "feature": "planned_commissioning_year",
-          "importance": 0.014822
-        },
-        {
-          "feature": "sector_risk_score",
-          "importance": 0.013554
-        },
-        {
-          "feature": "complexity_score",
-          "importance": 0.007951
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.137069
         },
         {
           "feature": "approved_cost_cr",
-          "importance": 0.004822
-        },
-        {
-          "feature": "approved_cost_log",
-          "importance": 0.004803
-        },
-        {
-          "feature": "planned_commissioning_month",
-          "importance": 0.002205
-        },
-        {
-          "feature": "implementing_agency",
-          "importance": 0.001403
+          "importance": 0.132274
         }
       ]
     },
@@ -330,27 +286,377 @@
     "data_source": "Official PAIMANA completed-project archive reports",
     "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
     "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only. Agency/sector priors are fitted from training rows only; training rows use leave-one-out priors.",
-    "created_at": "2026-08-22T20:19:50.174034+00:00",
+    "created_at": "2026-08-22T21:38:45.006340+00:00",
     "status": "trained",
     "evaluated_test_start": 2016,
     "evaluated_test_end": 2021,
     "pending_actual_outcomes": [],
     "testing_samples": 110,
     "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics.",
+    "confidence_calibration_status": "calibration_warning",
+    "reliability_reports": {
+      "feature_quality": "models/2001_2015/feature_quality_report.json",
+      "sector_validation": "reports/sector_validation.json",
+      "confidence_calibration": "reports/confidence_calibration.json",
+      "cost_target_analysis": "reports/cost_target_analysis.json",
+      "final_comparison": "reports/phase1_final_comparison.json"
+    },
     "rolling_validation_scores": {
       "model_version": "2001_2015",
       "fold_count": 20,
-      "average_cost_mae": 52.407,
-      "average_delay_mae_days": 666.043,
-      "best_cost_mae": 19.973,
-      "worst_cost_mae": 130.528,
-      "best_delay_mae_days": 284.106,
-      "worst_delay_mae_days": 1019.647,
-      "average_risk_accuracy": 0.3676,
-      "average_risk_precision": 0.1051,
-      "average_risk_recall": 0.2667,
-      "average_risk_f1": 0.143,
+      "average_cost_mae": 41.062,
+      "average_delay_mae_days": 650.9,
+      "best_cost_mae": 12.836,
+      "worst_cost_mae": 124.852,
+      "best_delay_mae_days": 263.118,
+      "worst_delay_mae_days": 1218.379,
+      "average_risk_accuracy": 0.279,
+      "average_risk_precision": 0.2191,
+      "average_risk_recall": 0.2744,
+      "average_risk_f1": 0.2078,
       "policy": "Each fold trains only on completion years before its test year. No future outcomes are used in fitting."
     }
+  },
+  "sector_validation": {
+    "model_version": "2001_2015",
+    "sectors": {
+      "Petroleum": {
+        "projects": 20,
+        "cost_mae": 13.718,
+        "delay_mae": 479.003,
+        "validation_period_only": true
+      },
+      "Power": {
+        "projects": 10,
+        "cost_mae": 19.114,
+        "delay_mae": 526.727,
+        "validation_period_only": true
+      },
+      "Road Transport And Highways": {
+        "projects": 10,
+        "cost_mae": 22.268,
+        "delay_mae": 1013.076,
+        "validation_period_only": true
+      },
+      "Urban Development": {
+        "projects": 10,
+        "cost_mae": 46.749,
+        "delay_mae": 1241.648,
+        "validation_period_only": true
+      },
+      "Steel": {
+        "projects": 5,
+        "cost_mae": 11.394,
+        "delay_mae": 353.958,
+        "validation_period_only": true
+      },
+      "Highways And Infrastructure Development Corporation": {
+        "projects": 3,
+        "cost_mae": 25.232,
+        "delay_mae": 882.81,
+        "validation_period_only": true
+      },
+      "Shoulders Configuration Of Nabarangpur-Kok (Ministry": {
+        "projects": 3,
+        "cost_mae": 127.149,
+        "delay_mae": 1908.181,
+        "validation_period_only": true
+      },
+      "Flash Report": {
+        "projects": 2,
+        "cost_mae": 48.63,
+        "delay_mae": 1587.416,
+        "validation_period_only": true
+      },
+      "Ppp (Annuity)(National Highways Authority Of India) -": {
+        "projects": 2,
+        "cost_mae": 19.693,
+        "delay_mae": 435.108,
+        "validation_period_only": true
+      },
+      "Railways": {
+        "projects": 2,
+        "cost_mae": 64.202,
+        "delay_mae": 1348.566,
+        "validation_period_only": true
+      },
+      "Shoulders Configuration And Strengthening Of Anish": {
+        "projects": 2,
+        "cost_mae": 25.922,
+        "delay_mae": 1501.854,
+        "validation_period_only": true
+      },
+      "Arunachal Pradesh Under Arunachal Pradesh Pa Item": {
+        "projects": 1,
+        "cost_mae": 124.024,
+        "delay_mae": 2586.404,
+        "validation_period_only": true
+      },
+      "At Gulbarga                    (Hindustan Steelwork": {
+        "projects": 1,
+        "cost_mae": 16.661,
+        "delay_mae": 1150.442,
+        "validation_period_only": true
+      },
+      "B                            (Power Grid Corporation Of India": {
+        "projects": 1,
+        "cost_mae": 1.79,
+        "delay_mae": 323.658,
+        "validation_period_only": true
+      },
+      "Barauni Refinery                      (Indian Oil Corporation": {
+        "projects": 1,
+        "cost_mae": 29.017,
+        "delay_mae": 108.118,
+        "validation_period_only": true
+      },
+      "Chandigarh                        (Northern Railway) -": {
+        "projects": 1,
+        "cost_mae": 62.913,
+        "delay_mae": 7114.535,
+        "validation_period_only": true
+      },
+      "Coal": {
+        "projects": 1,
+        "cost_mae": 10.781,
+        "delay_mae": 318.701,
+        "validation_period_only": true
+      },
+      "Corridor For Ipps In Chhattisgarh             (Power Grid": {
+        "projects": 1,
+        "cost_mae": 19.484,
+        "delay_mae": 886.225,
+        "validation_period_only": true
+      },
+      "Court Of India At Land Adjoining Pragati Maidan (Central": {
+        "projects": 1,
+        "cost_mae": 4.067,
+        "delay_mae": 66.108,
+        "validation_period_only": true
+      },
+      "Effluent Treatment Plant At Madhuban              (Oil India": {
+        "projects": 1,
+        "cost_mae": 22.675,
+        "delay_mae": 89.603,
+        "validation_period_only": true
+      },
+      "Gulbarga                          (Hindustan Steelwork": {
+        "projects": 1,
+        "cost_mae": 2.454,
+        "delay_mae": 1357.59,
+        "validation_period_only": true
+      },
+      "Health And Family Welfare": {
+        "projects": 1,
+        "cost_mae": 12.644,
+        "delay_mae": 455.409,
+        "validation_period_only": true
+      },
+      "Ibrahimpatnam Hyderabad                (Central Public": {
+        "projects": 1,
+        "cost_mae": 7.058,
+        "delay_mae": 129.594,
+        "validation_period_only": true
+      },
+      "Kengesii- Musore (Swr)                    (South Western": {
+        "projects": 1,
+        "cost_mae": 45.649,
+        "delay_mae": 903.638,
+        "validation_period_only": true
+      },
+      "Koyali-Manmad-Ahmednagar-Solapur Pipeline         (Indian Oil": {
+        "projects": 1,
+        "cost_mae": 10.09,
+        "delay_mae": 29.456,
+        "validation_period_only": true
+      },
+      "Lanes With Paved Side Shoulders Of Faridkot-Ko Epc() -": {
+        "projects": 1,
+        "cost_mae": 113.965,
+        "delay_mae": 1612.303,
+        "validation_period_only": true
+      },
+      "Limited And Ind-Barath Power(Madras) Limited L (Power": {
+        "projects": 1,
+        "cost_mae": 8.839,
+        "delay_mae": 737.238,
+        "validation_period_only": true
+      },
+      "Manali Refinery                        (Chennai Petroleum": {
+        "projects": 1,
+        "cost_mae": 36.342,
+        "delay_mae": 298.97,
+        "validation_period_only": true
+      },
+      "Mines": {
+        "projects": 1,
+        "cost_mae": 18.173,
+        "delay_mae": 29.673,
+        "validation_period_only": true
+      },
+      "Mundra Umpp (Part-B)                      (Power Grid": {
+        "projects": 1,
+        "cost_mae": 24.923,
+        "delay_mae": 329.937,
+        "validation_period_only": true
+      },
+      "Nongstoin Tura State Road Under Phase A Of Sa Item": {
+        "projects": 1,
+        "cost_mae": 11.543,
+        "delay_mae": 142.029,
+        "validation_period_only": true
+      },
+      "Oddisha                         (Steel Authority Of India": {
+        "projects": 1,
+        "cost_mae": 5.064,
+        "delay_mae": 209.169,
+        "validation_period_only": true
+      },
+      "Part-B                        (Power Grid Corporation Of": {
+        "projects": 1,
+        "cost_mae": 12.832,
+        "delay_mae": 20.457,
+        "validation_period_only": true
+      },
+      "Paved Shoulders From Existing                Epc(Ministry Of": {
+        "projects": 1,
+        "cost_mae": 40.576,
+        "delay_mae": 2404.303,
+        "validation_period_only": true
+      },
+      "Pkg-Iii)                  (National Highways Authority Of": {
+        "projects": 1,
+        "cost_mae": 16.014,
+        "delay_mae": 325.029,
+        "validation_period_only": true
+      },
+      "Pkg-Iv)                      (National Highways Authority Of": {
+        "projects": 1,
+        "cost_mae": 2.766,
+        "delay_mae": 793.956,
+        "validation_period_only": true
+      },
+      "Pkg-V)                       (National Highways Authority Of": {
+        "projects": 1,
+        "cost_mae": 19.152,
+        "delay_mae": 100.971,
+        "validation_period_only": true
+      },
+      "Plant (Psp)                      (Power Grid Corporation Of": {
+        "projects": 1,
+        "cost_mae": 22.536,
+        "delay_mae": 177.069,
+        "validation_period_only": true
+      },
+      "Pradesh                             Epc(Ministry Of Road": {
+        "projects": 1,
+        "cost_mae": 16.277,
+        "delay_mae": 326.982,
+        "validation_period_only": true
+      },
+      "Rate(Ministry Of Road Transport And Highways (State": {
+        "projects": 1,
+        "cost_mae": 20.347,
+        "delay_mae": 3003.212,
+        "validation_period_only": true
+      },
+      "Scheme Part-D                         (Power Grid": {
+        "projects": 1,
+        "cost_mae": 4.398,
+        "delay_mae": 623.263,
+        "validation_period_only": true
+      },
+      "Shipping And Ports": {
+        "projects": 1,
+        "cost_mae": 6.807,
+        "delay_mae": 1747.673,
+        "validation_period_only": true
+      },
+      "Shoulder Of Abohar-Sitogunno-Dabwali Road Of Nh": {
+        "projects": 1,
+        "cost_mae": 52.45,
+        "delay_mae": 259.918,
+        "validation_period_only": true
+      },
+      "Shoulder Of Mudki-Jawahar Singh Wala Section Of": {
+        "projects": 1,
+        "cost_mae": 2.481,
+        "delay_mae": 575.444,
+        "validation_period_only": true
+      },
+      "Shoulders Configuration Of Pratapgarh-Padi (Ministry": {
+        "projects": 1,
+        "cost_mae": 52.951,
+        "delay_mae": 2628.605,
+        "validation_period_only": true
+      },
+      "Speciality Block                (Hospital Services": {
+        "projects": 1,
+        "cost_mae": 1.31,
+        "delay_mae": 426.125,
+        "validation_period_only": true
+      },
+      "Top On Koyali-Manmad-Ahmednagar-Solapur Pipeli (Indian": {
+        "projects": 1,
+        "cost_mae": 23.409,
+        "delay_mae": 382.395,
+        "validation_period_only": true
+      },
+      "Tumkur (Pavagada) Karnataka Phase -Ii (Part Ii)      (Power": {
+        "projects": 1,
+        "cost_mae": 20.746,
+        "delay_mae": 276.514,
+        "validation_period_only": true
+      },
+      "Two Lane With Paved Shoulder And Gemetric Impr": {
+        "projects": 1,
+        "cost_mae": 24.833,
+        "delay_mae": 1063.444,
+        "validation_period_only": true
+      },
+      "Under Phase-Xii                      (Hindustan Steelwork": {
+        "projects": 1,
+        "cost_mae": 96.811,
+        "delay_mae": 1455.624,
+        "validation_period_only": true
+      },
+      "Under Pmgsy-Jharkhand                (Hindustan": {
+        "projects": 1,
+        "cost_mae": 54.521,
+        "delay_mae": 942.746,
+        "validation_period_only": true
+      },
+      "Wb For Iiser Kolkata             (Central Public Works": {
+        "projects": 1,
+        "cost_mae": 27.063,
+        "delay_mae": 330.928,
+        "validation_period_only": true
+      }
+    },
+    "policy": "Computed only from future held-out completed projects; training rows are excluded."
+  },
+  "confidence_calibration": {
+    "status": "calibration_warning",
+    "calibration_year": 2015,
+    "calibration_projects": 14,
+    "nominal_coverage_percentage": 80.0,
+    "cost": {
+      "scale": 1.5,
+      "coverage_percentage": 78.57
+    },
+    "delay": {
+      "scale": 1.0,
+      "coverage_percentage": 78.57
+    },
+    "confidence_percentage": 78.57,
+    "leakage_policy": "Scale factors are chosen on the latest training-window year and never on the final future holdout.",
+    "model_version": "2001_2015",
+    "holdout_observed": {
+      "projects": 110,
+      "cost_interval_coverage_percentage": 81.82,
+      "delay_interval_coverage_percentage": 50.0,
+      "joint_interval_coverage_percentage": 43.64
+    },
+    "display_policy": "Confidence is the earlier-year calibrated interval coverage, not an unsupported per-project probability."
   }
 }

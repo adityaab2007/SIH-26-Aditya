@@ -1,0 +1,19 @@
+{
+  "before": {
+    "model": "old 4-feature PAIMANA model",
+    "cost_mae": 36.821,
+    "delay_mae": 1284.944,
+    "risk_f1": 0.6935,
+    "feature_count": 4,
+    "data_quality_score": null
+  },
+  "after": {
+    "model": "feature-audited official PAIMANA model",
+    "cost_mae": 32.886,
+    "delay_mae": 1026.711,
+    "risk_f1": 0.2129,
+    "feature_count": 5,
+    "data_quality_score": 81.98
+  },
+  "honesty_note": "Metrics are from different task definitions where stated; four-level risk F1 is not directly comparable with the old binary risk F1. Worse metrics are retained."
+}
