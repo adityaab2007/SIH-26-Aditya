@@ -23,6 +23,8 @@ def prediction(code: str):
         return project_prediction(code)
     except KeyError:
         raise HTTPException(404, "Project not found")
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
 
 @router.get("/{code}/forecast")
 def forecast(code: str):
@@ -30,6 +32,8 @@ def forecast(code: str):
         return project_forecast(code)
     except KeyError:
         raise HTTPException(404, "Project not found")
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
 
 @router.get("/{code}/peers")
 def peers(code: str):

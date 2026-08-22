@@ -148,13 +148,14 @@ export async function ModelSimulationPage(root) {
     project.disabled = true;
     predictButton.disabled = true;
     randomButton.disabled = true;
-    receipt.innerHTML = '<div class="loading">Retraining cost, delay, and risk models from official historical records…</div>';
+    receipt.innerHTML = '<div class="loading">Loading official PAIMANA data → training models → evaluating future unseen projects → generating metrics…</div>';
     try {
+      const registryRun = await api.retrainModel(startYear, endYear);
       session = await api.trainCustomSimulation(startYear, endYear);
       const eligible = session.eligible_test_years || [];
       testYear.innerHTML = eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} held-out projects</option>`).join('');
       testYear.disabled = !eligible.length;
-      receipt.innerHTML = `<strong>Fresh model trained.</strong> ${session.training_samples} official completed projects from ${session.training_start}-${session.training_end}. <strong>Features:</strong> ${session.features_used.map(escape).join(', ')}.<br><strong>Training-data SHA-256:</strong> <code>${escape(session.training_fingerprint_sha256)}</code><br><strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.`;
+      receipt.innerHTML = `<strong>Model ${escape(registryRun.model_version)} trained and registered.</strong> Training: ${escape(registryRun.training_years)} · testing: ${escape(registryRun.testing_years)}. <strong>Fresh metrics:</strong> cost MAE ${fixed(registryRun.metrics.cost_model.MAE)} pp · delay MAE ${fixed(registryRun.metrics.delay_model.MAE_days)} days · risk F1 ${fixed(registryRun.metrics.risk_model.f1 * 100, 1)}%. <strong>Rolling validation:</strong> ${registryRun.rolling_validation.fold_count} folds · average cost MAE ${fixed(registryRun.rolling_validation.average_cost_mae)} pp · average delay MAE ${fixed(registryRun.rolling_validation.average_delay_mae_days)} days. <a href="#/prediction-accuracy">Open dynamic Prediction Accuracy</a><br><strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.`;
       if (eligible.length) await loadProjects();
     } catch (error) {
       session = null;

@@ -1,0 +1,56 @@
+{
+  "model_version": "2001_2018",
+  "training_start": 2001,
+  "training_end": 2018,
+  "test_start": 2019,
+  "test_end": 2024,
+  "available_actual_end": 2024,
+  "features_used": [
+    "approved_cost_cr",
+    "sector",
+    "implementing_agency",
+    "planned_commissioning_year"
+  ],
+  "feature_availability": {
+    "available": [
+      "approved_cost_cr",
+      "sector",
+      "implementing_agency",
+      "planned_commissioning_year"
+    ],
+    "not_used_without_precompletion_snapshots": [
+      "revised_cost_cr",
+      "expenditure_cr",
+      "physical_progress_pct",
+      "progress_deviation",
+      "duration_ratio",
+      "milestone_delay_count"
+    ]
+  },
+  "algorithms": {
+    "cost": "CatBoostRegressor(MAE)",
+    "delay": "CatBoostRegressor(log1p delay, MAE)",
+    "risk": "CatBoostClassifier"
+  },
+  "best_parameters": {
+    "cost": {
+      "iterations": 300,
+      "depth": 5,
+      "learning_rate": 0.05,
+      "l2_leaf_reg": 4.0
+    },
+    "delay": {
+      "iterations": 300,
+      "depth": 5,
+      "learning_rate": 0.05,
+      "l2_leaf_reg": 4.0
+    }
+  },
+  "outlier_policy": "Cost uses CatBoost MAE loss. Delay is trained on log1p(delay days) and converted back to days for evaluation; no official record is deleted.",
+  "training_samples": 646,
+  "data_source": "Official PAIMANA completed-project archive reports",
+  "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
+  "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
+  "created_at": "2026-08-22T19:12:47.760730+00:00",
+  "status": "trained"
+}

@@ -1,0 +1,84 @@
+{
+  "model_version": "2009_2016",
+  "cost_model": {
+    "MAE": 36.883,
+    "RMSE": 60.939,
+    "MAPE": 220.838,
+    "accuracy_percentage": 0.86
+  },
+  "delay_model": {
+    "MAE": 1192.87,
+    "MAE_days": 1192.87,
+    "RMSE": 1597.633,
+    "RMSE_days": 1597.633,
+    "log_target_RMSE": 3.6264,
+    "accuracy_percentage": 8.1
+  },
+  "risk_model": {
+    "accuracy": 0.7527,
+    "precision": 0.9301,
+    "recall": 0.7917,
+    "f1": 0.8553
+  },
+  "metadata": {
+    "model_version": "2009_2016",
+    "training_start": 2009,
+    "training_end": 2016,
+    "test_start": 2017,
+    "test_end": 2024,
+    "available_actual_end": 2024,
+    "features_used": [
+      "approved_cost_cr",
+      "sector",
+      "implementing_agency",
+      "planned_commissioning_year"
+    ],
+    "feature_availability": {
+      "available": [
+        "approved_cost_cr",
+        "sector",
+        "implementing_agency",
+        "planned_commissioning_year"
+      ],
+      "not_used_without_precompletion_snapshots": [
+        "revised_cost_cr",
+        "expenditure_cr",
+        "physical_progress_pct",
+        "progress_deviation",
+        "duration_ratio",
+        "milestone_delay_count"
+      ]
+    },
+    "algorithms": {
+      "cost": "CatBoostRegressor(MAE)",
+      "delay": "CatBoostRegressor(log1p delay, MAE)",
+      "risk": "CatBoostClassifier"
+    },
+    "best_parameters": {
+      "cost": {
+        "iterations": 450,
+        "depth": 6,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 6.0
+      },
+      "delay": {
+        "iterations": 450,
+        "depth": 6,
+        "learning_rate": 0.05,
+        "l2_leaf_reg": 6.0
+      }
+    },
+    "outlier_policy": "Cost uses CatBoost MAE loss. Delay is trained on log1p(delay days) and converted back to days for evaluation; no official record is deleted.",
+    "training_samples": 315,
+    "data_source": "Official PAIMANA completed-project archive reports",
+    "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
+    "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only and never input features.",
+    "created_at": "2026-08-22T18:50:20.163459+00:00",
+    "status": "trained",
+    "evaluated_test_start": 2017,
+    "evaluated_test_end": 2024,
+    "pending_actual_outcomes": [],
+    "testing_samples": 182,
+    "actual_outcome_policy": "Only official completed-project records are evaluated. Future years with no official completion record are forecast-only and excluded from metrics."
+  }
+}

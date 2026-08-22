@@ -23,7 +23,10 @@ def number(value: str) -> float:
 
 def parse_completed_projects(text: str, source_url: str, financial_year: str) -> pd.DataFrame:
     """Parse the completed-project table found in PAIMANA annual flash reports."""
-    start = re.search(r"Month wise List of Completed Projects", text, re.I)
+    # PAIMANA's older annual reports use "Completed Projects Costing..." while
+    # newer reports use "Month wise List of Completed Projects". Both contain
+    # the same official completed-project table.
+    start = re.search(r"(?:Month\s+wise\s+List\s+of\s+Completed\s+Project(?:s)?|Completed\s+Projects\s+Costing)", text, re.I)
     if not start:
         return pd.DataFrame()
     tail = text[start.start():]
@@ -47,7 +50,7 @@ def parse_completed_projects(text: str, source_url: str, financial_year: str) ->
         code = re.search(r"\[([A-Z]?\d{8,9})\]", joined)
         agency = re.search(r"\(([^()]{3,160})\)\s*-?\s*\[[A-Z]?\d{8,9}\]", joined)
         name = joined[:match.start()].strip()
-        name = re.sub(r"^\d+\s+", "", name)
+        name = re.sub(r"^\d+\.?\s+", "", name)
         name = re.sub(r"\s+", " ", name)
         if len(name) >= 4:
             rows.append({"project_id": code.group(1) if code else None, "project_name": name, "sector": current_sector.title(), "implementing_agency": agency.group(1).strip() if agency else None, "approved_cost_cr": number(match.group("cost")), "planned_commissioning_date": pd.to_datetime(match.group("planned"), format="%m/%Y", errors="coerce"), "reported_completion_expenditure_cr": number(match.group("expenditure")), "completion_date": current_month, "financial_year": financial_year, "source_url": source_url})
@@ -62,7 +65,7 @@ def parse_completed_projects(text: str, source_url: str, financial_year: str) ->
             flush(); current_month = pd.Timestamp(year=int(month.group(2)), month=MONTHS[month.group(1).lower()], day=1) + pd.offsets.MonthEnd(0); continue
         if sector_re.match(line) and not any(word in line for word in ["TABLE", "PROJECT", "COST", "EXPENDITURE", "COMMISSIONING", "MONTH"]):
             flush(); current_sector = line; continue
-        if re.match(r"^\d+\s+", line):
+        if re.match(r"^\d+\.?\s+", line):
             flush(); pending = [line]; continue
         if pending:
             pending.append(line)

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi import Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -16,6 +17,15 @@ app.include_router(scenario.router)
 app.include_router(assistant.router)
 app.include_router(data_quality.router)
 app.include_router(simulations.router)
+
+
+@app.middleware("http")
+async def disable_spa_source_cache(request: Request, call_next):
+    """Local development must not retain stale ES modules after a reload."""
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/src/"):
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+    return response
 
 @app.get("/api/health")
 def health():

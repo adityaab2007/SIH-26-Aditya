@@ -1,44 +1,37 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
 import pandas as pd
 
-from backend.app.ml.real_time_windows import WINDOWS, model_dir
+from backend.app.core.config import MODELS_DIR, PROCESSED_DIR
+from backend.app.ml.real_time_windows import active_version
 
 
-def _resolve_window(key: str | None) -> str:
-    if key and key in WINDOWS:
-        return key
-    return next(iter(WINDOWS))
+def _version(version: str | None = None) -> str | None:
+    return version or active_version()
 
 
-def validation_report(model: str | None = None) -> dict:
-    key = _resolve_window(model)
-    path = model_dir(key) / "evaluation_results.json"
-    if not path.exists():
-        return {
-            "model": key,
-            "status": "not_evaluated",
-            "message": "Run evaluation for this model window first."
-        }
-    return {"model": key, **json.loads(path.read_text())}
+def validation_report(version: str | None = None) -> dict:
+    selected = _version(version)
+    path = MODELS_DIR / selected / "evaluation_results.json" if selected else None
+    if path and path.exists():
+        return json.loads(path.read_text())
+    return json.loads((MODELS_DIR / "validation_report.json").read_text())
 
 
-def validation_rows(model: str | None = None) -> pd.DataFrame:
-    key = _resolve_window(model)
-    path = model_dir(key) / "evaluation_results.csv"
-    if not path.exists():
-        return pd.DataFrame()
-    return pd.read_csv(path, dtype={"project_id": str})
+def validation_rows(version: str | None = None) -> pd.DataFrame:
+    selected = _version(version)
+    if selected:
+        for name in ("prediction_validation.csv", "evaluation_results.csv"):
+            path = MODELS_DIR / selected / name
+            if path.exists():
+                return pd.read_csv(path, dtype={"project_id": str})
+    return pd.read_csv(PROCESSED_DIR / "prediction_validation.csv", dtype={"project_id": str})
 
 
-def validation_payload(model: str | None = None, limit: int = 100) -> dict:
-    rows = validation_rows(model)
-    frame = rows.head(max(1, min(limit, 500)))
-    return {
-        "model": _resolve_window(model),
-        "items": frame.where(pd.notna(frame), None).to_dict(orient="records"),
-        "total": int(len(rows)),
-    }
+def validation_payload(limit: int = 100, version: str | None = None) -> dict:
+    all_rows = validation_rows(version)
+    frame = all_rows.head(max(1, min(limit, 500)))
+    safe = frame.replace([float("inf"), float("-inf")], pd.NA).astype(object)
+    safe = safe.where(pd.notna(safe), None)
+    return {"model_version": _version(version), "items": safe.to_dict(orient="records"), "total": int(len(all_rows))}

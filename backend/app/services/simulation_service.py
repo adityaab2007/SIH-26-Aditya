@@ -13,6 +13,9 @@ import pandas as pd
 from backend.app.ml.real_time_windows import (
     FEATURES,
     _classifier,
+    _fit_classifier,
+    _fit_regressor,
+    _predict_regressor,
     _regressor,
     evaluate,
     labelled,
@@ -53,6 +56,10 @@ def available_data_years() -> list[dict]:
 def _shap_factors_for_model(model, row: pd.Series) -> list[dict]:
     """Return local SHAP contributions without exposing target fields."""
     try:
+        if model.__class__.__module__.startswith("catboost"):
+            from catboost import Pool
+            values = model.get_feature_importance(Pool(pd.DataFrame([row[FEATURES]]), cat_features=[FEATURES.index("sector"), FEATURES.index("implementing_agency")]), type="ShapValues")[0][:-1]
+            return [{"feature": feature, "impact": round(float(impact), 4), "direction": "increases" if impact >= 0 else "reduces"} for feature, impact in sorted(zip(FEATURES, values), key=lambda item: abs(item[1]), reverse=True)[:5]]
         import shap
 
         transformed = model.named_steps["preprocess"].transform(pd.DataFrame([row[FEATURES]]))
@@ -93,7 +100,7 @@ def run(key: str) -> dict:
                 "completion_date": _value(row.completion_date),
                 "approved_cost_cr": _value(row.approved_cost_cr),
                 "predicted_cost_overrun": _value(row.predicted_cost_overrun),
-                "actual_cost_overrun": _value(row.actual_cost_overrun_percentage),
+                "actual_cost_overrun": _value(row.actual_cost_overrun),
                 "cost_error": _value(row.cost_error),
                 "predicted_delay_days": _value(row.predicted_delay_days),
                 "actual_delay_days": _value(row.actual_delay_days),
@@ -157,9 +164,9 @@ def train_custom(start_year: int, end_year: int) -> dict:
     cost = _regressor()
     delay = _regressor(seed=26104)
     risk = _classifier(train_data.actual_risk)
-    cost.fit(X, train_data.actual_cost_overrun_percentage)
-    delay.fit(X, train_data.actual_delay_days)
-    risk.fit(X, train_data.actual_risk)
+    _fit_regressor(cost, X, train_data.actual_cost_overrun_percentage)
+    _fit_regressor(delay, X, train_data.actual_delay_days, delay_target=True)
+    _fit_classifier(risk, X, train_data.actual_risk)
 
     held_out["record_index"] = np.arange(len(held_out), dtype=int)
     session_id = uuid.uuid4().hex[:16]
@@ -244,9 +251,9 @@ def predict_custom(session_id: str, record_index: int) -> dict:
     session = _session(session_id)
     row = _session_row(session, record_index)
     X = pd.DataFrame([row[FEATURES]])
-    predicted_cost = float(session["cost_model"].predict(X)[0])
-    predicted_delay = max(0.0, float(session["delay_model"].predict(X)[0]))
-    predicted_risk = int(session["risk_model"].predict(X)[0])
+    predicted_cost = float(_predict_regressor(session["cost_model"], X)[0])
+    predicted_delay = float(_predict_regressor(session["delay_model"], X, delay_target=True)[0])
+    predicted_risk = int(np.asarray(session["risk_model"].predict(X), dtype=int).reshape(-1)[0])
     prediction = {
         "predicted_cost_overrun": round(predicted_cost, 4),
         "predicted_delay_days": round(predicted_delay, 4),
