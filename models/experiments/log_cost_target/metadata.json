@@ -1,0 +1,43 @@
+{
+  "experiment": "log_cost_target",
+  "target": "log_cost_overrun",
+  "target_transform": "log1p",
+  "negative_value_policy": "signed extension: sign(y) * log1p(abs(y)); inverse sign(z) * expm1(abs(z))",
+  "features_used": [
+    "approved_cost_cr",
+    "sector_average_delay",
+    "sector_average_cost_overrun",
+    "sector",
+    "project_size_category"
+  ],
+  "feature_count": 5,
+  "training_window": "2001-2017",
+  "testing_window": "2018-2024",
+  "created_from": "v1 baseline",
+  "baseline_model_version": "2001_2017",
+  "algorithm": "catboost_mae_d4",
+  "temporal_split": "latest-year temporal selection plus future-year holdout and expanding rolling validation",
+  "training_samples": 303,
+  "testing_samples": 156,
+  "sector_correction": {
+    "enabled": true,
+    "validation_year": 2017,
+    "correction_year": 2016,
+    "baseline_mae": 14.5976,
+    "corrected_mae": 13.0981,
+    "corrections": {
+      "Other": 2.239836942906016,
+      "Petroleum": -7.221048383974794,
+      "Power": -3.0461528642823006,
+      "Roads": -3.078208246629518
+    },
+    "policy": "Same nested temporal correction methodology as the baseline; only the cost target transform differs."
+  },
+  "evaluation_scale": "original cost-overrun percentage points",
+  "baseline_cost_model_sha256": "564f39cc8b6ee1e2309934320edbce63bcb9b1dfae6da9ec5191c8e0f217ccae",
+  "baseline_unchanged": true,
+  "delay_model_changed": false,
+  "risk_model_changed": false,
+  "feature_pipeline_changed": false,
+  "created_at": "2026-08-22T22:11:42.633267+00:00"
+}
