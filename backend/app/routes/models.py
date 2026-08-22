@@ -28,9 +28,9 @@ def retrain_model(payload: TrainingRange):
 
 
 @router.get("/validation")
-def validation(model_version: str | None = None):
-    return validation_report(model_version)
+def validation(model_version: str | None = None, model: str | None = None):
+    return validation_report(model_version or model)
 
 @router.get("/prediction-validation")
-def prediction_validation(limit: int = 100, model_version: str | None = None):
-    return validation_payload(limit, model_version)
+def prediction_validation(limit: int = 100, model_version: str | None = None, model: str | None = None):
+    return validation_payload(limit, model_version or model)

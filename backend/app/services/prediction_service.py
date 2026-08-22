@@ -42,7 +42,10 @@ def project_forecast(code: str) -> dict:
     delay_model = joblib.load(target / "delay_model.pkl")
     risk_model = joblib.load(target / "risk_model.pkl")
     cost = float(_predict_regressor(cost_model, X)[0])
-    delay = float(_predict_regressor(delay_model, X, delay_target=True)[0])
+    # A live forecast reports additional delay days.  The backtest retains
+    # signed early/late completion outcomes, while a negative live estimate is
+    # represented as no predicted delay rather than a negative delay duration.
+    delay = max(0.0, float(_predict_regressor(delay_model, X, delay_target=True)[0]))
     risk_prediction = int(np.asarray(risk_model.predict(X), dtype=int).reshape(-1)[0])
     probability = float(np.asarray(risk_model.predict_proba(X))[0][1]) if hasattr(risk_model, "predict_proba") and len(np.asarray(risk_model.predict_proba(X))[0]) > 1 else float(risk_prediction)
     planned = pd.to_datetime(project.original_end_date, errors="coerce")

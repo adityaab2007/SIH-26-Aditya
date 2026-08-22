@@ -13,6 +13,9 @@ async function request(path, options = {}) {
   return response.json();
 }
 
+const selectedModel = () => localStorage.getItem('selected_validation_model') || '';
+const withModel = (path, model = selectedModel()) => model ? `${path}${path.includes('?') ? '&' : '?'}model=${encodeURIComponent(model)}` : path;
+
 export const api = {
   health: () => request('/api/health'),
   portfolioSummary: () => request('/api/portfolio/summary'),
@@ -29,9 +32,11 @@ export const api = {
   peers: (code) => request(`/api/projects/${encodeURIComponent(code)}/peers`),
   modelMetrics: () => request('/api/models/metrics'),
   modelImportance: () => request('/api/models/importance'),
-  validationReport: (modelVersion = null) => request(`/api/models/validation${modelVersion ? `?model_version=${encodeURIComponent(modelVersion)}` : ''}`),
-  predictionValidation: (limit = 100, modelVersion = null) => request(`/api/models/prediction-validation?limit=${limit}${modelVersion ? `&model_version=${encodeURIComponent(modelVersion)}` : ''}`),
+  validationReport: (modelVersion = selectedModel()) => request(withModel('/api/models/validation', modelVersion)),
+  predictionValidation: (limit = 100, modelVersion = selectedModel()) => request(withModel(`/api/models/prediction-validation?limit=${limit}`, modelVersion)),
   retrainModel: (startYear, endYear) => request('/api/models/retrain', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }) }),
+  setValidationModel: (model) => localStorage.setItem('selected_validation_model', model || ''),
+  getValidationModel: () => selectedModel(),
   simulationVersions: () => request('/api/model-simulations'),
   runSimulation: (version) => request(`/api/model-simulations/${encodeURIComponent(version)}/run`, { method: 'POST' }),
   trainCustomSimulation: (startYear, endYear) => request('/api/model-simulations/custom/train', {
