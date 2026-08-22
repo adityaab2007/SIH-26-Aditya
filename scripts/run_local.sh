@@ -2,6 +2,9 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+if [[ -x "$ROOT/.venv/bin/python" ]]; then
+  export PATH="$ROOT/.venv/bin:$PATH"
+fi
 export PYTHONPATH="$ROOT"
 
 # Rebuild the included real PAIMANA subset on a fresh clone.
