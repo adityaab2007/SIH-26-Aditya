@@ -57,9 +57,13 @@ def test_real_paimana_model_simulation_contract():
     versions = client.get("/api/model-simulations")
     assert versions.status_code == 200
     assert {item["key"] for item in versions.json()["items"]} == {"2001_2015", "2015_2021"}
-    simulation = client.post("/api/model-simulations/2001_2015/run")
+    projects = client.get("/api/model-simulations/2001_2015/projects")
+    assert projects.status_code == 200
+    selected = projects.json()["items"][0]
+    simulation = client.post("/api/model-simulations/2001_2015/run", json={"record_index": selected["record_index"]})
     assert simulation.status_code == 200
     payload = simulation.json()
     assert payload["metrics"]["metadata"]["data_source"].startswith("Official PAIMANA")
-    first = payload["items"][0]
-    assert {"predicted_cost_overrun", "actual_cost_overrun", "predicted_delay_days", "actual_delay_days", "shap_explanation"}.issubset(first)
+    assert payload["generated_at"]
+    assert payload["item"]["project_name"] == selected["project_name"]
+    assert {"predicted_cost_overrun", "actual_cost_overrun", "predicted_delay_days", "actual_delay_days", "shap_explanation"}.issubset(payload["item"])
