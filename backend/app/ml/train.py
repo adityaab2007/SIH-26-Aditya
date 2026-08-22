@@ -5,6 +5,7 @@ import json
 import math
 import sys
 from pathlib import Path
+from datetime import datetime, timezone
 import joblib
 import numpy as np
 from catboost import CatBoostRegressor
@@ -19,10 +20,12 @@ from xgboost import XGBRegressor
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
     from backend.app.ml.features import CATEGORICAL_COLUMNS, TEMPORAL_FEATURES, engineer_temporal_features, load_project_history
-    from backend.app.ml.forward_labels import build_forward_labels
+    from backend.app.ml.create_labels import build_forward_labels
+    from backend.app.ml.backtest import generate_prediction_validation
 else:
     from .features import CATEGORICAL_COLUMNS, TEMPORAL_FEATURES, engineer_temporal_features, load_project_history
-    from .forward_labels import build_forward_labels
+    from .create_labels import build_forward_labels
+    from .backtest import generate_prediction_validation
 
 ROOT = Path(__file__).resolve().parents[3]
 MODELS = ROOT / "models"
@@ -89,7 +92,7 @@ def main():
     history = load_project_history()
     labelled = build_forward_labels(engineer_temporal_features(history)).dropna(subset=["future_cost_escalation_percentage", "future_schedule_extension_days"])
     splits = project_time_split(labelled)
-    report = {"metadata": {"dataset_rows": len(labelled), "dataset_kind": "deterministic synthetic longitudinal demonstration data", "split_strategy": "time-based, project-level planned-start-year split: train <=2023, validation 2024-2025, test >=2026", "leakage_policy": "features use snapshot/past values only; sector and agency outcomes use projects completed before snapshot month", "prediction_vs_actual": []}, "cost_model": {"candidates": {}}, "delay_model": {"candidates": {}}}
+    report = {"metadata": {"dataset_rows": len(labelled), "dataset_kind": "deterministic synthetic longitudinal demonstration data; official archive observations are separately ingested without fabricated final outcomes", "validation_timestamp_utc": datetime.now(timezone.utc).isoformat(), "split_strategy": "time-based, project-level planned-start-year split: train <=2023, validation 2024-2025, test >=2026", "leakage_policy": "features use snapshot/past values only; sector and agency outcomes use projects completed before snapshot month", "prediction_vs_actual": []}, "cost_model": {"candidates": {}}, "delay_model": {"candidates": {}}}
     registry, importances = {}, {}
     for name, target, output_name in [("cost_model", "future_cost_escalation_percentage", "cost_model.pkl"), ("delay_model", "future_schedule_extension_days", "delay_model.pkl")]:
         choices = []
@@ -108,9 +111,12 @@ def main():
         bundle = joblib.load(MODELS / ("cost_model.pkl" if name == "cost_model" else "delay_model.pkl"))
         pred = float(bundle["model"].predict(bundle["preprocess"].transform(held[TEMPORAL_FEATURES].to_frame().T))[0])
         report["metadata"]["prediction_vs_actual"].append({"project_id": str(held.project_id), "month": held.month.strftime("%Y-%m-%d"), "target": name, "predicted": round(pred, 2), "actual": round(float(held[target]), 2), "absolute_error": round(abs(pred - float(held[target])), 2)})
-    METRICS_PATH.write_text(json.dumps(report, indent=2))
     (MODELS / "registry.json").write_text(json.dumps(registry, indent=2))
     (MODELS / "global_feature_importance.json").write_text(json.dumps(importances, indent=2))
+    backtest_report = generate_prediction_validation(labelled, MODELS / "cost_model.pkl", MODELS / "delay_model.pkl")
+    report["metadata"]["backtesting"] = {"records": backtest_report["metadata"]["records"], "report": "validation_report.json", "rows": "data/processed/prediction_validation.csv"}
+    METRICS_PATH.write_text(json.dumps(report, indent=2))
+    (MODELS / "metrics.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
     print(f"Saved selected temporal models to {MODELS / 'cost_model.pkl'} and {MODELS / 'delay_model.pkl'}")
 
