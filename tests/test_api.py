@@ -56,10 +56,49 @@ def test_prediction_validation_artifacts_are_served():
 def test_real_paimana_model_simulation_contract():
     versions = client.get("/api/model-simulations")
     assert versions.status_code == 200
-    assert {item["key"] for item in versions.json()["items"]} == {"2001_2015", "2015_2021"}
+    payload = versions.json()
+    assert {item["key"] for item in payload["items"]} == {"2001_2015", "2015_2021"}
+    assert payload["data_years"]
     simulation = client.post("/api/model-simulations/2001_2015/run")
     assert simulation.status_code == 200
     payload = simulation.json()
     assert payload["metrics"]["metadata"]["data_source"].startswith("Official PAIMANA")
     first = payload["items"][0]
     assert {"predicted_cost_overrun", "actual_cost_overrun", "predicted_delay_days", "actual_delay_days", "shap_explanation"}.issubset(first)
+
+
+def test_judge_controlled_backtest_hides_actual_until_reveal():
+    trained = client.post("/api/model-simulations/custom/train", json={"start_year": 2001, "end_year": 2015})
+    assert trained.status_code == 200
+    training = trained.json()
+    assert training["training_samples"] >= 12
+    assert training["actual_outcomes_sent_to_browser"] is False
+    assert training["eligible_test_years"]
+    assert len(training["training_fingerprint_sha256"]) == 64
+
+    test_year = training["eligible_test_years"][0]["year"]
+    assert test_year > training["training_end"]
+    projects = client.get(f"/api/model-simulations/custom/{training['session_id']}/projects?year={test_year}")
+    assert projects.status_code == 200
+    project_payload = projects.json()
+    assert project_payload["actual_outcomes_sent_to_browser"] is False
+    selected = project_payload["items"][0]
+    assert "actual_cost_overrun" not in selected
+    assert "actual_delay_days" not in selected
+    assert "completion_date" not in selected
+
+    selection = {"record_index": selected["record_index"]}
+    prediction = client.post(f"/api/model-simulations/custom/{training['session_id']}/predict", json=selection)
+    assert prediction.status_code == 200
+    predicted = prediction.json()
+    assert predicted["audit"]["project_excluded_from_training"] is True
+    assert predicted["audit"]["actual_outcomes_sent_to_browser"] is False
+    assert "actual_cost_overrun" not in predicted
+    assert "actual_delay_days" not in predicted
+
+    reveal = client.post(f"/api/model-simulations/custom/{training['session_id']}/reveal", json=selection)
+    assert reveal.status_code == 200
+    actual = reveal.json()
+    assert {"actual_cost_overrun", "actual_delay_days", "cost_error_absolute_pp", "delay_error_absolute_days", "source_url"}.issubset(actual)
+    assert actual["cost_error_absolute_pp"] >= 0
+    assert actual["delay_error_absolute_days"] >= 0
