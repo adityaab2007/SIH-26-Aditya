@@ -2,7 +2,6 @@ import { api } from '../services/api.js';
 import { horizontalBars, lineChart } from '../components/charts.js';
 
 const value = (number, digits = 2) => Number(number || 0).toFixed(digits);
-
 function errorBuckets(rows, key) {
   return [[0,5],[5,15],[15,30],[30,Infinity]].map(([from,to]) => ({
     label: `${from}-${to === Infinity ? '∞' : to}`,
