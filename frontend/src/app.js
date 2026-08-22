@@ -9,10 +9,12 @@ import { ScenarioPage } from './pages/ScenarioPage.js';
 import { DataQualityPage } from './pages/DataQualityPage.js';
 import { AssistantPage } from './pages/AssistantPage.js';
 import { AboutPage } from './pages/AboutPage.js';
+import { ForecastPage } from './pages/ForecastPage.js';
 
 const routes = {
   dashboard: DashboardPage,
   projects: ProjectsPage,
+  forecast: ForecastPage,
   'time-machine': TimeMachinePage,
   models: ModelLabPage,
   alerts: AlertsPage,

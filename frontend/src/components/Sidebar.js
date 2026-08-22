@@ -1,6 +1,7 @@
 const NAV = [
   ['dashboard','Dashboard','⌂'],
   ['projects','Projects','▦'],
+  ['forecast','Project Forecast','◉'],
   ['time-machine','Time Machine','◷'],
   ['models','Model Lab','⌁'],
   ['alerts','Early Warnings','△'],

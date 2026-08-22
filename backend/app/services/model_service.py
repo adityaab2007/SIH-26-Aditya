@@ -11,7 +11,7 @@ from backend.app.core.config import MODELS_DIR
 @lru_cache(maxsize=1)
 def registry() -> dict[str, Any]: return json.loads((MODELS_DIR / "registry.json").read_text())
 @lru_cache(maxsize=1)
-def metrics() -> dict[str, Any]: return json.loads((MODELS_DIR / "metrics.json").read_text())
+def metrics() -> dict[str, Any]: return json.loads((MODELS_DIR / "model_metrics.json").read_text())
 @lru_cache(maxsize=1)
 def global_importances() -> dict[str, Any]: return json.loads((MODELS_DIR / "global_feature_importance.json").read_text())
 @lru_cache(maxsize=32)

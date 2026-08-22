@@ -2,7 +2,7 @@
 
 data:
 	PYTHONPATH=. python scripts/seed_official_data.py
-	PYTHONPATH=. python backend/app/ml/features.py
+	PYTHONPATH=. python scripts/generate_project_history.py
 
 train:
 	PYTHONPATH=. python scripts/train_models.py

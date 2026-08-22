@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from backend.app.core.config import PROCESSED_DIR, RAW_DIR
+from backend.app.ml.features import engineer_temporal_features, load_project_history
 
 DATE_COLUMNS = ["snapshot_date", "original_end_date", "revised_end_date"]
 
@@ -25,6 +26,19 @@ def history_df() -> pd.DataFrame:
     df["snapshot_date"] = pd.to_datetime(df["snapshot_date"], errors="coerce")
     df["revised_completion_date"] = pd.to_datetime(df["revised_completion_date"], errors="coerce")
     return df
+
+
+@lru_cache(maxsize=1)
+def temporal_features_df() -> pd.DataFrame:
+    return engineer_temporal_features(load_project_history())
+
+
+def latest_temporal_snapshot(code: str) -> pd.Series:
+    df = temporal_features_df()
+    hit = df[df["project_id"].astype(str) == str(code)].sort_values("month")
+    if hit.empty:
+        raise KeyError(code)
+    return hit.iloc[-1]
 
 
 def _json_value(v):

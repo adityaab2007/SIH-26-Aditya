@@ -41,6 +41,17 @@ Primary source surfaces:
 
 See [`docs/data-provenance.md`](docs/data-provenance.md) for the exact provenance and limitations.
 
+## SIH forecasting demo
+
+The judging flow is available at **Project Forecast**. It selects a project, loads its most recent longitudinal snapshot, and shows predicted cost escalation, delay, risk level, and feature-level SHAP factors through `GET /api/projects/{project_id}/forecast`.
+
+`data/project_history.csv` is a deterministic synthetic monthly demonstration dataset, documented in [`docs/data_source.md`](docs/data_source.md). It demonstrates the replaceable PAIMANA/OCMS-compatible schema and must be replaced with an authorised monthly export before operational use. Train it with:
+
+```bash
+python scripts/generate_project_history.py  # demo data only
+python -m backend.app.ml.train
+```
+
 ## Current model results
 
 These are **real cross-validated metrics from the included dataset**, not placeholder numbers.

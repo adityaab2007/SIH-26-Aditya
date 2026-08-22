@@ -1,6 +1,17 @@
 # Model Methodology
 
-## Current baseline tasks
+## Temporal forecasting demonstration
+
+`data/project_history.csv` provides a documented synthetic monthly timeline for demonstrating the SIH26103 forecasting workflow. The train script creates a future label only when the snapshot month precedes the project's eventual completion date:
+
+- cost escalation: `(actual_final_cost - original_cost) / original_cost * 100`;
+- schedule extension: `actual_completion_date - planned_completion_date`.
+
+Projects are assigned once to a **time-based, project-level** cohort by planned-start year: training through 2023, validation in 2024-25, and test from 2026. This prevents one project's later snapshots from appearing in an earlier evaluation cohort. Features use only the snapshot and preceding observations; sector/agency outcomes are calculated solely from other projects completed before the snapshot month.
+
+The selected XGBoost, Random Forest, and CatBoost regressors are written to `models/cost_model.pkl` and `models/delay_model.pkl`. `models/model_metrics.json` records MAE, RMSE and R2 for every candidate, plus a held-out prediction-versus-actual example.
+
+## Legacy current-snapshot baselines
 
 The included May 2026 snapshot supports observed-state labels:
 
@@ -70,9 +81,9 @@ The prototype review-priority score is a transparent triage index:
 
 It is not an official MoSPI score and is labelled accordingly.
 
-## Forward forecasting
+## Operational replacement path
 
-`backend/app/ml/forward_labels.py` creates labels from month `T` to `T+h` only when a later official snapshot exists. The intended production targets include:
+The pipeline is intentionally schema-compatible with an authorised PAIMANA/OCMS monthly export. Replace the demonstration history file and rerun training before treating forecasts as operational. The intended production targets include:
 
 - future deadline shift > 90 days in next 6 months;
 - future revised-cost increase > 5% in next 6 months;

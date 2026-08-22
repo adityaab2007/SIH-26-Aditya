@@ -25,6 +25,7 @@ export const api = {
   },
   project: (code) => request(`/api/projects/${encodeURIComponent(code)}`),
   prediction: (code) => request(`/api/projects/${encodeURIComponent(code)}/prediction`),
+  forecast: (code) => request(`/api/projects/${encodeURIComponent(code)}/forecast`),
   peers: (code) => request(`/api/projects/${encodeURIComponent(code)}/peers`),
   modelMetrics: () => request('/api/models/metrics'),
   modelImportance: () => request('/api/models/importance'),

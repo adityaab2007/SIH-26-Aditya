@@ -1,0 +1,116 @@
+{
+  "metadata": {
+    "dataset_rows": 4698,
+    "dataset_kind": "deterministic synthetic longitudinal demonstration data",
+    "split_strategy": "time-based, project-level planned-start-year split: train <=2023, validation 2024-2025, test >=2026",
+    "leakage_policy": "features use snapshot/past values only; sector and agency outcomes use projects completed before snapshot month",
+    "prediction_vs_actual": [
+      {
+        "project_id": "611716",
+        "month": "2025-01-01",
+        "target": "cost_model",
+        "predicted": 40.76,
+        "actual": 45.0,
+        "absolute_error": 4.24
+      },
+      {
+        "project_id": "611716",
+        "month": "2025-01-01",
+        "target": "delay_model",
+        "predicted": 365.26,
+        "actual": 374.0,
+        "absolute_error": 8.74
+      }
+    ]
+  },
+  "cost_model": {
+    "candidates": {
+      "xgboost": {
+        "validation": {
+          "MAE": 4.083,
+          "RMSE": 4.735,
+          "R2": 0.6881
+        },
+        "test": {
+          "MAE": 3.266,
+          "RMSE": 3.987,
+          "R2": -0.7662
+        }
+      },
+      "random_forest": {
+        "validation": {
+          "MAE": 4.852,
+          "RMSE": 5.761,
+          "R2": 0.5383
+        },
+        "test": {
+          "MAE": 4.374,
+          "RMSE": 5.272,
+          "R2": -2.0882
+        }
+      },
+      "catboost": {
+        "validation": {
+          "MAE": 3.763,
+          "RMSE": 4.422,
+          "R2": 0.728
+        },
+        "test": {
+          "MAE": 2.076,
+          "RMSE": 2.562,
+          "R2": 0.2707
+        }
+      }
+    },
+    "best_model": "catboost",
+    "MAE": 2.076,
+    "RMSE": 2.562,
+    "R2": 0.2707,
+    "target": "future_cost_escalation_percentage"
+  },
+  "delay_model": {
+    "candidates": {
+      "xgboost": {
+        "validation": {
+          "MAE": 38.415,
+          "RMSE": 44.369,
+          "R2": 0.5773
+        },
+        "test": {
+          "MAE": 56.531,
+          "RMSE": 58.496,
+          "R2": -3.0686
+        }
+      },
+      "random_forest": {
+        "validation": {
+          "MAE": 43.632,
+          "RMSE": 52.886,
+          "R2": 0.3995
+        },
+        "test": {
+          "MAE": 29.003,
+          "RMSE": 29.113,
+          "R2": -0.0078
+        }
+      },
+      "catboost": {
+        "validation": {
+          "MAE": 38.435,
+          "RMSE": 44.665,
+          "R2": 0.5717
+        },
+        "test": {
+          "MAE": 41.974,
+          "RMSE": 44.775,
+          "R2": -1.3839
+        }
+      }
+    },
+    "best_model": "xgboost",
+    "MAE": 56.531,
+    "RMSE": 58.496,
+    "R2": -3.0686,
+    "target": "future_schedule_extension_days"
+  }
+}

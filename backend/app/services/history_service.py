@@ -39,9 +39,9 @@ def replay(code: str) -> dict:
             "expenditure_cr": None if pd.isna(r["expenditure_cr"]) else float(r["expenditure_cr"]),
             "revised_cost_cr": None if pd.isna(r["revised_cost_cr"]) else float(r["revised_cost_cr"]),
             "revised_completion_date": None if pd.isna(r["revised_completion_date"]) else r["revised_completion_date"].strftime("%Y-%m-%d"),
-            "baseline_priority_score": pred["priority_score"],
-            "schedule_risk_probability": pred["schedule_risk_probability"],
-            "cost_risk_probability": pred["cost_risk_probability"],
+            "baseline_priority_score": pred["risk_score"],
+            "schedule_risk_probability": pred["risk_score"] / 100,
+            "cost_risk_probability": pred["risk_score"] / 100,
             "source_url": r["source_url"],
         })
     return {"project_code": str(code), "project_name": hist.iloc[0]["project_name"], "note": "Historical trajectory uses official snapshots. Baseline model scores are replayed for demonstration and are not claimed as forward-validated forecasts until the full archive is ingested.", "snapshots": snapshots}
