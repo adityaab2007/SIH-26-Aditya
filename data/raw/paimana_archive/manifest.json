@@ -1,0 +1,85 @@
+[
+  {
+    "financial_year": "2024-25",
+    "label": "June",
+    "id": "65",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/June.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=65&path=Content/ArchiveReport/flash/2024-25/June.pdf",
+    "filename": "June.pdf",
+    "status": "downloaded",
+    "bytes": 1096309,
+    "sha256": "7823bd3479b62d31f024c6add12100d4a91855ce8e6b738029a47336567a94c9",
+    "downloaded_at_utc": "2026-08-22T10:18:37.483112+00:00"
+  },
+  {
+    "financial_year": "2024-25",
+    "label": "October",
+    "id": "72",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/October.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=72&path=Content/ArchiveReport/flash/2024-25/October.pdf",
+    "filename": "October.pdf",
+    "status": "downloaded",
+    "bytes": 2021952,
+    "sha256": "2f4a0d3a695aa8af173137118dc54331907f174d1a949e39a3cb2a2c4d392a16",
+    "downloaded_at_utc": "2026-08-22T10:18:37.484400+00:00"
+  },
+  {
+    "financial_year": "2024-25",
+    "label": "November",
+    "id": "73",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/November.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=73&path=Content/ArchiveReport/flash/2024-25/November.pdf",
+    "filename": "November.pdf",
+    "status": "downloaded",
+    "bytes": 1985755,
+    "sha256": "7f27651b6b54da7c20069f5a26d67e145ee935e50a78fcfe5d6980c3cd700e31",
+    "downloaded_at_utc": "2026-08-22T10:18:37.485588+00:00"
+  },
+  {
+    "financial_year": "2024-25",
+    "label": "December",
+    "id": "74",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/December.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=74&path=Content/ArchiveReport/flash/2024-25/December.pdf",
+    "filename": "December.pdf",
+    "status": "downloaded",
+    "bytes": 2313092,
+    "sha256": "b2be571bfe46f7d9bba8fd2281b481d2c3bf8b3672365182eb708f89c72a6e1d",
+    "downloaded_at_utc": "2026-08-22T10:18:37.486976+00:00"
+  },
+  {
+    "financial_year": "2024-25",
+    "label": "January",
+    "id": "75",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/January.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=75&path=Content/ArchiveReport/flash/2024-25/January.pdf",
+    "filename": "January.pdf",
+    "status": "downloaded",
+    "bytes": 2804389,
+    "sha256": "3ba881decfb846c33c0378399a7d4f2a03c60ce58cb449c1f654851facf9bfce",
+    "downloaded_at_utc": "2026-08-22T10:18:37.488496+00:00"
+  },
+  {
+    "financial_year": "2024-25",
+    "label": "March",
+    "id": "1150",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/FRMarch2025.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=1150&path=Content/ArchiveReport/flash/2024-25/FRMarch2025.pdf",
+    "filename": "FRMarch2025.pdf",
+    "status": "downloaded",
+    "bytes": 12129235,
+    "sha256": "2766338305d6f68969d1d371e99cca1290d3d39dd083c9b6788d91b4499de41b",
+    "downloaded_at_utc": "2026-08-22T10:18:37.493347+00:00"
+  },
+  {
+    "financial_year": "2024-25",
+    "label": "February",
+    "id": "1154",
+    "archive_path": "Content/ArchiveReport/flash/2024-25/FRFebruary2025.pdf",
+    "url": "https://paimana-proj.mospi.gov.in/ReportPage/ViewPdf?id=1154&path=Content/ArchiveReport/flash/2024-25/FRFebruary2025.pdf",
+    "filename": "FRFebruary2025.pdf",
+    "status": "failed",
+    "error": "HTTPError: HTTP Error 500: Internal Server Error",
+    "downloaded_at_utc": "2026-08-22T10:18:38.295761+00:00"
+  }
+]

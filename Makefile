@@ -2,6 +2,7 @@
 
 data:
 	PYTHONPATH=. python scripts/seed_official_data.py
+	PYTHONPATH=. python scripts/ingest_paimana_archive.py
 	PYTHONPATH=. python scripts/generate_project_history.py
 
 train:

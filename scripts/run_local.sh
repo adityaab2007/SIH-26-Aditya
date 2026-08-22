@@ -16,6 +16,11 @@ if [[ ! -f data/project_history.csv ]]; then
   python scripts/generate_project_history.py
 fi
 
+if [[ ! -f data/processed/project_monthly_history.csv && -f data/raw/paimana_archive/manifest.json ]]; then
+  echo "[InfraSight] Normalizing checked-in official PAIMANA archive reports..."
+  python scripts/ingest_paimana_archive.py --local-only
+fi
+
 REQUIRED=(
   models/cost_model.pkl
   models/delay_model.pkl
