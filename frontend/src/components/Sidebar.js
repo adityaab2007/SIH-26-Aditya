@@ -3,6 +3,7 @@ const NAV = [
   ['projects','Projects','▦'],
   ['time-machine','Time Machine','◷'],
   ['models','Model Lab','⌁'],
+  ['validation','Model Validation','✓'],
   ['alerts','Early Warnings','△'],
   ['scenario','Scenario Explorer','⇄'],
   ['data-quality','Data Quality','✓'],
