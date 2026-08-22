@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 
 from backend.app.core.config import MODELS_DIR
@@ -23,7 +22,7 @@ def validation_summary() -> dict[str, Any]:
     meta = payload.get("metadata", {})
     return {
         "methodology": {
-            "forecasting_rule": "Features are taken only from the as-of snapshot; future revised cost/completion outcomes are labels and are never exposed as features.",
+            "forecasting_rule": "Features are taken only from the as-of snapshot; future outcomes (later revised cost and completion) are labels and are never exposed as features.",
             "single_snapshot_baseline": "When only one snapshot exists, evaluation is explicitly labelled cross-validation baseline rather than future forecasting.",
             "temporal_rule": "When multiple snapshot dates exist, training uses older snapshots and evaluation uses later snapshots.",
         },
