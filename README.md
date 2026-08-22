@@ -17,6 +17,7 @@ InfraSight AI is an end-to-end prototype for **Smart India Hackathon 2026 proble
 - **Project-level SHAP explanations** from the selected forecasting artifacts.
 - **Historical-cutoff verification** using older completed projects for fitting and 2025–26 completions for evaluation.
 - **Project Forecast, Model Performance and Prediction Accuracy** judging flows.
+- **Model Simulation** with real PAIMANA completed-project windows: 2001–15 → 2016–21 and 2015–21 → 2022–24 (2025–28 stay forecast-only until official outcomes are published).
 - **Priority / intervention queue** combining model risk signals with financial exposure.
 - **Peer benchmarking** against similar projects in the same sector.
 - **Historical Time Machine** using real monthly PAIMANA/Flash Report snapshots.
@@ -72,6 +73,20 @@ Elevated-risk classification achieves 85.0% accuracy and 0.8571 F1 on that held-
 ### Forecasting boundary
 
 The archive ingestion and longitudinal monitoring observations are real. PAIMANA's public ongoing-project reports do not consistently publish project-level final actual cost and actual completion, so the repository does not fabricate those labels. The bundled final-outcome models therefore remain a **demonstration trained on deterministic synthetic completion trajectories**. Replace them with an authorized PAIMANA/OCMS completed-project export before operational use.
+
+## Real historical model simulation
+
+The **Model Simulation** page is separate from the older demonstration forecast. It uses only `data/processed/paimana_completed_outcomes.csv`, extracted from official PAIMANA completed-project archive tables. It never reads `data/project_history.csv`.
+
+```bash
+PYTHONPATH=. python scripts/ingest_paimana_completed_reports.py --from-year 2001 --to-year 2025
+PYTHONPATH=. python train.py --start-year 2001 --end-year 2015
+PYTHONPATH=. python train.py --start-year 2015 --end-year 2021
+PYTHONPATH=. python evaluate_model.py --model 2001_2015
+PYTHONPATH=. python evaluate_model.py --model 2015_2021
+```
+
+Reported completion expenditure and completion month are targets only; they never become model inputs. The V2 reliability report only scores the official outcomes available through 2024. It excludes 2025–2028 from metrics until PAIMANA publishes recorded completion outcomes.
 
 ## Architecture
 

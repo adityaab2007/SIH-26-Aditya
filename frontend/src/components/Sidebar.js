@@ -5,6 +5,7 @@ const NAV = [
   ['prediction-accuracy','Prediction Accuracy','◌'],
   ['time-machine','Time Machine','◷'],
   ['models','Model Lab','⌁'],
+  ['model-simulation','Model Simulation','◫'],
   ['alerts','Early Warnings','△'],
   ['scenario','Scenario Explorer','⇄'],
   ['data-quality','Data Quality','✓'],

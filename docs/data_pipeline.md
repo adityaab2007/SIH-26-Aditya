@@ -32,3 +32,9 @@ The reproducible snapshot includes six original 2024–25 reports. Three support
 ## Forecast-training boundary
 
 Official ongoing-project reports provide longitudinal monitoring inputs but do not consistently publish final actual cost and actual completion for each project. Consequently they cannot safely supply supervised final-outcome labels without a governed completed-project export. The operational ingestion is real; the bundled temporal model remains explicitly trained on deterministic synthetic completion trajectories solely to demonstrate the leakage-safe training/API/UI contract. Replacing those trajectories with an authorized completed-project PAIMANA/OCMS table requires no architecture change.
+
+## Completed-project historical simulation
+
+`scripts/ingest_paimana_completed_reports.py` fetches the March archive report for each financial year and extracts the official completed-project table into `data/processed/paimana_completed_outcomes.csv`. The real simulation pipeline uses approved cost, sector, implementing agency when published, and original commissioning month as inputs. Reported cumulative expenditure at completion and the reported completion month are held out as targets, never features.
+
+This source supports the 2001–2015 and 2015–2021 training windows. Evaluation is limited to completion years for which the archive has recorded outcomes; unrecorded future years are surfaced as forecast-only rather than given fabricated actual values.

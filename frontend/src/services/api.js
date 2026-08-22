@@ -31,6 +31,8 @@ export const api = {
   modelImportance: () => request('/api/models/importance'),
   validationReport: () => request('/api/models/validation'),
   predictionValidation: (limit = 100) => request(`/api/models/prediction-validation?limit=${limit}`),
+  simulationVersions: () => request('/api/model-simulations'),
+  runSimulation: (version) => request(`/api/model-simulations/${encodeURIComponent(version)}/run`, { method: 'POST' }),
   historyList: () => request('/api/history'),
   history: (code) => request(`/api/history/${encodeURIComponent(code)}`),
   scenario: (payload) => request('/api/scenario', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) }),

@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.app.core.config import APP_NAME, APP_VERSION, FRONTEND_DIR
-from backend.app.routes import assistant, data_quality, history, models, portfolio, projects, scenario
+from backend.app.routes import assistant, data_quality, history, models, portfolio, projects, scenario, simulations
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
 app.include_router(portfolio.router)
@@ -15,6 +15,7 @@ app.include_router(history.router)
 app.include_router(scenario.router)
 app.include_router(assistant.router)
 app.include_router(data_quality.router)
+app.include_router(simulations.router)
 
 @app.get("/api/health")
 def health():

@@ -51,3 +51,15 @@ def test_prediction_validation_artifacts_are_served():
     assert rows.status_code == 200
     first = rows.json()["items"][0]
     assert {"project_id", "prediction_date", "predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(first)
+
+
+def test_real_paimana_model_simulation_contract():
+    versions = client.get("/api/model-simulations")
+    assert versions.status_code == 200
+    assert {item["key"] for item in versions.json()["items"]} == {"2001_2015", "2015_2021"}
+    simulation = client.post("/api/model-simulations/2001_2015/run")
+    assert simulation.status_code == 200
+    payload = simulation.json()
+    assert payload["metrics"]["metadata"]["data_source"].startswith("Official PAIMANA")
+    first = payload["items"][0]
+    assert {"predicted_cost_overrun", "actual_cost_overrun", "predicted_delay_days", "actual_delay_days", "shap_explanation"}.issubset(first)
