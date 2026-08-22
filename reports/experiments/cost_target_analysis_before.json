@@ -1,0 +1,23 @@
+{
+  "target": "cost_overrun_percentage",
+  "training_window": "2001-2017",
+  "projects": 303,
+  "minimum": -89.9701,
+  "maximum": 866.0,
+  "mean": 17.5045,
+  "median": -10.1583,
+  "standard_deviation": 109.3158,
+  "percentile_distribution": {
+    "p1": -82.449,
+    "p10": -50.7696,
+    "p25": -27.2115,
+    "p50": -10.1583,
+    "p75": 20.4414,
+    "p90": 100.1653,
+    "p95": 182.1776,
+    "p99": 494.3378
+  },
+  "plain_log1p_invalid_projects": 183,
+  "negative_overrun_projects": 187,
+  "transform_policy": "signed_log1p preserves every baseline project; plain log1p is used unchanged for non-negative overruns"
+}
