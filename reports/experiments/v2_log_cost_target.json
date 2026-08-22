@@ -1,0 +1,29 @@
+{
+  "experiment": "log_cost_target",
+  "cost_model": {
+    "mae": 32.868,
+    "rmse": 60.566,
+    "mape": 256.868
+  },
+  "delay_model": {
+    "mae": 1026.711,
+    "status": "unchanged; copied from baseline evaluation"
+  },
+  "risk_model": {
+    "classes": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL"
+    ],
+    "accuracy": 0.2628,
+    "precision": 0.2548,
+    "recall": 0.366,
+    "f1": 0.2129,
+    "status": "unchanged; copied from baseline evaluation"
+  },
+  "feature_count": 5,
+  "training_samples": 303,
+  "testing_samples": 156,
+  "evaluation_scale": "original cost-overrun percentage points after inverse transform"
+}

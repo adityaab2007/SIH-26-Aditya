@@ -1,0 +1,14 @@
+[
+  {
+    "version": "v1",
+    "experiment": "baseline",
+    "cost_mae": 32.886
+  },
+  {
+    "version": "v2",
+    "experiment": "log_cost_target",
+    "cost_mae": 32.868,
+    "absolute_improvement": 0.018,
+    "percentage_improvement": 0.05
+  }
+]
