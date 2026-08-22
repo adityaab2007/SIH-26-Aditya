@@ -23,8 +23,10 @@ def project_forecast(code: str) -> dict:
     return {
         "project_id": str(row.project_id), "project_name": row.project_name, "current_status": current_status,
         "predicted_cost_overrun_percentage": round(cost, 2), "predicted_delay_days": round(delay, 1),
+        "current_progress": current_status["physical_progress_percentage"], "predicted_cost_overrun": round(cost, 2),
+        "predicted_delay_months": round(delay / 30.4375, 1),
         "risk_score": round(risk_score, 1), "risk_level": risk_level,
-        "explanation": factors, "cost_factors": cost_factors, "delay_factors": delay_factors,
+        "explanation": factors, "shap_explanation": factors, "cost_factors": cost_factors, "delay_factors": delay_factors,
         "best_models": {"cost": best_model_info("cost_model")["model"], "delay": best_model_info("delay_model")["model"]},
         "model_scope": "Temporal demonstration forecast trained on documented synthetic longitudinal data; replace with governed PAIMANA/OCMS monthly exports for operational use.",
     }

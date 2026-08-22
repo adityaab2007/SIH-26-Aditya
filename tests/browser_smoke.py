@@ -1,11 +1,13 @@
 from pathlib import Path
+import os
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from playwright.sync_api import sync_playwright
 
-OUT = Path('/mnt/data/SIH-26/test-output')
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / 'test-output'
 OUT.mkdir(exist_ok=True)
-BASE='http://127.0.0.1:8000'
+BASE=os.getenv('INFRASIGHT_BASE_URL','http://127.0.0.1:8000')
 BROWSER_BASE='https://infrasight.local'
 
 
@@ -31,7 +33,8 @@ index_html = fetch_local('/')
 index_html = index_html.replace('<head>', f'<head><base href="{BROWSER_BASE}/">', 1)
 
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True, executable_path='/usr/bin/chromium', args=['--no-sandbox','--disable-dev-shm-usage'])
+    executable=os.getenv('PLAYWRIGHT_CHROMIUM_EXECUTABLE')
+    browser=p.chromium.launch(headless=True, executable_path=executable, args=['--no-sandbox','--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':1440,'height':1100})
     page.route(f'{BROWSER_BASE}/**', proxy_route)
     errors=[]
@@ -47,14 +50,13 @@ with sync_playwright() as p:
     assert page.locator('text=BharatNet').count()>=1
     page.screenshot(path=str(OUT/'dashboard.png'), full_page=True)
 
-    page.evaluate("location.hash='#/project/701263'")
-    page.wait_for_selector('text=Project risk profile', timeout=20000)
+    page.evaluate("location.hash='#/forecast'")
+    page.wait_for_selector('#run-forecast', timeout=20000)
     body=page.locator('body').inner_text()
-    assert 'Rajasthan Refinery Project' in body
-    assert '96.5/100' in body
-    assert '84.2%' in body
-    assert 'Observed cost escalation' in body
-    page.screenshot(path=str(OUT/'project-701263.png'), full_page=True)
+    assert 'Project Forecast' in body
+    assert 'Expected cost increase' in body
+    assert 'Historical comparison' in body
+    page.screenshot(path=str(OUT/'project-forecast.png'), full_page=True)
 
     page.evaluate("location.hash='#/scenario?project=701263'")
     page.wait_for_selector('#run-scenario', timeout=20000)
@@ -76,11 +78,18 @@ with sync_playwright() as p:
     page.screenshot(path=str(OUT/'time-machine.png'), full_page=True)
 
     page.evaluate("location.hash='#/models'")
-    page.wait_for_selector('text=Model Lab', timeout=20000)
+    page.wait_for_selector('text=Model Performance', timeout=20000)
     mt=page.locator('body').inner_text().lower()
-    for name in ['logistic regression','random forest','xgboost','catboost']:
+    for name in ['random forest','xgboost','catboost']:
         assert name in mt
-    page.screenshot(path=str(OUT/'model-lab.png'), full_page=True)
+    page.screenshot(path=str(OUT/'model-performance.png'), full_page=True)
+
+    page.evaluate("location.hash='#/prediction-accuracy'")
+    page.wait_for_selector('text=Prediction Accuracy Dashboard', timeout=20000)
+    accuracy=page.locator('body').inner_text()
+    assert 'Predicted vs actual' in accuracy
+    assert 'Project-wise forecast accuracy' in accuracy
+    page.screenshot(path=str(OUT/'prediction-accuracy.png'), full_page=True)
 
     print('BROWSER_SMOKE_OK')
     print('browser_console_errors=', errors)

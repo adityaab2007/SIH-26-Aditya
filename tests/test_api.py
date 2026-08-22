@@ -19,6 +19,9 @@ def test_temporal_forecast_contract_and_actual_factors():
     assert data["predicted_delay_days"] >= 0
     assert data["cost_factors"] or data["delay_factors"]
     assert all("feature" in factor and "impact" in factor for factor in data["explanation"])
+    assert data["current_progress"] == data["current_status"]["physical_progress_percentage"]
+    assert data["predicted_delay_months"] >= 0
+    assert data["shap_explanation"] == data["explanation"]
 
 
 def test_model_performance_and_history_remain_available():
@@ -28,3 +31,15 @@ def test_model_performance_and_history_remain_available():
     history = client.get("/api/history/705728")
     assert history.status_code == 200
     assert history.json()["snapshots"]
+
+
+def test_prediction_validation_artifacts_are_served():
+    report = client.get("/api/models/validation")
+    assert report.status_code == 200
+    payload = report.json()
+    assert payload["cost_model"]["MAE"] >= 0
+    assert {"accuracy", "precision", "recall", "f1"}.issubset(payload["risk_classification"])
+    rows = client.get("/api/models/prediction-validation?limit=5")
+    assert rows.status_code == 200
+    first = rows.json()["items"][0]
+    assert {"project_id", "prediction_date", "predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(first)

@@ -10,11 +10,13 @@ import { DataQualityPage } from './pages/DataQualityPage.js';
 import { AssistantPage } from './pages/AssistantPage.js';
 import { AboutPage } from './pages/AboutPage.js';
 import { ForecastPage } from './pages/ForecastPage.js';
+import { PredictionAccuracyPage } from './pages/PredictionAccuracyPage.js';
 
 const routes = {
   dashboard: DashboardPage,
   projects: ProjectsPage,
   forecast: ForecastPage,
+  'prediction-accuracy': PredictionAccuracyPage,
   'time-machine': TimeMachinePage,
   models: ModelLabPage,
   alerts: AlertsPage,

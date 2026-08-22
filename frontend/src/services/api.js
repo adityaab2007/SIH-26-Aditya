@@ -29,6 +29,8 @@ export const api = {
   peers: (code) => request(`/api/projects/${encodeURIComponent(code)}/peers`),
   modelMetrics: () => request('/api/models/metrics'),
   modelImportance: () => request('/api/models/importance'),
+  validationReport: () => request('/api/models/validation'),
+  predictionValidation: (limit = 100) => request(`/api/models/prediction-validation?limit=${limit}`),
   historyList: () => request('/api/history'),
   history: (code) => request(`/api/history/${encodeURIComponent(code)}`),
   scenario: (payload) => request('/api/scenario', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) }),
