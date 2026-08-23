@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from backend.app.services.simulation_service import (
+from backend.app.services.simulation_service import available_versions, available_data_years as legacy_available_data_years, run
+from backend.app.services.lifecycle_simulation_service import (
     available_data_years,
-    available_versions,
     custom_projects,
     predict_custom,
     reveal_custom,
-    run,
     train_custom,
 )
 
@@ -25,7 +24,16 @@ class ProjectSelection(BaseModel):
 
 @router.get("")
 def list_versions():
-    return {"items": available_versions(), "data_years": available_data_years()}
+    try:
+        data_years = available_data_years()
+        lifecycle_data_available = True
+    except FileNotFoundError:
+        # Large canonical monthly datasets are reproducible and intentionally
+        # excluded from Git. Keep the catalog readable on a fresh checkout, but
+        # never silently use this fallback for an actual lifecycle retrain.
+        data_years = legacy_available_data_years()
+        lifecycle_data_available = False
+    return {"items": available_versions(), "data_years": data_years, "lifecycle_data_available": lifecycle_data_available}
 
 
 @router.post("/{version}/run")
