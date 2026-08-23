@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from backend.app.services.model_service import model_table, global_importances
 from backend.app.services.validation_service import rolling_validation_report, validation_payload, validation_report
-from backend.app.ml.real_time_windows import retrain
+from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
 from backend.app.services.monthly_prediction_service import lifecycle_comparison, forecast_evolution
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -22,8 +22,9 @@ def importance():
 
 @router.post("/retrain")
 def retrain_model(payload: TrainingRange):
+    """Retrain the production monthly-lifecycle stack for the selected years."""
     try:
-        return retrain(payload.start_year, payload.end_year)
+        return retrain_lifecycle(payload.start_year, payload.end_year)
     except (FileNotFoundError, ValueError) as exc:
         raise HTTPException(409, str(exc))
 
