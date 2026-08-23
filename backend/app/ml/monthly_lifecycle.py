@@ -10,6 +10,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[3]
 SNAPSHOTS = ROOT / "data" / "processed" / "paimana_monthly_snapshots.csv"
+SNAPSHOTS_GZ = ROOT / "data" / "processed" / "paimana_monthly_snapshots.csv.gz"
 OUTCOMES = ROOT / "data" / "processed" / "paimana_completed_outcomes.csv"
 TRAJECTORIES = ROOT / "data" / "processed" / "paimana_project_trajectories.csv"
 TRAINING_DATA = ROOT / "data" / "processed" / "paimana_snapshot_training_dataset.csv"
@@ -31,6 +32,27 @@ PRIOR_FEATURES = [
 CANDIDATE_FEATURES = list(dict.fromkeys(DIRECT_FEATURES + TRAJECTORY_FEATURES + PRIOR_FEATURES))
 TARGETS = ["actual_cost_overrun_percentage", "actual_delay_days", "actual_risk"]
 DATE_COLUMNS = ["snapshot_date", "approval_date", "planned_start_date", "planned_completion_date", "revised_completion_date", "actual_completion_date"]
+
+
+def load_monthly_snapshots(snapshot_path: Path | None = None) -> pd.DataFrame:
+    """Load the official processed monthly snapshots without archive ingestion.
+
+    The uncompressed CSV is preferred for local development.  A tracked gzip
+    artifact is supported for clones where the uncompressed file is too large
+    for normal Git storage.  Neither path triggers PDF discovery or parsing.
+    """
+    requested = Path(snapshot_path) if snapshot_path is not None else None
+    candidates = [requested] if requested is not None else [SNAPSHOTS, SNAPSHOTS_GZ]
+    if requested == SNAPSHOTS:
+        candidates.append(SNAPSHOTS_GZ)
+    for path in candidates:
+        if path is not None and path.exists():
+            return pd.read_csv(path, dtype={"project_id": "string"}, low_memory=False)
+    raise FileNotFoundError(
+        "Official processed monthly PAIMANA dataset is unavailable in this checkout: "
+        "data/processed/paimana_monthly_snapshots.csv (or .csv.gz). "
+        "Run the separate local-only monthly PAIMANA data refresh before retraining."
+    )
 
 
 def normalize_name(value: object) -> str:
@@ -232,8 +254,8 @@ def engineer_as_of_features(frame: pd.DataFrame, outcomes: pd.DataFrame) -> pd.D
     return data
 
 
-def build_training_dataset(snapshot_path: Path = SNAPSHOTS, outcome_path: Path = OUTCOMES) -> tuple[pd.DataFrame, pd.DataFrame]:
-    snapshots = pd.read_csv(snapshot_path, dtype={"project_id": "string"}, low_memory=False)
+def build_training_dataset(snapshot_path: Path | None = None, outcome_path: Path = OUTCOMES) -> tuple[pd.DataFrame, pd.DataFrame]:
+    snapshots = load_monthly_snapshots(snapshot_path)
     outcomes = pd.read_csv(outcome_path, dtype={"project_id": "string"}, low_memory=False)
     resolved, identity = resolve_identities(snapshots, outcomes); engineered = engineer_as_of_features(resolved, outcomes)
     trajectories = engineered.copy(); eligible = engineered[
