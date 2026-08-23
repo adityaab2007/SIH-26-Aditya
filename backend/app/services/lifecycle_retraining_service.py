@@ -27,10 +27,10 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
     """Retrain the monthly lifecycle cost/delay/risk stack for a selected period.
 
     Algorithm selection remains internal-temporal: the latest completion year
-    inside the selected training range is used to choose the cost and delay
-    regressor, then the winning regressors and the Random Forest risk classifier
-    are fitted on the full selected training range.  All later completion years
-    remain future holdout data.
+    actually present inside the selected training range is used to choose the
+    cost and delay regressor, then the winning regressors and the Random Forest
+    risk classifier are fitted on the full selected training range.  All later
+    completion years remain future holdout data.
     """
     start_year = int(start_year)
     end_year = int(end_year)
@@ -42,6 +42,11 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
         raise ValueError(f"Training must end before {max_year} so an unseen future lifecycle holdout remains.")
     if end_year < min_year or start_year > max_year:
         raise ValueError(f"Training range must overlap identity-verified lifecycle data ({min_year}-{max_year}).")
+
+    selected_training_years = data.loc[data.completion_year.between(start_year, end_year), "completion_year"].dropna()
+    if selected_training_years.empty:
+        raise ValueError("The selected period has no identity-verified lifecycle training projects.")
+    internal_validation_year = int(selected_training_years.max())
 
     result = train_window(start_year, end_year, max_year, data=data, identity=identity)
     metadata = result["metadata"]
@@ -73,7 +78,7 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
             "delay": selected.get("delay"),
             "risk": "random_forest",
         },
-        "internal_validation_year": end_year,
+        "internal_validation_year": internal_validation_year,
         "future_holdout_start": end_year + 1,
         "future_holdout_end": max_year,
         "metrics": {
