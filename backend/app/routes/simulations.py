@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from backend.app.services.simulation_service import available_versions, available_data_years as legacy_available_data_years, run
+from backend.app.services.simulation_service import available_versions, run
 from backend.app.services.lifecycle_simulation_service import (
     available_data_years,
     custom_projects,
@@ -27,12 +27,12 @@ def list_versions():
     try:
         data_years = available_data_years()
         lifecycle_data_available = True
-    except FileNotFoundError:
-        # Large canonical monthly datasets are reproducible and intentionally
-        # excluded from Git. Keep the catalog readable on a fresh checkout, but
-        # never silently use this fallback for an actual lifecycle retrain.
-        data_years = legacy_available_data_years()
+    except FileNotFoundError as exc:
+        data_years = []
         lifecycle_data_available = False
+        return {"items": available_versions(), "data_years": data_years,
+                "lifecycle_data_available": lifecycle_data_available,
+                "lifecycle_data_unavailable_reason": str(exc)}
     return {"items": available_versions(), "data_years": data_years, "lifecycle_data_available": lifecycle_data_available}
 
 

@@ -16,6 +16,7 @@ models/monthly_lifecycle/**/prediction_validation.csv
 data/raw/*.csv
 data/processed/*.csv
 !data/processed/paimana_completed_outcomes.csv
+!data/processed/paimana_monthly_snapshots.csv
 data/raw/paimana_completed_archive/
 data/raw/paimana_archive/**/*.pdf
 data/raw/paimana_archive/parse_cache/
