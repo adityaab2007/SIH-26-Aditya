@@ -1,0 +1,8 @@
+{
+  "raw_cumulative_rows": 10766,
+  "canonical_outcomes": 4797,
+  "canonical_outcomes_with_official_id": 2292,
+  "unique_official_project_ids": 2292,
+  "official_ids_with_historical_variants": 1180,
+  "deduplication_policy": "Latest official cumulative record per exact project code; code-less rows use exact normalized name and completion date only."
+}
