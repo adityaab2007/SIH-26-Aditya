@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from backend.app.services.simulation_service import (
+from backend.app.services.simulation_service import available_versions, run
+from backend.app.services.lifecycle_simulation_service import (
     available_data_years,
-    available_versions,
     custom_projects,
     predict_custom,
     reveal_custom,
-    run,
     train_custom,
 )
 
