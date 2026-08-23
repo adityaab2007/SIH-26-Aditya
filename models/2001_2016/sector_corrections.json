@@ -1,0 +1,27 @@
+{
+  "cost": {
+    "enabled": false,
+    "target": "actual_cost_overrun_percentage",
+    "validation_year": 2016,
+    "correction_year": 2015,
+    "baseline_mae": 21.2876,
+    "corrected_mae": 27.0443,
+    "corrections": {},
+    "policy": "Residual correction is enabled only when learned on an earlier year and improves the next unseen completion year."
+  },
+  "delay": {
+    "enabled": true,
+    "target": "actual_delay_days",
+    "validation_year": 2016,
+    "correction_year": 2015,
+    "baseline_mae": 574.9034,
+    "corrected_mae": 567.7303,
+    "corrections": {
+      "Other": 452.8517885991357,
+      "Petroleum": 253.19464778866612,
+      "Power": -14.30345521910393,
+      "Roads": 60.24460797202687
+    },
+    "policy": "Residual correction is enabled only when learned on an earlier year and improves the next unseen completion year."
+  }
+}

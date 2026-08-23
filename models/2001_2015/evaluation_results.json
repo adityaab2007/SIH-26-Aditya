@@ -286,7 +286,7 @@
     "data_source": "Official PAIMANA completed-project archive reports",
     "outcome_definition": "Reported completion expenditure versus approved cost; reported completion month versus original commissioning month.",
     "leakage_policy": "Completion expenditure, completion date, and derived outcomes are targets only. Agency/sector priors are fitted from training rows only; training rows use leave-one-out priors.",
-    "created_at": "2026-08-22T21:38:45.006340+00:00",
+    "created_at": "2026-08-23T11:02:11.433806+00:00",
     "status": "trained",
     "evaluated_test_start": 2016,
     "evaluated_test_end": 2021,

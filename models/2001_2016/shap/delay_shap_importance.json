@@ -1,0 +1,28 @@
+{
+  "model_version": "2001_2016",
+  "target": "delay",
+  "method": "mean absolute SHAP value",
+  "training_samples": 294,
+  "features": [
+    {
+      "feature": "sector",
+      "importance": 0.806306
+    },
+    {
+      "feature": "approved_cost_cr",
+      "importance": 0.192891
+    },
+    {
+      "feature": "project_size_category",
+      "importance": 0.000803
+    },
+    {
+      "feature": "sector_average_delay",
+      "importance": 0.0
+    },
+    {
+      "feature": "sector_average_cost_overrun",
+      "importance": 0.0
+    }
+  ]
+}
