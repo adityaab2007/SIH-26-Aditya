@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
 from backend.app.ml.monthly_lifecycle import SNAPSHOTS
@@ -58,6 +62,51 @@ def test_prediction_validation_artifacts_are_served():
     assert rolling.status_code == 200
     assert rolling.json()["fold_count"] == len(rolling.json()["folds"])
     assert {"cost_MAE", "delay_MAE_days", "risk_f1"}.issubset(rolling.json()["folds"][0])
+
+
+def test_explicit_lifecycle_validation_uses_lifecycle_artifacts():
+    artifact_path = Path(__file__).parents[1] / "models/monthly_lifecycle/2001_2019/evaluation_results.json"
+    rows_path = artifact_path.with_name("prediction_validation.csv")
+    if not artifact_path.exists() or not rows_path.exists():
+        pytest.skip("The locally generated 2001_2019 lifecycle validation artifacts are unavailable")
+    report_response = client.get("/api/models/validation?model=2001_2019")
+    assert report_response.status_code == 200
+    report = report_response.json()
+    assert report["model_family"] == "monthly_lifecycle"
+    artifact = json.loads(artifact_path.read_text())
+    lifecycle_metrics = artifact["lifecycle"]["metrics"]
+    assert report["cost_model"] == lifecycle_metrics["cost"]
+    assert report["delay_model"] == lifecycle_metrics["delay"]
+    assert report["risk_model"] == lifecycle_metrics["risk"]
+    assert report["metadata"]["training_start"] == 2001
+    assert report["metadata"]["training_end"] == 2019
+    assert report["metadata"]["evaluated_test_start"] == 2020
+    assert report["metadata"]["evaluated_test_end"] == 2025
+    assert report["metadata"]["feature_count"] == len(artifact["metadata"]["features_used"])
+    assert report["metadata"]["feature_quality"]["data_quality_score"] > 0
+
+    rows_response = client.get("/api/models/prediction-validation?model=2001_2019&limit=5")
+    assert rows_response.status_code == 200
+    payload = rows_response.json()
+    assert payload["total"] > 0
+    assert all(item["project_id"] for item in payload["items"])
+    assert all(item["completion_year"] > 2019 for item in payload["items"])
+    assert {"predicted_cost_overrun", "actual_cost_overrun", "cost_error", "predicted_delay_days", "actual_delay_days", "delay_error"}.issubset(payload["items"][0])
+
+
+def test_explicit_missing_model_does_not_fall_back_to_legacy_report():
+    response = client.get("/api/models/validation?model=this_model_does_not_exist")
+    assert response.status_code == 404
+    assert "this_model_does_not_exist" in response.json()["detail"]
+
+    rows = client.get("/api/models/prediction-validation?model=this_model_does_not_exist")
+    assert rows.status_code == 404
+
+
+def test_lifecycle_rolling_validation_is_honest_when_not_generated():
+    response = client.get("/api/models/rolling-validation?model=2001_2019")
+    assert response.status_code == 200
+    assert response.json() == {"model_version": "2001_2019", "folds": [], "fold_count": 0, "status": "not_generated"}
 
 
 def test_real_paimana_model_simulation_contract():
