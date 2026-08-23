@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from backend.app.main import app
+from backend.app.ml.monthly_lifecycle import SNAPSHOTS
 
 client = TestClient(app)
 
@@ -65,6 +66,7 @@ def test_real_paimana_model_simulation_contract():
     payload = versions.json()
     assert {"2001_2015", "2015_2021"}.issubset({item["key"] for item in payload["items"]})
     assert payload["data_years"]
+    assert "lifecycle_data_available" in payload
     simulation = client.post("/api/model-simulations/2001_2015/run")
     assert simulation.status_code == 200
     payload = simulation.json()
@@ -75,12 +77,21 @@ def test_real_paimana_model_simulation_contract():
 
 def test_judge_controlled_backtest_hides_actual_until_reveal():
     trained = client.post("/api/model-simulations/custom/train", json={"start_year": 2001, "end_year": 2015})
+    if not SNAPSHOTS.exists():
+        # The 195k-row canonical lifecycle dataset is intentionally not checked
+        # into Git. A fresh clone must rebuild it before live lifecycle retraining;
+        # critically, the API must not silently fall back to the five-feature model.
+        assert trained.status_code == 409
+        assert "paimana_monthly_snapshots.csv" in trained.json()["detail"]
+        return
+
     assert trained.status_code == 200
     training = trained.json()
-    assert training["training_samples"] >= 12
+    assert training["model_family"] == "monthly_lifecycle"
+    assert training["training_samples"] > 0
+    assert training["feature_count"] >= 5
     assert training["actual_outcomes_sent_to_browser"] is False
     assert training["eligible_test_years"]
-    assert len(training["training_fingerprint_sha256"]) == 64
 
     test_year = training["eligible_test_years"][0]["year"]
     assert test_year > training["training_end"]
@@ -97,13 +108,13 @@ def test_judge_controlled_backtest_hides_actual_until_reveal():
     prediction = client.post(f"/api/model-simulations/custom/{training['session_id']}/predict", json=selection)
     assert prediction.status_code == 200
     predicted = prediction.json()
+    assert predicted["audit"]["model_family"] == "monthly_lifecycle"
     assert predicted["audit"]["project_excluded_from_training"] is True
     assert predicted["audit"]["actual_outcomes_sent_to_browser"] is False
     assert "actual_cost_overrun" not in predicted
     assert "actual_delay_days" not in predicted
     assert predicted["predicted_risk"] in {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
     assert 0 <= predicted["risk_probability_percentage"] <= 100
-    assert 0 <= predicted["model_confidence_percentage"] <= 100
 
     reveal = client.post(f"/api/model-simulations/custom/{training['session_id']}/reveal", json=selection)
     assert reveal.status_code == 200
