@@ -1,4 +1,4 @@
-.PHONY: data train test run browser-test
+.PHONY: data monthly-data monthly-train train test run browser-test
 
 data:
 	PYTHONPATH=. python scripts/seed_official_data.py
@@ -7,6 +7,12 @@ data:
 
 train:
 	PYTHONPATH=. python scripts/train_models.py
+
+monthly-data:
+	PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py
+
+monthly-train:
+	PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py --local-only --train
 
 test:
 	PYTHONPATH=. pytest

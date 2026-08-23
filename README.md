@@ -88,6 +88,27 @@ PYTHONPATH=. python evaluate_model.py --model 2015_2021
 
 Reported completion expenditure and completion month are targets only; they never become model inputs. The V2 reliability report only scores the official outcomes available through 2024. It excludes 2025–2028 from metrics until PAIMANA publishes recorded completion outcomes.
 
+## Official monthly lifecycle forecasting
+
+The production monthly upgrade discovers all official Flash Reports from 2001–02 through 2024–25, preserves immutable PDFs, uses detected-layout parsers, constructs exact/audited project trajectories, and trains snapshot-at-T models without synthetic history.
+
+```bash
+# Official index only
+PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py --discover-only
+
+# Download, parse, resolve identity, build trajectories and datasets
+PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py
+
+# Reuse cached PDFs and train/evaluate both required windows plus ablations/SHAP
+PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py --local-only --train
+
+# One dynamic window
+PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py --local-only --train \
+  --training-start 2001 --training-end 2015 --test-end 2021
+```
+
+Generated data and model binaries remain reproducible/ignored. Versioned metadata, comparison reports, ingestion audits and the human-readable `reports/monthly_lifecycle_upgrade_report.md` capture exact evidence and limitations.
+
 ## Architecture
 
 ```text

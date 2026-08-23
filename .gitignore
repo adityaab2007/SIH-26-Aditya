@@ -10,11 +10,16 @@ test-output/
 *.log
 # Reproducible generated ML artifacts (trained automatically on first run)
 models/*.joblib
+models/monthly_lifecycle/**/*.pkl
+models/monthly_lifecycle/**/prediction_validation.csv
 # Reproducible generated dataset outputs
 data/raw/*.csv
 data/processed/*.csv
 !data/processed/paimana_completed_outcomes.csv
 data/raw/paimana_completed_archive/
+data/raw/paimana_archive/**/*.pdf
+data/raw/paimana_archive/parse_cache/
+data/processed/paimana_monthly_conflicts.csv
 models/global_feature_importance.json
 models/metrics.json
 models/registry.json

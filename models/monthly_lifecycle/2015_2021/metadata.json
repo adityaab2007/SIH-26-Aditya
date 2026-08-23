@@ -1,0 +1,3102 @@
+{
+  "model_version": "monthly-2015-2021",
+  "training_period": [
+    2015,
+    2021
+  ],
+  "testing_period": [
+    2022,
+    2024
+  ],
+  "unique_training_projects": 892,
+  "training_snapshots": 13736,
+  "unique_test_projects": 691,
+  "test_snapshots": 10967,
+  "features_used": [
+    "approved_cost_cr",
+    "sector_average_delay",
+    "sector_average_cost_overrun",
+    "sector",
+    "project_size_category",
+    "cumulative_expenditure_cr",
+    "expenditure_ratio",
+    "schedule_slippage_days",
+    "schedule_slippage_ratio",
+    "elapsed_duration_days",
+    "planned_duration_days",
+    "duration_ratio",
+    "expected_progress_percentage",
+    "revised_cost_cr",
+    "cost_escalation_percentage",
+    "implementing_agency",
+    "cost_growth_velocity_3m",
+    "cost_growth_velocity_6m",
+    "cost_acceleration",
+    "sector_delay_rate",
+    "sector_cost_overrun_rate",
+    "agency_average_delay",
+    "agency_average_cost_overrun",
+    "agency_delay_rate",
+    "agency_cost_overrun_rate"
+  ],
+  "feature_availability": {
+    "training_rows": 13736,
+    "feature_count_audited": 32,
+    "features_used": [
+      "approved_cost_cr",
+      "cumulative_expenditure_cr",
+      "expenditure_ratio",
+      "schedule_slippage_days",
+      "schedule_slippage_ratio",
+      "elapsed_duration_days",
+      "planned_duration_days",
+      "duration_ratio",
+      "expected_progress_percentage",
+      "revised_cost_cr",
+      "cost_escalation_percentage",
+      "sector",
+      "project_size_category",
+      "implementing_agency",
+      "cost_growth_velocity_3m",
+      "cost_growth_velocity_6m",
+      "cost_acceleration",
+      "sector_average_delay",
+      "sector_average_cost_overrun",
+      "sector_delay_rate",
+      "sector_cost_overrun_rate",
+      "agency_average_delay",
+      "agency_average_cost_overrun",
+      "agency_delay_rate",
+      "agency_cost_overrun_rate"
+    ],
+    "removed_features": [
+      "physical_progress",
+      "progress_deviation",
+      "current_schedule_status",
+      "ministry",
+      "progress_velocity_3m",
+      "progress_velocity_6m",
+      "progress_acceleration"
+    ],
+    "removed_invalid_feature_count": 7,
+    "data_quality_score": 98.05,
+    "features": [
+      {
+        "feature": "approved_cost_cr",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 938,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "cumulative_expenditure_cr",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.37,
+        "unique_value_count": 9896,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "expenditure_ratio",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.37,
+        "unique_value_count": 10643,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "physical_progress",
+        "datatype": "float64",
+        "missing_percentage": 100.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 0,
+        "constant": true,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
+        "availability_by_year": {
+          "2004": 0.0,
+          "2005": 0.0,
+          "2006": 0.0,
+          "2007": 0.0,
+          "2008": 0.0,
+          "2009": 0.0,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "schedule_slippage_days",
+        "datatype": "float64",
+        "missing_percentage": 4.24,
+        "zero_percentage": 41.21,
+        "unique_value_count": 510,
+        "constant": false,
+        "availability": 95.76,
+        "availability_percentage": 95.76,
+        "temporal_year_coverage": 18,
+        "project_coverage": 883,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 91.55,
+          "2010": 87.71,
+          "2011": 87.0,
+          "2012": 96.64,
+          "2013": 96.78,
+          "2014": 95.95,
+          "2015": 96.17,
+          "2016": 95.55,
+          "2017": 94.65,
+          "2018": 98.47,
+          "2019": 99.7,
+          "2020": 99.72,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 95.64,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "schedule_slippage_ratio",
+        "datatype": "float64",
+        "missing_percentage": 4.81,
+        "zero_percentage": 40.91,
+        "unique_value_count": 2660,
+        "constant": false,
+        "availability": 95.19,
+        "availability_percentage": 95.19,
+        "temporal_year_coverage": 18,
+        "project_coverage": 875,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 91.55,
+          "2010": 87.71,
+          "2011": 87.0,
+          "2012": 96.64,
+          "2013": 96.32,
+          "2014": 94.92,
+          "2015": 95.57,
+          "2016": 94.95,
+          "2017": 94.36,
+          "2018": 97.94,
+          "2019": 98.62,
+          "2020": 98.18,
+          "2021": 98.54
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 95.1,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 97.96
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "elapsed_duration_days",
+        "datatype": "int64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 983,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "planned_duration_days",
+        "datatype": "float64",
+        "missing_percentage": 4.24,
+        "zero_percentage": 0.23,
+        "unique_value_count": 327,
+        "constant": false,
+        "availability": 95.76,
+        "availability_percentage": 95.76,
+        "temporal_year_coverage": 18,
+        "project_coverage": 883,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 91.55,
+          "2010": 87.71,
+          "2011": 87.0,
+          "2012": 96.64,
+          "2013": 96.78,
+          "2014": 95.95,
+          "2015": 96.17,
+          "2016": 95.55,
+          "2017": 94.65,
+          "2018": 98.47,
+          "2019": 99.7,
+          "2020": 99.72,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 95.64,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "duration_ratio",
+        "datatype": "float64",
+        "missing_percentage": 4.81,
+        "zero_percentage": 0.0,
+        "unique_value_count": 9442,
+        "constant": false,
+        "availability": 95.19,
+        "availability_percentage": 95.19,
+        "temporal_year_coverage": 18,
+        "project_coverage": 875,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 91.55,
+          "2010": 87.71,
+          "2011": 87.0,
+          "2012": 96.64,
+          "2013": 96.32,
+          "2014": 94.92,
+          "2015": 95.57,
+          "2016": 94.95,
+          "2017": 94.36,
+          "2018": 97.94,
+          "2019": 98.62,
+          "2020": 98.18,
+          "2021": 98.54
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 95.1,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 97.96
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "expected_progress_percentage",
+        "datatype": "float64",
+        "missing_percentage": 4.81,
+        "zero_percentage": 0.02,
+        "unique_value_count": 3182,
+        "constant": false,
+        "availability": 95.19,
+        "availability_percentage": 95.19,
+        "temporal_year_coverage": 18,
+        "project_coverage": 875,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 91.55,
+          "2010": 87.71,
+          "2011": 87.0,
+          "2012": 96.64,
+          "2013": 96.32,
+          "2014": 94.92,
+          "2015": 95.57,
+          "2016": 94.95,
+          "2017": 94.36,
+          "2018": 97.94,
+          "2019": 98.62,
+          "2020": 98.18,
+          "2021": 98.54
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 95.1,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 97.96
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "progress_deviation",
+        "datatype": "float64",
+        "missing_percentage": 100.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 0,
+        "constant": true,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
+        "availability_by_year": {
+          "2004": 0.0,
+          "2005": 0.0,
+          "2006": 0.0,
+          "2007": 0.0,
+          "2008": 0.0,
+          "2009": 0.0,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "revised_cost_cr",
+        "datatype": "float64",
+        "missing_percentage": 0.01,
+        "zero_percentage": 1.68,
+        "unique_value_count": 1587,
+        "constant": false,
+        "availability": 99.99,
+        "availability_percentage": 99.99,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 87.5,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 98.73,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "cost_escalation_percentage",
+        "datatype": "float64",
+        "missing_percentage": 0.01,
+        "zero_percentage": 63.29,
+        "unique_value_count": 933,
+        "constant": false,
+        "availability": 99.99,
+        "availability_percentage": 99.99,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 87.5,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 98.73,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "current_schedule_status",
+        "datatype": "object",
+        "missing_percentage": 99.8,
+        "zero_percentage": 0.0,
+        "unique_value_count": 1,
+        "constant": true,
+        "availability": 0.2,
+        "availability_percentage": 0.2,
+        "temporal_year_coverage": 6,
+        "project_coverage": 4,
+        "availability_by_year": {
+          "2004": 33.33,
+          "2005": 50.0,
+          "2006": 40.0,
+          "2007": 33.33,
+          "2008": 22.22,
+          "2009": 0.85,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 34.18,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "sector",
+        "datatype": "object",
+        "missing_percentage": 2.17,
+        "zero_percentage": 0.0,
+        "unique_value_count": 2177,
+        "constant": false,
+        "availability": 97.83,
+        "availability_percentage": 97.83,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 98.59,
+          "2010": 99.83,
+          "2011": 91.62,
+          "2012": 100.0,
+          "2013": 82.75,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 97.77,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "project_size_category",
+        "datatype": "string",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 4,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "implementing_agency",
+        "datatype": "object",
+        "missing_percentage": 4.39,
+        "zero_percentage": 0.0,
+        "unique_value_count": 191,
+        "constant": false,
+        "availability": 95.61,
+        "availability_percentage": 95.61,
+        "temporal_year_coverage": 17,
+        "project_coverage": 891,
+        "availability_by_year": {
+          "2004": 33.33,
+          "2005": 50.0,
+          "2006": 40.0,
+          "2007": 33.33,
+          "2008": 0.0,
+          "2009": 21.13,
+          "2010": 65.99,
+          "2011": 100.0,
+          "2012": 95.69,
+          "2013": 98.47,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 99.78,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 99.86,
+          "2021": 99.64
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 95.93,
+          "legacy-sector-v1": 25.32,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "ministry",
+        "datatype": "float64",
+        "missing_percentage": 100.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 0,
+        "constant": true,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
+        "availability_by_year": {
+          "2004": 0.0,
+          "2005": 0.0,
+          "2006": 0.0,
+          "2007": 0.0,
+          "2008": 0.0,
+          "2009": 0.0,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "cost_growth_velocity_3m",
+        "datatype": "float64",
+        "missing_percentage": 6.78,
+        "zero_percentage": 85.7,
+        "unique_value_count": 1005,
+        "constant": false,
+        "availability": 93.22,
+        "availability_percentage": 93.22,
+        "temporal_year_coverage": 18,
+        "project_coverage": 878,
+        "availability_by_year": {
+          "2004": 66.67,
+          "2005": 87.5,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 40.56,
+          "2010": 98.32,
+          "2011": 97.5,
+          "2012": 98.95,
+          "2013": 98.54,
+          "2014": 97.11,
+          "2015": 94.75,
+          "2016": 98.27,
+          "2017": 72.6,
+          "2018": 94.96,
+          "2019": 97.24,
+          "2020": 99.3,
+          "2021": 93.8
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 93.57,
+          "legacy-sector-v1": 96.2,
+          "redesigned-code-v1": 76.53
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "cost_growth_velocity_6m",
+        "datatype": "float64",
+        "missing_percentage": 5.79,
+        "zero_percentage": 83.15,
+        "unique_value_count": 1468,
+        "constant": false,
+        "availability": 94.21,
+        "availability_percentage": 94.21,
+        "temporal_year_coverage": 18,
+        "project_coverage": 879,
+        "availability_by_year": {
+          "2004": 66.67,
+          "2005": 87.5,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 67.61,
+          "2010": 98.48,
+          "2011": 98.12,
+          "2012": 98.95,
+          "2013": 98.62,
+          "2014": 97.17,
+          "2015": 95.14,
+          "2016": 98.34,
+          "2017": 72.97,
+          "2018": 95.42,
+          "2019": 97.24,
+          "2020": 99.3,
+          "2021": 98.18
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 94.48,
+          "legacy-sector-v1": 96.2,
+          "redesigned-code-v1": 80.95
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "cost_acceleration",
+        "datatype": "float64",
+        "missing_percentage": 6.78,
+        "zero_percentage": 81.83,
+        "unique_value_count": 1539,
+        "constant": false,
+        "availability": 93.22,
+        "availability_percentage": 93.22,
+        "temporal_year_coverage": 18,
+        "project_coverage": 878,
+        "availability_by_year": {
+          "2004": 66.67,
+          "2005": 87.5,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 40.56,
+          "2010": 98.32,
+          "2011": 97.5,
+          "2012": 98.95,
+          "2013": 98.54,
+          "2014": 97.11,
+          "2015": 94.75,
+          "2016": 98.27,
+          "2017": 72.6,
+          "2018": 94.96,
+          "2019": 97.24,
+          "2020": 99.3,
+          "2021": 93.8
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 93.57,
+          "legacy-sector-v1": 96.2,
+          "redesigned-code-v1": 76.53
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "progress_velocity_3m",
+        "datatype": "float64",
+        "missing_percentage": 100.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 0,
+        "constant": true,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
+        "availability_by_year": {
+          "2004": 0.0,
+          "2005": 0.0,
+          "2006": 0.0,
+          "2007": 0.0,
+          "2008": 0.0,
+          "2009": 0.0,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "progress_velocity_6m",
+        "datatype": "float64",
+        "missing_percentage": 100.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 0,
+        "constant": true,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
+        "availability_by_year": {
+          "2004": 0.0,
+          "2005": 0.0,
+          "2006": 0.0,
+          "2007": 0.0,
+          "2008": 0.0,
+          "2009": 0.0,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "progress_acceleration",
+        "datatype": "float64",
+        "missing_percentage": 100.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 0,
+        "constant": true,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
+        "availability_by_year": {
+          "2004": 0.0,
+          "2005": 0.0,
+          "2006": 0.0,
+          "2007": 0.0,
+          "2008": 0.0,
+          "2009": 0.0,
+          "2010": 0.0,
+          "2011": 0.0,
+          "2012": 0.0,
+          "2013": 0.0,
+          "2014": 0.0,
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 0.0,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "remove",
+        "reason": "availability below 10.0%"
+      },
+      {
+        "feature": "sector_average_delay",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 185,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "sector_average_cost_overrun",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 185,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "sector_delay_rate",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 157,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "sector_cost_overrun_rate",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 1.89,
+        "unique_value_count": 156,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "agency_average_delay",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.98,
+        "unique_value_count": 358,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "agency_average_cost_overrun",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.0,
+        "unique_value_count": 362,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "agency_delay_rate",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 5.0,
+        "unique_value_count": 221,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      },
+      {
+        "feature": "agency_cost_overrun_rate",
+        "datatype": "float64",
+        "missing_percentage": 0.0,
+        "zero_percentage": 10.97,
+        "unique_value_count": 209,
+        "constant": false,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 18,
+        "project_coverage": 892,
+        "availability_by_year": {
+          "2004": 100.0,
+          "2005": 100.0,
+          "2006": 100.0,
+          "2007": 100.0,
+          "2008": 100.0,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 100.0,
+          "2012": 100.0,
+          "2013": 100.0,
+          "2014": 100.0,
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
+        },
+        "availability_by_parser": {
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
+        },
+        "safely_as_of_available": true,
+        "leakage_risk": "none identified; computed from snapshot or earlier records only",
+        "decision": "keep",
+        "reason": "observed and variable in the training window"
+      }
+    ],
+    "policy": "Eligibility is evaluated inside the selected training window using availability, variability, temporal/project coverage, parser coverage, as-of safety, and leakage risk."
+  },
+  "data_source": "Official PAIMANA/MoSPI monthly Flash Reports only",
+  "raw_archive_coverage": {
+    "reports_discovered": 291,
+    "financial_years": [
+      "2001-02",
+      "2002-03",
+      "2003-04",
+      "2004-05",
+      "2005-06",
+      "2006-07",
+      "2007-08",
+      "2008-09",
+      "2009-10",
+      "2010-11",
+      "2011-12",
+      "2012-13",
+      "2013-14",
+      "2014-15",
+      "2015-16",
+      "2016-17",
+      "2017-18",
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25"
+    ],
+    "missing_months": [
+      {
+        "financial_year": "2005-06",
+        "month": "April",
+        "known_archive_gap": true
+      },
+      {
+        "financial_year": "2008-09",
+        "month": "January",
+        "known_archive_gap": true
+      }
+    ],
+    "reports_parsed": 274,
+    "monthly_observations": 195934
+  },
+  "parser_versions": {
+    "legacy-sector-v1": 98,
+    "classic-code-v3": 143,
+    "unrecognized": 16,
+    "redesigned-code-v1": 24,
+    "recent-project-list-v3": 9
+  },
+  "identity_verified_training_only": true,
+  "leakage_policy": "Features and priors use only observations/outcomes known at or before snapshot T; final holdout is excluded from selection.",
+  "snapshot_weighting_policy": "Quarterly last-observation sampling plus per-project weights summing to approximately one.",
+  "selected_algorithms": {
+    "cost": "xgboost",
+    "delay": "xgboost"
+  },
+  "hyperparameters": {
+    "cost": {
+      "objective": "reg:squarederror",
+      "base_score": null,
+      "booster": null,
+      "callbacks": null,
+      "colsample_bylevel": null,
+      "colsample_bynode": null,
+      "colsample_bytree": 0.85,
+      "device": null,
+      "early_stopping_rounds": null,
+      "enable_categorical": false,
+      "eval_metric": null,
+      "feature_types": null,
+      "feature_weights": null,
+      "gamma": null,
+      "grow_policy": null,
+      "importance_type": null,
+      "interaction_constraints": null,
+      "learning_rate": 0.035,
+      "max_bin": null,
+      "max_cat_threshold": null,
+      "max_cat_to_onehot": null,
+      "max_delta_step": null,
+      "max_depth": 4,
+      "max_leaves": null,
+      "min_child_weight": null,
+      "missing": null,
+      "monotone_constraints": null,
+      "multi_strategy": null,
+      "n_estimators": 240,
+      "n_jobs": 2,
+      "num_parallel_tree": null,
+      "random_state": 26203,
+      "reg_alpha": null,
+      "reg_lambda": null,
+      "sampling_method": null,
+      "scale_pos_weight": null,
+      "subsample": 0.85,
+      "tree_method": null,
+      "validate_parameters": null,
+      "verbosity": null
+    },
+    "delay": {
+      "objective": "reg:squarederror",
+      "base_score": null,
+      "booster": null,
+      "callbacks": null,
+      "colsample_bylevel": null,
+      "colsample_bynode": null,
+      "colsample_bytree": 0.85,
+      "device": null,
+      "early_stopping_rounds": null,
+      "enable_categorical": false,
+      "eval_metric": null,
+      "feature_types": null,
+      "feature_weights": null,
+      "gamma": null,
+      "grow_policy": null,
+      "importance_type": null,
+      "interaction_constraints": null,
+      "learning_rate": 0.035,
+      "max_bin": null,
+      "max_cat_threshold": null,
+      "max_cat_to_onehot": null,
+      "max_delta_step": null,
+      "max_depth": 4,
+      "max_leaves": null,
+      "min_child_weight": null,
+      "missing": null,
+      "monotone_constraints": null,
+      "multi_strategy": null,
+      "n_estimators": 240,
+      "n_jobs": 2,
+      "num_parallel_tree": null,
+      "random_state": 26204,
+      "reg_alpha": null,
+      "reg_lambda": null,
+      "sampling_method": null,
+      "scale_pos_weight": null,
+      "subsample": 0.85,
+      "tree_method": null,
+      "validate_parameters": null,
+      "verbosity": null
+    },
+    "risk": {
+      "bootstrap": true,
+      "ccp_alpha": 0.0,
+      "class_weight": "balanced_subsample",
+      "criterion": "gini",
+      "max_depth": null,
+      "max_features": "sqrt",
+      "max_leaf_nodes": null,
+      "max_samples": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 2,
+      "min_samples_split": 2,
+      "min_weight_fraction_leaf": 0.0,
+      "monotonic_cst": null,
+      "n_estimators": 320,
+      "n_jobs": 2,
+      "oob_score": false,
+      "random_state": 26205,
+      "verbose": 0,
+      "warm_start": false
+    }
+  },
+  "internal_algorithm_comparisons": {
+    "cost": [
+      {
+        "algorithm": "lightgbm",
+        "MAE": 33.832,
+        "RMSE": 69.667,
+        "R2": 0.4772,
+        "MAPE": 193.462,
+        "rows": 2613,
+        "unique_projects": 154
+      },
+      {
+        "algorithm": "xgboost",
+        "MAE": 32.663,
+        "RMSE": 69.33,
+        "R2": 0.4822,
+        "MAPE": 168.359,
+        "rows": 2613,
+        "unique_projects": 154
+      },
+      {
+        "algorithm": "extra_trees",
+        "MAE": 33.828,
+        "RMSE": 71.088,
+        "R2": 0.4556,
+        "MAPE": 165.607,
+        "rows": 2613,
+        "unique_projects": 154
+      }
+    ],
+    "delay": [
+      {
+        "algorithm": "lightgbm",
+        "MAE": 474.708,
+        "RMSE": 668.017,
+        "R2": 0.666,
+        "MAPE": 48.483,
+        "rows": 2613,
+        "unique_projects": 154
+      },
+      {
+        "algorithm": "xgboost",
+        "MAE": 472.93,
+        "RMSE": 671.815,
+        "R2": 0.6622,
+        "MAPE": 47.52,
+        "rows": 2613,
+        "unique_projects": 154
+      },
+      {
+        "algorithm": "extra_trees",
+        "MAE": 474.521,
+        "RMSE": 679.527,
+        "R2": 0.6544,
+        "MAPE": 56.7,
+        "rows": 2613,
+        "unique_projects": 154
+      }
+    ]
+  },
+  "baseline_metrics": {
+    "cost": {
+      "MAE": 36.249,
+      "RMSE": 72.704,
+      "R2": 0.0612,
+      "MAPE": 157.119,
+      "rows": 10967,
+      "unique_projects": 691
+    },
+    "delay": {
+      "MAE": 759.933,
+      "RMSE": 1052.501,
+      "R2": -0.027,
+      "MAPE": 112.302,
+      "rows": 10967,
+      "unique_projects": 691
+    },
+    "risk": {
+      "accuracy": 0.3963,
+      "macro_precision": 0.2718,
+      "macro_recall": 0.2641,
+      "macro_f1": 0.2526,
+      "confusion_matrix": [
+        [
+          3.5128,
+          2.8024,
+          3.1316,
+          8.979
+        ],
+        [
+          11.1172,
+          4.969,
+          3.0814,
+          11.3317
+        ],
+        [
+          8.703,
+          11.1392,
+          9.1032,
+          15.3673
+        ],
+        [
+          23.606,
+          43.7934,
+          28.9711,
+          95.3251
+        ]
+      ],
+      "labels": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ]
+    }
+  },
+  "lifecycle_metrics": {
+    "cost": {
+      "MAE": 28.283,
+      "RMSE": 60.219,
+      "R2": 0.356,
+      "MAPE": 146.125,
+      "rows": 10967,
+      "unique_projects": 691
+    },
+    "delay": {
+      "MAE": 530.599,
+      "RMSE": 717.985,
+      "R2": 0.5221,
+      "MAPE": 57.089,
+      "rows": 10967,
+      "unique_projects": 691
+    },
+    "risk": {
+      "accuracy": 0.5855,
+      "macro_precision": 0.4222,
+      "macro_recall": 0.4407,
+      "macro_f1": 0.4278,
+      "confusion_matrix": [
+        [
+          8.2507,
+          2.2892,
+          6.0567,
+          1.8293
+        ],
+        [
+          2.5448,
+          11.7939,
+          5.0134,
+          11.1471
+        ],
+        [
+          3.6329,
+          10.5206,
+          9.3687,
+          20.7905
+        ],
+        [
+          4.5734,
+          19.7797,
+          29.9289,
+          137.4135
+        ]
+      ],
+      "labels": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ]
+    }
+  },
+  "lifecycle_stage_metrics": {
+    "early": {
+      "available": true,
+      "cost": {
+        "MAE": 37.31,
+        "RMSE": 50.529,
+        "R2": -1.1718,
+        "MAPE": 261.756,
+        "rows": 169,
+        "unique_projects": 93
+      },
+      "delay": {
+        "MAE": 616.242,
+        "RMSE": 821.79,
+        "R2": 0.0469,
+        "MAPE": 79.673,
+        "rows": 169,
+        "unique_projects": 93
+      },
+      "risk": {
+        "accuracy": 0.1539,
+        "macro_precision": 0.2269,
+        "macro_recall": 0.2181,
+        "macro_f1": 0.1444,
+        "confusion_matrix": [
+          [
+            0.1723,
+            0.0345,
+            0.0909,
+            0.0909
+          ],
+          [
+            0.339,
+            0.1894,
+            0.0556,
+            0.0
+          ],
+          [
+            0.5243,
+            0.382,
+            0.0,
+            0.0
+          ],
+          [
+            0.5575,
+            0.4983,
+            0.2585,
+            0.1535
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "mid": {
+      "available": true,
+      "cost": {
+        "MAE": 36.712,
+        "RMSE": 50.871,
+        "R2": -0.218,
+        "MAPE": 234.077,
+        "rows": 655,
+        "unique_projects": 239
+      },
+      "delay": {
+        "MAE": 488.195,
+        "RMSE": 725.502,
+        "R2": 0.1458,
+        "MAPE": 106.886,
+        "rows": 655,
+        "unique_projects": 239
+      },
+      "risk": {
+        "accuracy": 0.3676,
+        "macro_precision": 0.3862,
+        "macro_recall": 0.2931,
+        "macro_f1": 0.2426,
+        "confusion_matrix": [
+          [
+            5.7467,
+            0.4824,
+            1.8594,
+            0.0345
+          ],
+          [
+            0.7079,
+            0.4601,
+            0.1181,
+            0.0625
+          ],
+          [
+            1.5857,
+            1.4302,
+            0.1297,
+            0.0
+          ],
+          [
+            1.9634,
+            2.6766,
+            0.8224,
+            0.4906
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "late": {
+      "available": true,
+      "cost": {
+        "MAE": 35.602,
+        "RMSE": 89.546,
+        "R2": 0.0642,
+        "MAPE": 198.488,
+        "rows": 1126,
+        "unique_projects": 368
+      },
+      "delay": {
+        "MAE": 580.73,
+        "RMSE": 780.064,
+        "R2": -0.0051,
+        "MAPE": 95.328,
+        "rows": 1126,
+        "unique_projects": 368
+      },
+      "risk": {
+        "accuracy": 0.2311,
+        "macro_precision": 0.3058,
+        "macro_recall": 0.2734,
+        "macro_f1": 0.2349,
+        "confusion_matrix": [
+          [
+            1.7527,
+            0.507,
+            2.2632,
+            0.6607
+          ],
+          [
+            1.2813,
+            1.6693,
+            1.1737,
+            0.2198
+          ],
+          [
+            1.2728,
+            2.4263,
+            1.1398,
+            0.2521
+          ],
+          [
+            1.7334,
+            5.7912,
+            4.5092,
+            2.0769
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "very_late": {
+      "available": true,
+      "cost": {
+        "MAE": 24.591,
+        "RMSE": 54.028,
+        "R2": 0.3799,
+        "MAPE": 131.743,
+        "rows": 8159,
+        "unique_projects": 652
+      },
+      "delay": {
+        "MAE": 518.037,
+        "RMSE": 696.434,
+        "R2": 0.5668,
+        "MAPE": 48.459,
+        "rows": 8159,
+        "unique_projects": 652
+      },
+      "risk": {
+        "accuracy": 0.6722,
+        "macro_precision": 0.4669,
+        "macro_recall": 0.3811,
+        "macro_f1": 0.4009,
+        "confusion_matrix": [
+          [
+            0.579,
+            1.2333,
+            1.7581,
+            0.9794
+          ],
+          [
+            0.2166,
+            6.9592,
+            3.6316,
+            10.1045
+          ],
+          [
+            0.25,
+            3.8268,
+            7.5816,
+            18.9374
+          ],
+          [
+            0.2655,
+            5.0353,
+            23.3991,
+            127.6825
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    }
+  },
+  "ablation_results": {
+    "without_revised_cost": {
+      "features": [
+        "approved_cost_cr",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector",
+        "project_size_category",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "implementing_agency",
+        "cost_growth_velocity_3m",
+        "cost_growth_velocity_6m",
+        "cost_acceleration",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate",
+        "agency_average_delay",
+        "agency_average_cost_overrun",
+        "agency_delay_rate",
+        "agency_cost_overrun_rate"
+      ],
+      "selected_algorithms": {
+        "cost": "lightgbm",
+        "delay": "extra_trees"
+      },
+      "internal_algorithm_comparisons": {
+        "cost": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 33.723,
+            "RMSE": 71.5,
+            "R2": 0.4493,
+            "MAPE": 189.631,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 34.984,
+            "RMSE": 72.855,
+            "R2": 0.4282,
+            "MAPE": 182.767,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 35.171,
+            "RMSE": 74.721,
+            "R2": 0.3986,
+            "MAPE": 166.446,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ],
+        "delay": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 478.663,
+            "RMSE": 673.198,
+            "R2": 0.6608,
+            "MAPE": 49.661,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 477.192,
+            "RMSE": 678.677,
+            "R2": 0.6552,
+            "MAPE": 47.402,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 470.81,
+            "RMSE": 677.533,
+            "R2": 0.6564,
+            "MAPE": 55.936,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ]
+      },
+      "metrics": {
+        "cost": {
+          "MAE": 29.769,
+          "RMSE": 62.767,
+          "R2": 0.3003,
+          "MAPE": 166.396,
+          "rows": 10967,
+          "unique_projects": 691
+        },
+        "delay": {
+          "MAE": 549.031,
+          "RMSE": 726.483,
+          "R2": 0.5107,
+          "MAPE": 74.522,
+          "rows": 10967,
+          "unique_projects": 691
+        },
+        "risk": {
+          "accuracy": 0.5734,
+          "macro_precision": 0.4146,
+          "macro_recall": 0.4326,
+          "macro_f1": 0.4192,
+          "confusion_matrix": [
+            [
+              9.0464,
+              1.8205,
+              6.1723,
+              1.3867
+            ],
+            [
+              2.7119,
+              9.6735,
+              10.1362,
+              7.9776
+            ],
+            [
+              3.678,
+              11.4303,
+              9.6709,
+              19.5334
+            ],
+            [
+              4.8773,
+              21.5647,
+              30.2572,
+              134.9963
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "lifecycle_stages": {
+        "early": {
+          "available": true,
+          "cost": {
+            "MAE": 34.028,
+            "RMSE": 47.438,
+            "R2": -0.9142,
+            "MAPE": 266.202,
+            "rows": 169,
+            "unique_projects": 93
+          },
+          "delay": {
+            "MAE": 568.398,
+            "RMSE": 834.158,
+            "R2": 0.018,
+            "MAPE": 67.933,
+            "rows": 169,
+            "unique_projects": 93
+          },
+          "risk": {
+            "accuracy": 0.1425,
+            "macro_precision": 0.2078,
+            "macro_recall": 0.2216,
+            "macro_f1": 0.1296,
+            "confusion_matrix": [
+              [
+                0.2328,
+                0.0649,
+                0.0,
+                0.0909
+              ],
+              [
+                0.3586,
+                0.1171,
+                0.1082,
+                0.0
+              ],
+              [
+                0.5297,
+                0.3767,
+                0.0,
+                0.0
+              ],
+              [
+                0.5382,
+                0.5247,
+                0.2779,
+                0.127
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "mid": {
+          "available": true,
+          "cost": {
+            "MAE": 31.449,
+            "RMSE": 48.709,
+            "R2": -0.1166,
+            "MAPE": 232.496,
+            "rows": 655,
+            "unique_projects": 239
+          },
+          "delay": {
+            "MAE": 574.663,
+            "RMSE": 746.056,
+            "R2": 0.0967,
+            "MAPE": 133.627,
+            "rows": 655,
+            "unique_projects": 239
+          },
+          "risk": {
+            "accuracy": 0.3632,
+            "macro_precision": 0.4208,
+            "macro_recall": 0.2774,
+            "macro_f1": 0.233,
+            "confusion_matrix": [
+              [
+                5.8181,
+                0.1034,
+                2.2014,
+                0.0
+              ],
+              [
+                0.7284,
+                0.3871,
+                0.2332,
+                0.0
+              ],
+              [
+                1.6417,
+                1.3986,
+                0.1053,
+                0.0
+              ],
+              [
+                2.0861,
+                2.6619,
+                0.7711,
+                0.4339
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "late": {
+          "available": true,
+          "cost": {
+            "MAE": 37.314,
+            "RMSE": 92.812,
+            "R2": -0.0053,
+            "MAPE": 220.865,
+            "rows": 1126,
+            "unique_projects": 368
+          },
+          "delay": {
+            "MAE": 553.133,
+            "RMSE": 739.761,
+            "R2": 0.0961,
+            "MAPE": 129.097,
+            "rows": 1126,
+            "unique_projects": 368
+          },
+          "risk": {
+            "accuracy": 0.2349,
+            "macro_precision": 0.3537,
+            "macro_recall": 0.3016,
+            "macro_f1": 0.2427,
+            "confusion_matrix": [
+              [
+                2.1695,
+                0.3338,
+                2.3412,
+                0.3391
+              ],
+              [
+                1.2656,
+                1.8566,
+                1.1505,
+                0.0714
+              ],
+              [
+                1.2228,
+                2.5343,
+                1.3339,
+                0.0
+              ],
+              [
+                1.871,
+                6.3128,
+                4.5386,
+                1.3882
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "very_late": {
+          "available": true,
+          "cost": {
+            "MAE": 26.807,
+            "RMSE": 56.946,
+            "R2": 0.3111,
+            "MAPE": 153.353,
+            "rows": 8159,
+            "unique_projects": 652
+          },
+          "delay": {
+            "MAE": 544.446,
+            "RMSE": 712.622,
+            "R2": 0.5465,
+            "MAPE": 63.486,
+            "rows": 8159,
+            "unique_projects": 652
+          },
+          "risk": {
+            "accuracy": 0.654,
+            "macro_precision": 0.435,
+            "macro_recall": 0.3591,
+            "macro_f1": 0.379,
+            "confusion_matrix": [
+              [
+                0.8259,
+                1.2333,
+                1.5552,
+                0.9354
+              ],
+              [
+                0.3594,
+                4.1744,
+                8.6443,
+                7.7337
+              ],
+              [
+                0.2632,
+                3.6507,
+                7.5662,
+                19.1158
+              ],
+              [
+                0.3325,
+                6.233,
+                23.4452,
+                126.3718
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    },
+    "snapshot_only": {
+      "features": [
+        "approved_cost_cr",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector",
+        "project_size_category",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "revised_cost_cr",
+        "cost_escalation_percentage",
+        "implementing_agency",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate",
+        "agency_average_delay",
+        "agency_average_cost_overrun",
+        "agency_delay_rate",
+        "agency_cost_overrun_rate"
+      ],
+      "selected_algorithms": {
+        "cost": "xgboost",
+        "delay": "extra_trees"
+      },
+      "internal_algorithm_comparisons": {
+        "cost": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 33.858,
+            "RMSE": 69.683,
+            "R2": 0.4769,
+            "MAPE": 186.74,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 32.736,
+            "RMSE": 68.718,
+            "R2": 0.4913,
+            "MAPE": 167.444,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 34.321,
+            "RMSE": 71.509,
+            "R2": 0.4492,
+            "MAPE": 167.737,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ],
+        "delay": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 474.172,
+            "RMSE": 667.83,
+            "R2": 0.6662,
+            "MAPE": 47.808,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 476.022,
+            "RMSE": 674.231,
+            "R2": 0.6597,
+            "MAPE": 47.063,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 467.348,
+            "RMSE": 676.069,
+            "R2": 0.6579,
+            "MAPE": 53.402,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ]
+      },
+      "metrics": {
+        "cost": {
+          "MAE": 28.237,
+          "RMSE": 60.559,
+          "R2": 0.3487,
+          "MAPE": 143.456,
+          "rows": 10967,
+          "unique_projects": 691
+        },
+        "delay": {
+          "MAE": 537.991,
+          "RMSE": 718.477,
+          "R2": 0.5214,
+          "MAPE": 72.64,
+          "rows": 10967,
+          "unique_projects": 691
+        },
+        "risk": {
+          "accuracy": 0.5947,
+          "macro_precision": 0.4286,
+          "macro_recall": 0.4508,
+          "macro_f1": 0.4335,
+          "confusion_matrix": [
+            [
+              8.4112,
+              3.412,
+              4.7854,
+              1.8173
+            ],
+            [
+              2.3734,
+              13.3645,
+              5.8072,
+              8.9542
+            ],
+            [
+              3.1991,
+              12.739,
+              7.9666,
+              20.408
+            ],
+            [
+              4.4512,
+              21.6107,
+              25.9321,
+              139.7016
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "lifecycle_stages": {
+        "early": {
+          "available": true,
+          "cost": {
+            "MAE": 38.088,
+            "RMSE": 50.963,
+            "R2": -1.2093,
+            "MAPE": 271.216,
+            "rows": 169,
+            "unique_projects": 93
+          },
+          "delay": {
+            "MAE": 574.131,
+            "RMSE": 839.879,
+            "R2": 0.0045,
+            "MAPE": 73.846,
+            "rows": 169,
+            "unique_projects": 93
+          },
+          "risk": {
+            "accuracy": 0.1318,
+            "macro_precision": 0.1617,
+            "macro_recall": 0.1829,
+            "macro_f1": 0.121,
+            "confusion_matrix": [
+              [
+                0.1246,
+                0.0821,
+                0.0,
+                0.1818
+              ],
+              [
+                0.339,
+                0.1894,
+                0.0556,
+                0.0
+              ],
+              [
+                0.4819,
+                0.4245,
+                0.0,
+                0.0
+              ],
+              [
+                0.4778,
+                0.5834,
+                0.2796,
+                0.127
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "mid": {
+          "available": true,
+          "cost": {
+            "MAE": 36.311,
+            "RMSE": 50.635,
+            "R2": -0.2067,
+            "MAPE": 230.666,
+            "rows": 655,
+            "unique_projects": 239
+          },
+          "delay": {
+            "MAE": 569.534,
+            "RMSE": 742.357,
+            "R2": 0.1057,
+            "MAPE": 137.642,
+            "rows": 655,
+            "unique_projects": 239
+          },
+          "risk": {
+            "accuracy": 0.355,
+            "macro_precision": 0.3717,
+            "macro_recall": 0.2916,
+            "macro_f1": 0.2377,
+            "confusion_matrix": [
+              [
+                5.5124,
+                0.5486,
+                1.9906,
+                0.0714
+              ],
+              [
+                0.6579,
+                0.5101,
+                0.1181,
+                0.0625
+              ],
+              [
+                1.4382,
+                1.6158,
+                0.0917,
+                0.0
+              ],
+              [
+                1.8483,
+                2.8666,
+                0.7607,
+                0.4775
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "late": {
+          "available": true,
+          "cost": {
+            "MAE": 35.922,
+            "RMSE": 90.566,
+            "R2": 0.0428,
+            "MAPE": 201.25,
+            "rows": 1126,
+            "unique_projects": 368
+          },
+          "delay": {
+            "MAE": 550.906,
+            "RMSE": 739.794,
+            "R2": 0.096,
+            "MAPE": 133.653,
+            "rows": 1126,
+            "unique_projects": 368
+          },
+          "risk": {
+            "accuracy": 0.2692,
+            "macro_precision": 0.3447,
+            "macro_recall": 0.3177,
+            "macro_f1": 0.2651,
+            "confusion_matrix": [
+              [
+                1.6438,
+                1.2239,
+                1.7951,
+                0.5208
+              ],
+              [
+                1.1511,
+                2.4479,
+                0.5968,
+                0.1484
+              ],
+              [
+                1.1031,
+                2.7251,
+                1.0518,
+                0.211
+              ],
+              [
+                1.8214,
+                6.0612,
+                3.6381,
+                2.59
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "very_late": {
+          "available": true,
+          "cost": {
+            "MAE": 24.509,
+            "RMSE": 54.352,
+            "R2": 0.3724,
+            "MAPE": 127.778,
+            "rows": 8159,
+            "unique_projects": 652
+          },
+          "delay": {
+            "MAE": 530.258,
+            "RMSE": 703.302,
+            "R2": 0.5583,
+            "MAPE": 60.124,
+            "rows": 8159,
+            "unique_projects": 652
+          },
+          "risk": {
+            "accuracy": 0.6782,
+            "macro_precision": 0.501,
+            "macro_recall": 0.4057,
+            "macro_f1": 0.4327,
+            "confusion_matrix": [
+              [
+                1.1304,
+                1.5255,
+                0.9145,
+                0.9794
+              ],
+              [
+                0.2254,
+                7.1069,
+                5.0368,
+                8.5429
+              ],
+              [
+                0.176,
+                4.5316,
+                6.3141,
+                19.5742
+              ],
+              [
+                0.2692,
+                6.2387,
+                20.3405,
+                129.534
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    },
+    "without_agency_priors": {
+      "features": [
+        "approved_cost_cr",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector",
+        "project_size_category",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "revised_cost_cr",
+        "cost_escalation_percentage",
+        "implementing_agency",
+        "cost_growth_velocity_3m",
+        "cost_growth_velocity_6m",
+        "cost_acceleration",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate"
+      ],
+      "selected_algorithms": {
+        "cost": "xgboost",
+        "delay": "extra_trees"
+      },
+      "internal_algorithm_comparisons": {
+        "cost": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 33.97,
+            "RMSE": 70.738,
+            "R2": 0.461,
+            "MAPE": 190.266,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 32.839,
+            "RMSE": 67.981,
+            "R2": 0.5022,
+            "MAPE": 175.708,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 33.763,
+            "RMSE": 70.529,
+            "R2": 0.4642,
+            "MAPE": 159.507,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ],
+        "delay": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 486.389,
+            "RMSE": 676.281,
+            "R2": 0.6577,
+            "MAPE": 46.248,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 484.812,
+            "RMSE": 680.188,
+            "R2": 0.6537,
+            "MAPE": 47.31,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 473.443,
+            "RMSE": 682.652,
+            "R2": 0.6512,
+            "MAPE": 53.028,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ]
+      },
+      "metrics": {
+        "cost": {
+          "MAE": 29.035,
+          "RMSE": 61.066,
+          "R2": 0.3377,
+          "MAPE": 161.057,
+          "rows": 10967,
+          "unique_projects": 691
+        },
+        "delay": {
+          "MAE": 533.505,
+          "RMSE": 718.487,
+          "R2": 0.5214,
+          "MAPE": 70.27,
+          "rows": 10967,
+          "unique_projects": 691
+        },
+        "risk": {
+          "accuracy": 0.5741,
+          "macro_precision": 0.4152,
+          "macro_recall": 0.4572,
+          "macro_f1": 0.4278,
+          "confusion_matrix": [
+            [
+              9.9433,
+              2.7197,
+              4.4104,
+              1.3525
+            ],
+            [
+              3.1236,
+              12.7872,
+              6.1817,
+              8.4067
+            ],
+            [
+              3.6563,
+              12.9558,
+              7.7875,
+              19.913
+            ],
+            [
+              6.3262,
+              23.2051,
+              29.0901,
+              133.0742
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "lifecycle_stages": {
+        "early": {
+          "available": true,
+          "cost": {
+            "MAE": 37.616,
+            "RMSE": 50.074,
+            "R2": -1.1328,
+            "MAPE": 277.242,
+            "rows": 169,
+            "unique_projects": 93
+          },
+          "delay": {
+            "MAE": 570.448,
+            "RMSE": 837.444,
+            "R2": 0.0103,
+            "MAPE": 69.938,
+            "rows": 169,
+            "unique_projects": 93
+          },
+          "risk": {
+            "accuracy": 0.1122,
+            "macro_precision": 0.1108,
+            "macro_recall": 0.1799,
+            "macro_f1": 0.1022,
+            "confusion_matrix": [
+              [
+                0.1419,
+                0.0649,
+                0.0,
+                0.1818
+              ],
+              [
+                0.339,
+                0.1894,
+                0.0556,
+                0.0
+              ],
+              [
+                0.4992,
+                0.4071,
+                0.0,
+                0.0
+              ],
+              [
+                0.5991,
+                0.5388,
+                0.2857,
+                0.0442
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "mid": {
+          "available": true,
+          "cost": {
+            "MAE": 36.616,
+            "RMSE": 51.024,
+            "R2": -0.2253,
+            "MAPE": 223.755,
+            "rows": 655,
+            "unique_projects": 239
+          },
+          "delay": {
+            "MAE": 528.412,
+            "RMSE": 718.883,
+            "R2": 0.1613,
+            "MAPE": 123.434,
+            "rows": 655,
+            "unique_projects": 239
+          },
+          "risk": {
+            "accuracy": 0.3791,
+            "macro_precision": 0.3637,
+            "macro_recall": 0.2898,
+            "macro_f1": 0.2241,
+            "confusion_matrix": [
+              [
+                6.3013,
+                0.3481,
+                1.4021,
+                0.0714
+              ],
+              [
+                0.7287,
+                0.4393,
+                0.1806,
+                0.0
+              ],
+              [
+                1.6688,
+                1.4269,
+                0.05,
+                0.0
+              ],
+              [
+                2.5081,
+                2.4044,
+                0.7919,
+                0.2486
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "late": {
+          "available": true,
+          "cost": {
+            "MAE": 36.518,
+            "RMSE": 90.967,
+            "R2": 0.0343,
+            "MAPE": 217.626,
+            "rows": 1126,
+            "unique_projects": 368
+          },
+          "delay": {
+            "MAE": 550.544,
+            "RMSE": 740.269,
+            "R2": 0.0949,
+            "MAPE": 123.865,
+            "rows": 1126,
+            "unique_projects": 368
+          },
+          "risk": {
+            "accuracy": 0.2236,
+            "macro_precision": 0.3102,
+            "macro_recall": 0.3003,
+            "macro_f1": 0.2243,
+            "confusion_matrix": [
+              [
+                2.5219,
+                0.7428,
+                1.5584,
+                0.3606
+              ],
+              [
+                1.6429,
+                2.0418,
+                0.5111,
+                0.1484
+              ],
+              [
+                1.2744,
+                2.8638,
+                0.8982,
+                0.0545
+              ],
+              [
+                2.7408,
+                6.9885,
+                3.42,
+                0.9613
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "very_late": {
+          "available": true,
+          "cost": {
+            "MAE": 25.417,
+            "RMSE": 54.965,
+            "R2": 0.3582,
+            "MAPE": 148.323,
+            "rows": 8159,
+            "unique_projects": 652
+          },
+          "delay": {
+            "MAE": 526.533,
+            "RMSE": 703.212,
+            "R2": 0.5584,
+            "MAPE": 58.901,
+            "rows": 8159,
+            "unique_projects": 652
+          },
+          "risk": {
+            "accuracy": 0.6581,
+            "macro_precision": 0.4544,
+            "macro_recall": 0.3899,
+            "macro_f1": 0.4093,
+            "confusion_matrix": [
+              [
+                0.9782,
+                1.4576,
+                1.4287,
+                0.6854
+              ],
+              [
+                0.4131,
+                6.9719,
+                5.4345,
+                8.0924
+              ],
+              [
+                0.214,
+                4.6034,
+                6.385,
+                19.3936
+              ],
+              [
+                0.4525,
+                6.7259,
+                23.7246,
+                125.4794
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "shap_available": {
+    "cost": true,
+    "delay": true,
+    "risk": false
+  },
+  "created_at": "2026-08-23T10:46:53.485960+00:00"
+}
