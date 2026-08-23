@@ -48,6 +48,10 @@ CANDIDATE_NUMERIC = [
 CANDIDATE_CATEGORICAL = ["sector", "ministry", "implementing_agency", "project_size_category"]
 CANDIDATE_FEATURES = CANDIDATE_NUMERIC + CANDIDATE_CATEGORICAL
 INVALID_LIFECYCLE_SOURCES = {
+    "agency_average_delay": "excluded from the preserved five-feature production baseline; evaluated in the monthly lifecycle model",
+    "agency_average_cost_overrun": "excluded from the preserved five-feature production baseline; evaluated in the monthly lifecycle model",
+    "agency_failure_rate": "excluded from the preserved five-feature production baseline; evaluated in the monthly lifecycle model",
+    "implementing_agency": "excluded from the preserved five-feature production baseline; evaluated in the monthly lifecycle model",
     "progress_trend_6m": "no joined official monthly observations in the completed-project archive",
     "progress_trend_12m": "no joined official monthly observations in the completed-project archive",
     "progress_acceleration": "no joined official monthly observations in the completed-project archive",

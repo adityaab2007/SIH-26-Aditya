@@ -1,27 +1,27 @@
 # Lifecycle feature audit
 
-## Production data boundary
+## Legacy five-feature baseline
 
-The production time-window models read `data/processed/paimana_completed_outcomes.csv` through `backend/app/ml/real_time_windows.py`. They never read `data/project_history.csv`, which is a legacy deterministic demonstration dataset.
+The existing completed-outcome model remains unchanged and identifiable as the controlled five-feature baseline.
 
-The completed-outcome archive contains official approved cost, planned commissioning date, reported completion expenditure, completion date, and sector information. The checked-in monthly monitoring archive has no safe exact project-ID match to these completed outcomes. A fuzzy name join is not accepted because similarly named infrastructure packages may be different projects.
+The monthly lifecycle model uses `paimana_monthly_snapshots.csv` and links labels by exact official project ID. Where early reports lack IDs, only a unique exact normalized name plus exact approved-cost match can be verified. Fuzzy matching is never production truth; ambiguous rows are quarantined in `paimana_identity_audit.csv`.
 
 ## Audited lifecycle fields
 
 | Feature | Actual monthly observations? | Real matching snapshot? | Valid timestamps? | Decision |
 |---|---:|---:|---:|---|
-| `progress_trend_6m` | No | No | No matching timestamps | Remove from training |
-| `progress_trend_12m` | No | No | No matching timestamps | Remove from training |
-| `progress_acceleration` | No | No | No matching timestamps | Remove from training |
-| `progress_velocity` | No | No | No matching timestamps | Remove from training |
+| `progress_velocity_3m` | Audited per window | Exact trajectory only | Uses snapshots through T | Keep only when temporally distributed |
+| `progress_velocity_6m` | Audited per window | Exact trajectory only | Uses snapshots through T | Keep only when temporally distributed |
+| `progress_acceleration` | Audited per window | Exact trajectory only | Difference of as-of slopes | Keep only when temporally distributed |
+| `cost_growth_velocity_3m/6m` | Audited per window | Exact trajectory only | Uses actual date deltas | Keep only when temporally distributed |
 | `milestone_delay_count` | No | No | No milestone timeline | Remove from training |
 | `monthly_expenditure_growth` | No | No | Legacy demonstration only | Remove from training |
 
-The production feature builder may calculate these fields when a future input contains multiple real snapshots with valid dates. They are not members of the current production training feature contract and missing values remain missing.
+Missing trajectory features remain null when history is insufficient. They are never backfilled from later snapshots.
 
-## Final production feature contract
+## Preserved five-feature baseline contract
 
-The automated audit retains only features that are observed, variable, and available in at least 5% of the selected training window. For the official 2001–2015 window this is:
+The legacy completed-outcome pipeline intentionally remains fixed to:
 
 - `approved_cost_cr`
 - `sector_average_delay`
@@ -29,4 +29,8 @@ The automated audit retains only features that are observed, variable, and avail
 - `sector`
 - `project_size_category`
 
-Agency fields, ministry, revised cost, expenditure behaviour, and duration behaviour are excluded because the completed-project source does not publish enough valid values. Historical sector values for a training row use only projects completed before that row's prediction-period date. No missing lifecycle field is replaced with zero, a sector average, or synthetic history.
+Agency fields remain excluded from that controlled baseline even though newer outcome extraction improves their coverage.
+
+## Monthly lifecycle contract
+
+The monthly model runs the richer audit independently inside each training window. The generated `models/monthly_lifecycle/*/feature_quality_report.json` files contain per-feature availability by year and parser, project coverage, leakage notes, and the exact keep/remove decision. In the completed evaluations, direct expenditure/schedule/duration features, revised-cost state, cost trajectories, sector priors, and agency priors survive; physical-progress trajectories and ministry are rejected because their temporal coverage is insufficient. No missing lifecycle field is replaced with zero or future information.

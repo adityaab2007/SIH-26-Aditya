@@ -23,9 +23,20 @@ def audit_features(
     *,
     invalid_sources: dict[str, str] | None = None,
     minimum_availability: float = 5.0,
+    minimum_year_coverage: int = 1,
+    date_column: str = "snapshot_date",
+    project_column: str = "canonical_project_id",
+    parser_column: str = "parser_version",
+    safely_as_of_features: set[str] | None = None,
+    leakage_risks: dict[str, str] | None = None,
 ) -> dict:
     """Return deterministic per-feature quality decisions for one training frame."""
     invalid_sources = invalid_sources or {}
+    leakage_risks = leakage_risks or {}
+    safely_as_of_features = safely_as_of_features or set(feature_names)
+    has_temporal_axis = date_column in frame and pd.to_datetime(frame.get(date_column), errors="coerce").notna().any()
+    dates = pd.to_datetime(frame.get(date_column), errors="coerce") if date_column in frame else pd.Series(pd.NaT, index=frame.index)
+    years = dates.dt.year
     rows = []
     for feature in feature_names:
         series = frame[feature] if feature in frame else pd.Series(np.nan, index=frame.index)
@@ -37,6 +48,10 @@ def audit_features(
         zero_percentage = float(numeric.eq(0).sum() / len(series) * 100) if len(series) else 0.0
         unique = int(available.nunique(dropna=True))
         constant = unique <= 1
+        year_coverage = int(years[valid].nunique()) if has_temporal_axis and len(series) else (1 if valid.any() else 0)
+        project_coverage = int(frame.loc[valid, project_column].nunique()) if project_column in frame else int(valid.sum())
+        by_year = {str(int(year)): round(float(valid[years.eq(year)].mean() * 100), 2) for year in sorted(years.dropna().unique())}
+        by_parser = {str(parser): round(float(valid[frame[parser_column].eq(parser)].mean() * 100), 2) for parser in sorted(frame[parser_column].dropna().unique())} if parser_column in frame else {}
         reason = invalid_sources.get(feature)
         if reason:
             decision = "remove"
@@ -44,6 +59,10 @@ def audit_features(
             decision, reason = "remove", f"availability below {minimum_availability:.1f}%"
         elif constant:
             decision, reason = "remove", "constant or empty in the training window"
+        elif year_coverage < minimum_year_coverage:
+            decision, reason = "remove", f"available in only {year_coverage} temporal year(s); requires {minimum_year_coverage}"
+        elif feature not in safely_as_of_features:
+            decision, reason = "remove", "not proven available as of each historical snapshot"
         else:
             decision, reason = "keep", "observed and variable in the training window"
         rows.append({
@@ -55,6 +74,12 @@ def audit_features(
             "constant": bool(constant),
             "availability": round(availability, 2),
             "availability_percentage": round(availability, 2),
+            "temporal_year_coverage": year_coverage,
+            "project_coverage": project_coverage,
+            "availability_by_year": by_year,
+            "availability_by_parser": by_parser,
+            "safely_as_of_available": feature in safely_as_of_features,
+            "leakage_risk": leakage_risks.get(feature, "none identified; computed from snapshot or earlier records only"),
             "decision": decision,
             "reason": reason,
         })
@@ -69,7 +94,7 @@ def audit_features(
         "removed_invalid_feature_count": len(removed),
         "data_quality_score": round(quality, 2),
         "features": rows,
-        "policy": "Missing, placeholder, constant, synthetic, or source-invalid fields are excluded from model fitting.",
+        "policy": "Eligibility is evaluated inside the selected training window using availability, variability, temporal/project coverage, parser coverage, as-of safety, and leakage risk.",
     }
 
 
