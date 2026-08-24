@@ -1,0 +1,56 @@
+name: Run ML experiment
+
+on:
+  workflow_dispatch:
+    inputs:
+      callable:
+        description: "backend.app.ml.experiments.<module>:<function>"
+        required: true
+        type: string
+      training_start:
+        description: "Training start year"
+        required: true
+        type: string
+      training_end:
+        description: "Training end year"
+        required: true
+        type: string
+      test_end:
+        description: "Final holdout year"
+        required: true
+        type: string
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Validate Python sources
+        run: python -m compileall -q backend scripts tests
+      - name: Run isolated experiment
+        env:
+          EXPERIMENT_CALLABLE: ${{ inputs.callable }}
+          TRAINING_START: ${{ inputs.training_start }}
+          TRAINING_END: ${{ inputs.training_end }}
+          TEST_END: ${{ inputs.test_end }}
+        run: |
+          python scripts/run_ml_experiment.py \
+            --callable "$EXPERIMENT_CALLABLE" \
+            --start "$TRAINING_START" \
+            --end "$TRAINING_END" \
+            --test-end "$TEST_END"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: experiment-results
+          path: |
+            reports/experiments/**
+            models/monthly_lifecycle/experiments/**
+          if-no-files-found: warn
