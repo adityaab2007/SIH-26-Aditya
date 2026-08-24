@@ -1,26 +1,77 @@
 """Live retraining adapter for the official PAIMANA monthly lifecycle models.
 
 The website year-range selector must retrain the lifecycle cost, delay and risk
-models, not the preserved five-feature completed-project baseline.  This module
-keeps that policy in one place and returns an API-friendly training receipt.
+models, not the preserved five-feature completed-project baseline. This module
+keeps that policy in one place, caches the prepared official lifecycle cohort for
+repeated in-process retrains, and records successful arbitrary windows as real
+runtime model runs.
 """
 from __future__ import annotations
+
+from datetime import datetime, timezone
+from functools import lru_cache
+import json
 
 import pandas as pd
 
 from backend.app.ml.monthly_lifecycle import build_training_dataset
-from backend.app.ml.monthly_training import train_window
+from backend.app.ml.monthly_training import MODEL_ROOT, train_window
 from backend.app.services import monthly_prediction_service
 
 
-def _training_data() -> tuple[pd.DataFrame, pd.DataFrame, int, int]:
+@lru_cache(maxsize=1)
+def _cached_training_data() -> tuple[pd.DataFrame, pd.DataFrame, int, int]:
     data, identity = build_training_dataset()
     data = data.copy()
     data["completion_year"] = pd.to_numeric(data["completion_year"], errors="coerce")
     years = data["completion_year"].dropna().astype(int)
     if years.empty:
         raise ValueError("No identity-verified PAIMANA lifecycle outcomes are available for retraining.")
-    return data, identity, int(years.min()), int(years.max())
+    return data, identity.copy(), int(years.min()), int(years.max())
+
+
+def clear_training_data_cache() -> None:
+    """Allow an explicit data refresh/rebuild process to invalidate this process cache."""
+    _cached_training_data.cache_clear()
+
+
+def _training_data() -> tuple[pd.DataFrame, pd.DataFrame, int, int]:
+    data, identity, min_year, max_year = _cached_training_data()
+    # Train/evaluation code is allowed to mutate working frames, never the cache.
+    return data.copy(), identity.copy(), min_year, max_year
+
+
+def _write_run_manifest(start_year: int, end_year: int, result: dict) -> None:
+    target = MODEL_ROOT / f"{start_year}_{end_year}"
+    metadata = result.get("metadata") or {}
+    lifecycle_metrics = (result.get("lifecycle") or {}).get("metrics") or {}
+    artifacts = [
+        "cost_model.pkl",
+        "delay_model.pkl",
+        "risk_model.pkl",
+        "metadata.json",
+        "evaluation_results.json",
+        "feature_quality_report.json",
+        "shap_importance.json",
+        "prediction_validation.csv",
+    ]
+    payload = {
+        "status": "complete",
+        "model_family": "monthly_lifecycle",
+        "model_version": metadata.get("model_version") or f"monthly-{start_year}-{end_year}",
+        "window": f"{start_year}_{end_year}",
+        "training_period": metadata.get("training_period") or [start_year, end_year],
+        "testing_period": metadata.get("testing_period") or [],
+        "feature_count": len(metadata.get("features_used") or []),
+        "metrics": {
+            "cost_mae": (lifecycle_metrics.get("cost") or {}).get("MAE"),
+            "delay_mae": (lifecycle_metrics.get("delay") or {}).get("MAE"),
+            "risk_macro_f1": (lifecycle_metrics.get("risk") or {}).get("macro_f1"),
+        },
+        "artifacts": {name: (target / name).exists() for name in artifacts},
+        "created_at": metadata.get("created_at") or datetime.now(timezone.utc).isoformat(),
+    }
+    (target / "run_manifest.json").write_text(json.dumps(payload, indent=2))
 
 
 def retrain_lifecycle(start_year: int, end_year: int) -> dict:
@@ -29,7 +80,7 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
     Algorithm selection remains internal-temporal: the latest completion year
     actually present inside the selected training range is used to choose the
     cost and delay regressor, then the winning regressors and the Random Forest
-    risk classifier are fitted on the full selected training range.  All later
+    risk classifier are fitted on the full selected training range. All later
     completion years remain future holdout data.
     """
     start_year = int(start_year)
@@ -48,7 +99,15 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
         raise ValueError("The selected period has no identity-verified lifecycle training projects.")
     internal_validation_year = int(selected_training_years.max())
 
+    target = MODEL_ROOT / f"{start_year}_{end_year}"
+    target.mkdir(parents=True, exist_ok=True)
+    training_marker = target / ".training"
+    training_marker.write_text(datetime.now(timezone.utc).isoformat())
+
     result = train_window(start_year, end_year, max_year, data=data, identity=identity)
+    _write_run_manifest(start_year, end_year, result)
+    training_marker.unlink(missing_ok=True)
+
     metadata = result["metadata"]
     lifecycle = result["lifecycle"]
     lifecycle_metrics = lifecycle["metrics"]
