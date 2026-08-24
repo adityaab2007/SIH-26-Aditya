@@ -60,6 +60,25 @@ def _training_data() -> tuple[pd.DataFrame, pd.DataFrame, int, int]:
     return data.copy(), identity.copy(), min_year, max_year
 
 
+def _stamp_production_role(result: dict, target: Path) -> None:
+    """Make the production/experiment boundary explicit in persisted artifacts."""
+    metadata = result.get("metadata") or {}
+    metadata["model_role"] = "production"
+    result["metadata"] = metadata
+
+    metadata_path = target / "metadata.json"
+    if metadata_path.exists():
+        persisted_metadata = json.loads(metadata_path.read_text())
+        persisted_metadata["model_role"] = "production"
+        metadata_path.write_text(json.dumps(persisted_metadata, indent=2, allow_nan=False))
+
+    evaluation_path = target / "evaluation_results.json"
+    if evaluation_path.exists():
+        evaluation = json.loads(evaluation_path.read_text())
+        evaluation.setdefault("metadata", {})["model_role"] = "production"
+        evaluation_path.write_text(json.dumps(evaluation, indent=2, allow_nan=False))
+
+
 def _write_run_manifest(start_year: int, end_year: int, result: dict, target: Path | None = None) -> dict:
     target = target or (MODEL_ROOT / f"{start_year}_{end_year}")
     metadata = result.get("metadata") or {}
@@ -74,6 +93,7 @@ def _write_run_manifest(start_year: int, end_year: int, result: dict, target: Pa
         raise RuntimeError("Refusing to publish lifecycle run without run_id and dataset_fingerprint provenance.")
     payload = {
         "status": "complete",
+        "model_role": "production",
         "model_family": "monthly_lifecycle",
         "model_version": metadata.get("model_version") or f"monthly-{start_year}-{end_year}",
         "run_id": run_id,
@@ -146,6 +166,7 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
     try:
         result = train_window(start_year, end_year, max_year, data=data, identity=identity, artifact_root=staging_root)
         staged_target = staging_root / window
+        _stamp_production_role(result, staged_target)
         _write_run_manifest(start_year, end_year, result, staged_target)
         _publish_staged_run(staged_target, target)
     finally:
@@ -164,6 +185,7 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
 
     return {
         "status": "success",
+        "model_role": "production",
         "model_family": "monthly_lifecycle",
         "model_version": metadata["model_version"],
         "run_id": metadata.get("run_id") or provenance.get("run_id"),
