@@ -49,12 +49,21 @@ def _with_residual_target(frame: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def _renormalize_project_weights(frame: pd.DataFrame) -> pd.DataFrame:
+    """Give every project total weight 1 after experiment-specific filtering."""
+    result = frame.copy()
+    counts = result.groupby("canonical_project_id")["canonical_project_id"].transform("size")
+    result["sample_weight"] = 1.0 / counts.clip(lower=1).astype(float)
+    return result
+
+
 def prepare_common_cost_cohort(data: pd.DataFrame, training_start: int, training_end: int, test_end: int) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Return one common cohort used by both direct and residual approaches.
 
     Rows lacking current cost escalation cannot define a residual target, so they
-    are removed *before* either model is fit/evaluated. This prevents the common
-    mistake of comparing residual and direct metrics on different snapshots.
+    are removed *before* either model is fit/evaluated. We then recalculate
+    per-project weights on that exact retained cohort so each project contributes
+    total weight 1 to both approaches.
     """
     frame = data.copy()
     frame["completion_year"] = pd.to_numeric(frame["completion_year"], errors="coerce")
@@ -70,6 +79,8 @@ def prepare_common_cost_cohort(data: pd.DataFrame, training_start: int, training
             "Insufficient common direct/residual lifecycle cohort after requiring current cost escalation: "
             f"train projects={train.canonical_project_id.nunique()}, test projects={test.canonical_project_id.nunique()}"
         )
+    train = _renormalize_project_weights(train)
+    test = _renormalize_project_weights(test)
     return _with_residual_target(train), _with_residual_target(test)
 
 
@@ -142,9 +153,6 @@ def run_residual_overrun_experiment(
     )
     features = list(dict.fromkeys(BASELINE_FEATURES + audit["features_used"]))
 
-    # Select one algorithm on the direct target using only internal temporal
-    # validation, then use that exact algorithm family for the residual target.
-    # This makes the primary comparison a target-formulation experiment.
     algorithm, direct_model, direct_internal = _select_regressor(train, features, FINAL_TARGET, 27103)
     residual_model = _fit_pipeline(_regressors(27103)[algorithm], train, features, RESIDUAL_TARGET)
 
@@ -192,6 +200,7 @@ def run_residual_overrun_experiment(
             "same_features": True,
             "same_regressor_family": True,
             "post_sampling_project_weights": True,
+            "common_cohort_weights_renormalized": True,
             "explicit_as_of_lineage": True,
             "train_snapshot_digest": train_digest,
             "test_snapshot_digest": test_digest,
