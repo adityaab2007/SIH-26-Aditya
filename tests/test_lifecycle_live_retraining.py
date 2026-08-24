@@ -119,7 +119,7 @@ class _Risk:
         return np.tile(np.array([[0.05, 0.1, 0.8, 0.05]]), (len(frame), 1))
 
 
-def test_custom_judge_prediction_uses_lifecycle_bundle_and_future_project(monkeypatch):
+def test_custom_judge_prediction_uses_exact_lifecycle_run_and_future_project(monkeypatch):
     frame = pd.DataFrame([
         {
             "canonical_project_id": "TRAIN",
@@ -171,6 +171,8 @@ def test_custom_judge_prediction_uses_lifecycle_bundle_and_future_project(monkey
     bundle = {
         "metadata": {
             "model_version": "monthly-2001-2015",
+            "run_id": "judge-run",
+            "dataset_fingerprint": "sha256:judge-dataset",
             "training_snapshots": 1,
             "unique_training_projects": 1,
             "features_used": features,
@@ -182,28 +184,44 @@ def test_custom_judge_prediction_uses_lifecycle_bundle_and_future_project(monkey
     }
     simulation._CUSTOM_SESSIONS.clear()
     monkeypatch.setattr(simulation, "_dataset", lambda: frame)
-    monkeypatch.setattr(simulation, "_artifact_bundle", lambda start, end: bundle)
+    seen = {}
+
+    def fake_bundle(start, end, expected_run_id=None):
+        seen["expected_run_id"] = expected_run_id
+        return bundle
+
+    monkeypatch.setattr(simulation, "_artifact_bundle", fake_bundle)
     monkeypatch.setattr(simulation, "_shap_factors_for_model", lambda model, row, names: [{"feature": "revised_cost_cr", "impact": 1.0, "direction": "increases"}])
 
-    session = simulation.train_custom(2001, 2015)
+    session = simulation.train_custom(2001, 2015, "judge-run")
+    assert seen["expected_run_id"] == "judge-run"
+    assert session["run_id"] == "judge-run"
+    assert session["dataset_fingerprint"] == "sha256:judge-dataset"
     assert session["model_family"] == "monthly_lifecycle"
     assert session["feature_count"] == len(features)
     assert session["eligible_test_years"] == [{"year": 2019, "projects": 1}]
 
     projects = simulation.custom_projects(session["session_id"], 2019)
+    assert projects["run_id"] == "judge-run"
+    assert projects["dataset_fingerprint"] == "sha256:judge-dataset"
     assert len(projects["items"]) == 1
     assert projects["items"][0]["snapshot_date"] == "2019-09-30"
 
     prediction = simulation.predict_custom(session["session_id"], projects["items"][0]["record_index"])
+    assert prediction["run_id"] == "judge-run"
+    assert prediction["dataset_fingerprint"] == "sha256:judge-dataset"
     assert prediction["predicted_cost_overrun"] == 22.0
     assert prediction["predicted_delay_days"] == 360.0
     assert prediction["predicted_risk"] == "HIGH"
     assert prediction["risk_probability_percentage"] == 80.0
     assert prediction["model_inputs"]["revised_cost_cr"] == 250.0
+    assert prediction["model_confidence_percentage"] is None
     assert prediction["audit"]["project_excluded_from_training"] is True
     assert prediction["audit"]["actual_outcomes_sent_to_browser"] is False
 
     actual = simulation.reveal_custom(session["session_id"], prediction["record_index"])
+    assert actual["run_id"] == "judge-run"
+    assert actual["dataset_fingerprint"] == "sha256:judge-dataset"
     assert actual["actual_cost_overrun"] == 25.0
     assert actual["cost_error_absolute_pp"] == 3.0
     assert actual["actual_outcomes_sent_to_browser"] is True
