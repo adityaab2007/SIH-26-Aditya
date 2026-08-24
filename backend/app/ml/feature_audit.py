@@ -34,16 +34,31 @@ def audit_features(
     """Return deterministic per-feature quality and leakage-safety decisions.
 
     ``as_of_evidence`` is preferred over the legacy ``safely_as_of_features``
-    switch.  Each feature must carry explicit machine-readable provenance with
-    ``proven=True`` and a temporal rule describing why no information after the
-    snapshot can enter the value.  The legacy set remains supported for callers
-    outside the lifecycle pipeline, but it is intentionally marked as declared
-    rather than evidenced in the report.
+    switch. Each feature in the lifecycle pipeline must carry explicit
+    machine-readable provenance with ``proven=True`` and a temporal rule
+    describing why no information after the snapshot can enter the value.
+
+    Older non-lifecycle callers historically omitted both safety arguments and
+    expected the audit to evaluate availability/variability only. That API
+    behaviour is preserved as an explicitly labelled compatibility mode. It is
+    never used by the monthly lifecycle trainer, which supplies
+    ``as_of_evidence`` and therefore rejects any feature lacking evidence.
     """
     invalid_sources = invalid_sources or {}
     leakage_risks = leakage_risks or {}
+
+    provided_evidence = as_of_evidence is not None
+    provided_legacy_declaration = safely_as_of_features is not None
     as_of_evidence = as_of_evidence or {}
-    safely_as_of_features = safely_as_of_features or set()
+
+    if safely_as_of_features is None:
+        # Backward compatibility for the preserved completed-project baseline.
+        # If a caller supplies any evidence, unspecified features must *not* be
+        # silently accepted; only a no-evidence legacy caller gets this mode.
+        safely_as_of_features = set(feature_names) if not provided_evidence else set()
+    else:
+        safely_as_of_features = set(safely_as_of_features)
+
     has_temporal_axis = date_column in frame and pd.to_datetime(frame.get(date_column), errors="coerce").notna().any()
     dates = pd.to_datetime(frame.get(date_column), errors="coerce") if date_column in frame else pd.Series(pd.NaT, index=frame.index)
     years = dates.dt.year
@@ -69,7 +84,12 @@ def audit_features(
             safety_basis = "evidenced"
         else:
             as_of_safe = feature in safely_as_of_features
-            safety_basis = "legacy_declared" if as_of_safe else "missing"
+            if as_of_safe and provided_legacy_declaration:
+                safety_basis = "legacy_declared"
+            elif as_of_safe:
+                safety_basis = "legacy_implicit_compatibility"
+            else:
+                safety_basis = "missing"
 
         reason = invalid_sources.get(feature)
         if reason:
@@ -83,7 +103,7 @@ def audit_features(
         elif not as_of_safe:
             decision, reason = "remove", "not proven available as of each historical snapshot"
         else:
-            decision, reason = "keep", "observed, variable, and supported by as-of provenance in the training window"
+            decision, reason = "keep", "observed, variable, and supported by the caller's as-of safety mode"
         rows.append({
             "feature": feature,
             "datatype": str(series.dtype),
@@ -117,7 +137,7 @@ def audit_features(
         "data_quality_score": round(quality, 2),
         "as_of_evidence_coverage": round(evidenced / len(rows) * 100, 2) if rows else 0.0,
         "features": rows,
-        "policy": "Eligibility is evaluated inside the selected training window using availability, variability, temporal/project/parser coverage and explicit as-of provenance. Lifecycle features are not accepted solely because a caller labels them safe.",
+        "policy": "Eligibility is evaluated inside the selected training window using availability, variability, temporal/project/parser coverage and as-of provenance. Monthly lifecycle training supplies explicit evidence; legacy callers without evidence are labelled compatibility-mode rather than being represented as independently proven.",
     }
 
 
