@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from backend.app.services.model_service import model_table, global_importances
 from backend.app.services.validation_service import rolling_validation_report, validation_payload, validation_report
 from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
+from backend.app.services.lifecycle_run_service import lifecycle_runs
 from backend.app.services.monthly_prediction_service import lifecycle_comparison, forecast_evolution
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -12,13 +13,22 @@ class TrainingRange(BaseModel):
     start_year: int
     end_year: int
 
+
 @router.get("/metrics")
 def metrics():
     return model_table()
 
+
 @router.get("/importance")
 def importance():
     return global_importances()
+
+
+@router.get("/lifecycle-runs")
+def lifecycle_run_registry():
+    """Return lifecycle model runs that really exist in this checkout/runtime."""
+    return lifecycle_runs()
+
 
 @router.post("/retrain")
 def retrain_model(payload: TrainingRange):
@@ -36,6 +46,7 @@ def validation(model_version: str | None = None, model: str | None = None):
         return validation_report(selected)
     except FileNotFoundError as exc:
         raise HTTPException(404, str(exc))
+
 
 @router.get("/prediction-validation")
 def prediction_validation(limit: int = 100, model_version: str | None = None, model: str | None = None):
