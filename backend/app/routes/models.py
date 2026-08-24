@@ -31,16 +31,28 @@ def retrain_model(payload: TrainingRange):
 
 @router.get("/validation")
 def validation(model_version: str | None = None, model: str | None = None):
-    return validation_report(model_version or model)
+    selected = model_version or model
+    try:
+        return validation_report(selected)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc))
 
 @router.get("/prediction-validation")
 def prediction_validation(limit: int = 100, model_version: str | None = None, model: str | None = None):
-    return validation_payload(limit, model_version or model)
+    selected = model_version or model
+    try:
+        return validation_payload(limit, selected)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc))
 
 
 @router.get("/rolling-validation")
 def rolling_validation(model_version: str | None = None, model: str | None = None):
-    return rolling_validation_report(model_version or model)
+    selected = model_version or model
+    try:
+        return rolling_validation_report(selected)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc))
 
 
 @router.get("/monthly-lifecycle-comparison")

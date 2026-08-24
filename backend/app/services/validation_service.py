@@ -1,31 +1,116 @@
 from __future__ import annotations
 
 import json
+import re
+from pathlib import Path
+
 import pandas as pd
 
 from backend.app.core.config import MODELS_DIR, PROCESSED_DIR
 from backend.app.ml.real_time_windows import active_version
 
 
+_WINDOW_VERSION = re.compile(r"^(?:monthly[-_])?(\d{4})[_-](\d{4})$")
+
+
+def _normalise_version(version: str | None) -> str | None:
+    if not version:
+        return None
+    selected = version.strip()
+    match = _WINDOW_VERSION.fullmatch(selected)
+    return f"{match.group(1)}_{match.group(2)}" if match else selected
+
+
 def _version(version: str | None = None) -> str | None:
-    return version or active_version()
+    return _normalise_version(version or active_version())
+
+
+def _model_path(version: str | None, *, explicit: bool) -> tuple[Path | None, str | None]:
+    """Resolve lifecycle artifacts before legacy artifacts without cross-family fallback."""
+    selected = _normalise_version(version)
+    if not selected:
+        return None, None
+    lifecycle = MODELS_DIR / "monthly_lifecycle" / selected
+    if lifecycle.is_dir() and any((lifecycle / name).exists() for name in ("evaluation_results.json", "prediction_validation.csv")):
+        return lifecycle, "monthly_lifecycle"
+    legacy = MODELS_DIR / selected
+    if legacy.is_dir() and any((legacy / name).exists() for name in ("evaluation_results.json", "prediction_validation.csv", "evaluation_results.csv")):
+        return legacy, "legacy"
+    if explicit:
+        raise FileNotFoundError(f"Requested model version {version} was not found.")
+    return None, None
+
+
+def _lifecycle_report(raw: dict, model_path: Path) -> dict:
+    metadata = dict(raw.get("metadata") or {})
+    lifecycle = raw.get("lifecycle") or {}
+    metrics = lifecycle.get("metrics") or metadata.get("lifecycle_metrics") or {}
+    feature_quality = dict(metadata.get("feature_availability") or {})
+    quality_file = model_path / "feature_quality_report.json"
+    if quality_file.exists():
+        feature_quality.update(json.loads(quality_file.read_text()))
+    features = list(metadata.get("features_used") or feature_quality.get("features_used") or [])
+    training = metadata.get("training_period") or []
+    testing = metadata.get("testing_period") or []
+    metadata.update({
+        "training_start": training[0] if len(training) > 0 else None,
+        "training_end": training[1] if len(training) > 1 else None,
+        "evaluated_test_start": testing[0] if len(testing) > 0 else None,
+        "evaluated_test_end": testing[1] if len(testing) > 1 else None,
+        "training_projects": metadata.get("unique_training_projects"),
+        "evaluation_projects": metadata.get("unique_test_projects"),
+        "feature_count": len(features),
+        "feature_quality": {
+            "data_quality_score": feature_quality.get("data_quality_score"),
+            "removed_invalid_feature_count": feature_quality.get("removed_invalid_feature_count"),
+        },
+    })
+    return {
+        "model_family": "monthly_lifecycle",
+        "model_version": metadata.get("model_version") or f"monthly-{raw.get('window', model_path.name).replace('_', '-')}",
+        "metadata": metadata,
+        "cost_model": metrics.get("cost", {}),
+        "delay_model": metrics.get("delay", {}),
+        "risk_model": metrics.get("risk", {}),
+        "shap": raw.get("shap") or {},
+        "sector_validation": None,
+    }
 
 
 def validation_report(version: str | None = None) -> dict:
+    explicit = bool(version and version.strip())
     selected = _version(version)
-    path = MODELS_DIR / selected / "evaluation_results.json" if selected else None
-    if path and path.exists():
-        return json.loads(path.read_text())
+    path, family = _model_path(selected, explicit=explicit)
+    if path and family == "monthly_lifecycle":
+        return _lifecycle_report(json.loads((path / "evaluation_results.json").read_text()), path)
+    if path and family == "legacy":
+        return json.loads((path / "evaluation_results.json").read_text())
     return json.loads((MODELS_DIR / "validation_report.json").read_text())
 
 
+def _normalise_lifecycle_rows(frame: pd.DataFrame) -> pd.DataFrame:
+    renamed = frame.rename(columns={
+        "canonical_project_id": "project_id",
+        "actual_cost_overrun_percentage": "actual_cost_overrun",
+    })
+    for column in ("predicted_cost_p10", "predicted_cost_p90", "predicted_delay_p10", "predicted_delay_p90", "model_confidence_percentage"):
+        if column not in renamed:
+            renamed[column] = None
+    return renamed
+
+
 def validation_rows(version: str | None = None) -> pd.DataFrame:
+    explicit = bool(version and version.strip())
     selected = _version(version)
-    if selected:
+    path, family = _model_path(selected, explicit=explicit)
+    if path:
         for name in ("prediction_validation.csv", "evaluation_results.csv"):
-            path = MODELS_DIR / selected / name
-            if path.exists():
-                return pd.read_csv(path, dtype={"project_id": str})
+            artifact = path / name
+            if artifact.exists():
+                frame = pd.read_csv(artifact, dtype={"project_id": str, "canonical_project_id": str})
+                return _normalise_lifecycle_rows(frame) if family == "monthly_lifecycle" else frame
+        if explicit:
+            raise FileNotFoundError(f"Validation rows for requested model version {version} were not found.")
     return pd.read_csv(PROCESSED_DIR / "prediction_validation.csv", dtype={"project_id": str})
 
 
@@ -39,8 +124,10 @@ def validation_payload(limit: int = 100, version: str | None = None) -> dict:
 
 
 def rolling_validation_report(version: str | None = None) -> dict:
+    explicit = bool(version and version.strip())
     selected = _version(version)
-    path = MODELS_DIR / selected / "rolling_validation_results.json" if selected else None
-    if not path or not path.exists():
+    path, _family = _model_path(selected, explicit=explicit)
+    artifact = path / "rolling_validation_results.json" if path else None
+    if not artifact or not artifact.exists():
         return {"model_version": selected, "folds": [], "fold_count": 0, "status": "not_generated"}
-    return json.loads(path.read_text())
+    return json.loads(artifact.read_text())
