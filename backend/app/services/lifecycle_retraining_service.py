@@ -14,9 +14,9 @@ import uuid
 
 import pandas as pd
 
-from backend.app.ml.monthly_lifecycle import build_training_dataset
+from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, SNAPSHOTS_GZ, build_training_dataset
 from backend.app.ml.monthly_training import MODEL_ROOT, train_window
-from backend.app.ml.provenance import artifact_fingerprints
+from backend.app.ml.provenance import artifact_fingerprints, file_sha256
 from backend.app.services import monthly_prediction_service
 
 _REQUIRED_ARTIFACTS = [
@@ -29,6 +29,14 @@ _REQUIRED_ARTIFACTS = [
     "shap_importance.json",
     "prediction_validation.csv",
 ]
+
+
+def _source_dataset_files() -> dict[str, str | None]:
+    snapshot_path = SNAPSHOTS if SNAPSHOTS.exists() else SNAPSHOTS_GZ
+    return {
+        "monthly_snapshots": file_sha256(snapshot_path) if snapshot_path.exists() else None,
+        "completed_outcomes": file_sha256(OUTCOMES) if OUTCOMES.exists() else None,
+    }
 
 
 @lru_cache(maxsize=1)
@@ -74,6 +82,7 @@ def _write_run_manifest(start_year: int, end_year: int, result: dict, target: Pa
         "test_fingerprint": provenance.get("test_fingerprint"),
         "feature_schema_fingerprint": provenance.get("feature_schema_fingerprint"),
         "source_commit": provenance.get("source_commit"),
+        "source_dataset_files": _source_dataset_files(),
         "window": f"{start_year}_{end_year}",
         "training_period": metadata.get("training_period") or [start_year, end_year],
         "testing_period": metadata.get("testing_period") or [],
@@ -140,7 +149,6 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
         _write_run_manifest(start_year, end_year, result, staged_target)
         _publish_staged_run(staged_target, target)
     finally:
-        # This path is valid whether training, manifest creation, or publishing fails.
         training_marker.unlink(missing_ok=True)
         shutil.rmtree(staging_root, ignore_errors=True)
 
