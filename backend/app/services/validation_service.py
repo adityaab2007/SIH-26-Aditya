@@ -31,7 +31,7 @@ def _model_path(version: str | None, *, explicit: bool) -> tuple[Path | None, st
     if not selected:
         return None, None
     lifecycle = MODELS_DIR / "monthly_lifecycle" / selected
-    if lifecycle.is_dir() and any((lifecycle / name).exists() for name in ("evaluation_results.json", "prediction_validation.csv")):
+    if lifecycle.is_dir() and any((lifecycle / name).exists() for name in ("evaluation_results.json", "prediction_validation.csv", "prediction_validation.csv.gz")):
         return lifecycle, "monthly_lifecycle"
     legacy = MODELS_DIR / selected
     if legacy.is_dir() and any((legacy / name).exists() for name in ("evaluation_results.json", "prediction_validation.csv", "evaluation_results.csv")):
@@ -104,7 +104,8 @@ def validation_rows(version: str | None = None) -> pd.DataFrame:
     selected = _version(version)
     path, family = _model_path(selected, explicit=explicit)
     if path:
-        for name in ("prediction_validation.csv", "evaluation_results.csv"):
+        names = ("prediction_validation.csv", "prediction_validation.csv.gz", "evaluation_results.csv")
+        for name in names:
             artifact = path / name
             if artifact.exists():
                 frame = pd.read_csv(artifact, dtype={"project_id": str, "canonical_project_id": str})

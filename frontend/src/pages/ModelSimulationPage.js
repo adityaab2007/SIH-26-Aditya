@@ -51,6 +51,15 @@ function predictionCard(prediction, actual = null) {
   ${actual ? `<section class="panel"><span class="kicker">Official outcome revealed after prediction</span><h2>Prediction vs actual</h2><div class="detail-financial"><div><span>AI cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div><div><span>Actual cost overrun</span><strong>${fixed(actual.actual_cost_overrun)}%</strong></div><div><span>Absolute cost error</span><strong>${fixed(actual.cost_error_absolute_pp)} pp</strong></div><div><span>AI delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div><div><span>Actual delay</span><strong>${fixed(actual.actual_delay_days)} days</strong></div><div><span>Absolute delay error</span><strong>${fixed(actual.delay_error_absolute_days)} days</strong></div><div><span>AI / actual risk</span><strong>${escape(prediction.predicted_risk)} / ${escape(actual.actual_risk)}</strong></div><div><span>Recorded completion</span><strong>${escape(actual.completion_date)}</strong></div></div><div class="notice compact"><strong>Reveal audit:</strong> ${escape(actual.reveal_policy)}</div>${source ? `<a class="secondary-btn" href="${escape(source)}" target="_blank" rel="noopener noreferrer">Open official PAIMANA source</a>` : ''}</section>` : '<div class="notice compact"><strong>Actual outcome is still hidden.</strong> Click Reveal Actual Outcome only after the judge has seen the AI prediction.</div>'}`;
 }
 
+function trainingReceipt(registryRun, session = null, restored = false) {
+  if (!registryRun) return 'No lifecycle model has been trained in this browser session yet.';
+  const quality = registryRun.metrics?.metadata?.feature_quality || {};
+  const baseline = registryRun.baseline_comparison || {};
+  const algorithms = registryRun.selected_algorithms || {};
+  const sessionAudit = session ? ` <strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.` : '';
+  return `${restored ? '<strong>Restored active browser-session run.</strong> ' : ''}<strong>${escape(registryRun.model_version)} retrained from scratch.</strong> Training: ${escape(registryRun.training_years)} · internal validation: ${escape(registryRun.internal_validation_year)} · untouched future holdout: ${escape(registryRun.testing_years)}. <strong>Lifecycle features:</strong> ${registryRun.feature_count} retained · ${quality.removed_invalid_feature_count || 0} rejected by the selected window audit. <strong>Selected models:</strong> cost ${escape(algorithms.cost || 'unknown')} · delay ${escape(algorithms.delay || 'unknown')} · risk Random Forest. <strong>Fresh holdout metrics:</strong> cost MAE ${fixed(registryRun.metrics?.cost_model?.MAE)} pp · delay MAE ${fixed(registryRun.metrics?.delay_model?.MAE)} days · risk macro-F1 ${fixed((registryRun.metrics?.risk_model?.macro_f1 || 0) * 100, 1)}%. <strong>Five-feature benchmark:</strong> cost MAE ${fixed(baseline.cost_mae)} pp · delay MAE ${fixed(baseline.delay_mae)} days · risk macro-F1 ${fixed((baseline.risk_macro_f1 || 0) * 100, 1)}%. <strong>Feature quality:</strong> ${fixed(quality.data_quality_score, 1)}%.${sessionAudit}<br><a class="secondary-btn" href="#/prediction-accuracy">View Prediction Accuracy</a>`;
+}
+
 export async function ModelSimulationPage(root) {
   const catalog = await api.simulationVersions();
   if (!catalog.lifecycle_data_available) {
@@ -61,12 +70,16 @@ export async function ModelSimulationPage(root) {
   const years = catalog.data_years || [];
   if (!years.length) throw new Error('No identity-verified PAIMANA lifecycle years are available.');
 
+  const savedRun = api.getActiveLifecycleRun();
   const yearNumbers = years.map((item) => item.year);
-  const defaultStart = yearNumbers[0];
+  const savedStart = Number(savedRun?.start_year);
+  const savedEnd = Number(savedRun?.end_year);
+  const defaultStart = yearNumbers.includes(savedStart) ? savedStart : yearNumbers[0];
   const preferredEnd = yearNumbers.filter((year) => year <= 2015).at(-1);
-  const defaultEnd = preferredEnd || yearNumbers[Math.max(0, Math.floor(yearNumbers.length / 2) - 1)];
+  const fallbackEnd = preferredEnd || yearNumbers[Math.max(0, Math.floor(yearNumbers.length / 2) - 1)];
+  const defaultEnd = yearNumbers.includes(savedEnd) ? savedEnd : fallbackEnd;
 
-  root.innerHTML = `<header class="page-head"><div><span class="kicker">Judge-controlled historical lifecycle backtest</span><h1>Live Model Verification</h1><p>Choose a historical training range and retrain the monthly lifecycle cost, delay, and risk models from scratch. Then test an official project that completed only after that cutoff.</p></div></header>
+  root.innerHTML = `<header class="page-head"><div><span class="kicker">Judge-controlled historical lifecycle backtest</span><h1>Live Model Verification</h1><p>Choose a historical training range and retrain the monthly lifecycle cost, delay, and risk models from scratch. The active run is kept for this browser session when you navigate to other pages.</p></div></header>
   <div class="notice"><strong>Leakage rule:</strong> Algorithm selection happens inside the selected training period. Projects completed after the training cutoff are held out from fitting and are used only for future evaluation and judge-selected prediction.</div>
   <section class="panel">
     <div class="panel-head"><div><span class="kicker">Step 1</span><h2>Choose training years and retrain lifecycle models</h2></div></div>
@@ -75,7 +88,7 @@ export async function ModelSimulationPage(root) {
       <label>Training end year<select id="custom-end">${yearOptions(years, defaultEnd)}</select></label>
       <button class="primary-btn" id="custom-train">Retrain Lifecycle Models Live</button>
     </div>
-    <div id="training-receipt" class="notice compact">No lifecycle model has been trained in this demo session yet.</div>
+    <div id="training-receipt" class="notice compact">No lifecycle model has been trained in this browser session yet.</div>
   </section>
   <section class="panel">
     <div class="panel-head"><div><span class="kicker">Step 2</span><h2>Judge chooses an unseen future project</h2></div></div>
@@ -132,7 +145,7 @@ export async function ModelSimulationPage(root) {
     } catch (error) {
       projectRows = [];
       project.innerHTML = '<option>No projects available</option>';
-      heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
+      heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div><p class="muted">If the backend was restarted, retrain this saved range to create a new judge session.</p>`;
     }
   };
 
@@ -168,14 +181,29 @@ export async function ModelSimulationPage(root) {
     receipt.innerHTML = '<div class="loading">Building selected PAIMANA lifecycle cohort → auditing features → selecting cost/delay regressors on internal temporal validation → fitting final cost, delay, and risk models → evaluating future holdout…</div>';
     try {
       const registryRun = await api.retrainModel(startYear, endYear);
-      session = await api.trainCustomSimulation(startYear, endYear);
+      const activeBase = {
+        window: registryRun.window,
+        model_version: registryRun.model_version,
+        start_year: startYear,
+        end_year: endYear,
+        receipt: registryRun,
+      };
+      api.setActiveLifecycleRun(activeBase);
+      receipt.innerHTML = `${trainingReceipt(registryRun)}<div class="loading">Preparing judge-controlled held-out project session…</div>`;
+
+      try {
+        session = await api.trainCustomSimulation(startYear, endYear);
+        api.setActiveLifecycleRun({ ...activeBase, session });
+      } catch (sessionError) {
+        session = null;
+        receipt.innerHTML = `${trainingReceipt(registryRun)}<div class="error-state">The model was trained and saved, but the judge session could not be created: ${escape(sessionError.message)}</div>`;
+        return;
+      }
+
       const eligible = session.eligible_test_years || [];
       testYear.innerHTML = eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} held-out projects</option>`).join('');
       testYear.disabled = !eligible.length;
-      const quality = registryRun.metrics.metadata.feature_quality || {};
-      const baseline = registryRun.baseline_comparison || {};
-      const algorithms = registryRun.selected_algorithms || {};
-      receipt.innerHTML = `<strong>${escape(registryRun.model_version)} retrained from scratch.</strong> Training: ${escape(registryRun.training_years)} · internal validation: ${escape(registryRun.internal_validation_year)} · untouched future holdout: ${escape(registryRun.testing_years)}. <strong>Lifecycle features:</strong> ${registryRun.feature_count} retained · ${quality.removed_invalid_feature_count || 0} rejected by the selected window audit. <strong>Selected models:</strong> cost ${escape(algorithms.cost || 'unknown')} · delay ${escape(algorithms.delay || 'unknown')} · risk Random Forest. <strong>Fresh holdout metrics:</strong> cost MAE ${fixed(registryRun.metrics.cost_model.MAE)} pp · delay MAE ${fixed(registryRun.metrics.delay_model.MAE)} days · risk macro-F1 ${fixed(registryRun.metrics.risk_model.macro_f1 * 100, 1)}%. <strong>Five-feature benchmark:</strong> cost MAE ${fixed(baseline.cost_mae)} pp · delay MAE ${fixed(baseline.delay_mae)} days · risk macro-F1 ${fixed((baseline.risk_macro_f1 || 0) * 100, 1)}%. <strong>Feature quality:</strong> ${fixed(quality.data_quality_score, 1)}%.<br><strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.`;
+      receipt.innerHTML = trainingReceipt(registryRun, session);
       if (eligible.length) await loadProjects();
     } catch (error) {
       session = null;
@@ -205,4 +233,17 @@ export async function ModelSimulationPage(root) {
       revealButton.disabled = false;
     }
   });
+
+  if (savedRun?.receipt && savedRun.start_year === defaultStart && savedRun.end_year === defaultEnd) {
+    receipt.innerHTML = trainingReceipt(savedRun.receipt, savedRun.session || null, true);
+    if (savedRun.session?.session_id) {
+      session = savedRun.session;
+      const eligible = session.eligible_test_years || [];
+      testYear.innerHTML = eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} held-out projects</option>`).join('');
+      testYear.disabled = !eligible.length;
+      if (eligible.length) await loadProjects();
+    } else {
+      heldOutNote.innerHTML = '<strong>The trained model is still the active browser-session run.</strong> Retrain only if you need a new judge session or a different year range.';
+    }
+  }
 }

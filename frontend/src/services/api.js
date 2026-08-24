@@ -1,20 +1,50 @@
 const JSON_HEADERS = { "Content-Type": "application/json" };
+const DEFAULT_TIMEOUT_MS = 45000;
+const HEAVY_TIMEOUT_MS = 10 * 60 * 1000;
+const SELECTED_MODEL_KEY = 'selected_validation_model';
+const ACTIVE_LIFECYCLE_KEY = 'active_lifecycle_run';
 
-async function request(path, options = {}) {
-  const response = await fetch(path, options);
-  const type = response.headers.get('content-type') || '';
-  if (!response.ok || !type.includes('application/json')) {
-    let detail = `Request failed (${response.status})`;
-    if (type.includes('application/json')) {
-      try { detail = (await response.json()).detail || detail; } catch (_) {}
+async function request(path, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(path, { ...options, signal: controller.signal });
+    const type = response.headers.get('content-type') || '';
+    if (!response.ok || !type.includes('application/json')) {
+      let detail = `Request failed (${response.status})`;
+      if (type.includes('application/json')) {
+        try { detail = (await response.json()).detail || detail; } catch (_) {}
+      }
+      throw new Error(detail);
     }
-    throw new Error(detail);
+    return response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error('Request timed out. The backend may be busy; retry in a moment.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-  return response.json();
 }
 
-const selectedModel = () => localStorage.getItem('selected_validation_model') || '';
+const selectedModel = () => sessionStorage.getItem(SELECTED_MODEL_KEY) || '';
 const withModel = (path, model = selectedModel()) => model ? `${path}${path.includes('?') ? '&' : '?'}model=${encodeURIComponent(model)}` : path;
+
+function getActiveLifecycleRun() {
+  const raw = sessionStorage.getItem(ACTIVE_LIFECYCLE_KEY);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (_) { return null; }
+}
+
+function setActiveLifecycleRun(run) {
+  if (!run) {
+    sessionStorage.removeItem(ACTIVE_LIFECYCLE_KEY);
+    return;
+  }
+  sessionStorage.setItem(ACTIVE_LIFECYCLE_KEY, JSON.stringify(run));
+  if (run.window) sessionStorage.setItem(SELECTED_MODEL_KEY, run.window);
+}
 
 export const api = {
   health: () => request('/api/health'),
@@ -32,20 +62,27 @@ export const api = {
   peers: (code) => request(`/api/projects/${encodeURIComponent(code)}/peers`),
   modelMetrics: () => request('/api/models/metrics'),
   modelImportance: () => request('/api/models/importance'),
+  lifecycleRuns: () => request('/api/models/lifecycle-runs'),
   monthlyLifecycleComparison: () => request('/api/models/monthly-lifecycle-comparison'),
   lifecycleForecast: (code, window = '2015_2021') => request(`/api/projects/${encodeURIComponent(code)}/lifecycle-forecast?window=${encodeURIComponent(window)}`),
   lifecycleEvolution: (projectId, window = '2015_2021') => request(`/api/models/monthly-lifecycle-evolution/${encodeURIComponent(projectId)}?window=${encodeURIComponent(window)}`),
   validationReport: (modelVersion = selectedModel()) => request(withModel('/api/models/validation', modelVersion)),
   predictionValidation: (limit = 100, modelVersion = selectedModel()) => request(withModel(`/api/models/prediction-validation?limit=${limit}`, modelVersion)),
   rollingValidation: (modelVersion = selectedModel()) => request(withModel('/api/models/rolling-validation', modelVersion)),
-  retrainModel: (startYear, endYear) => request('/api/models/retrain', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }) }),
-  setValidationModel: (model) => localStorage.setItem('selected_validation_model', model || ''),
+  retrainModel: (startYear, endYear) => request('/api/models/retrain', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }) }, HEAVY_TIMEOUT_MS),
+  setValidationModel: (model) => model ? sessionStorage.setItem(SELECTED_MODEL_KEY, model) : sessionStorage.removeItem(SELECTED_MODEL_KEY),
   getValidationModel: () => selectedModel(),
-  simulationVersions: () => request('/api/model-simulations'),
+  setActiveLifecycleRun,
+  getActiveLifecycleRun,
+  clearActiveLifecycleRun: () => {
+    sessionStorage.removeItem(ACTIVE_LIFECYCLE_KEY);
+    sessionStorage.removeItem(SELECTED_MODEL_KEY);
+  },
+  simulationVersions: () => request('/api/model-simulations', {}, 90000),
   runSimulation: (version) => request(`/api/model-simulations/${encodeURIComponent(version)}/run`, { method: 'POST' }),
   trainCustomSimulation: (startYear, endYear) => request('/api/model-simulations/custom/train', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }),
-  }),
+  }, HEAVY_TIMEOUT_MS),
   customSimulationProjects: (sessionId, year) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
   predictCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/predict`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
@@ -56,6 +93,6 @@ export const api = {
   historyList: () => request('/api/history'),
   history: (code) => request(`/api/history/${encodeURIComponent(code)}`),
   scenario: (payload) => request('/api/scenario', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(payload) }),
-  dataQuality: () => request('/api/data-quality'),
+  dataQuality: () => request('/api/data-quality', {}, 90000),
   ask: (query) => request('/api/assistant/query', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ query }) }),
 };
