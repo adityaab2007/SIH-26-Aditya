@@ -45,6 +45,23 @@ def test_residual_target_is_final_minus_current_on_one_common_cohort():
     assert np.allclose(test[RESIDUAL_TARGET], test[FINAL_TARGET] - test[CURRENT_OVERRUN])
 
 
+def test_common_cohort_reweights_each_project_to_total_one():
+    frame = _frame()
+    duplicate = frame.iloc[[0]].copy()
+    duplicate["snapshot_date"] = pd.Timestamp("2014-07-31")
+    duplicate[CURRENT_OVERRUN] = 2.0
+    duplicate[FINAL_TARGET] = 12.0
+    duplicate["sample_weight"] = 0.001
+    frame = pd.concat([frame, duplicate], ignore_index=True)
+
+    train, _ = prepare_common_cost_cohort(frame, 2001, 2015, 2020)
+    project_totals = train.groupby("canonical_project_id").sample_weight.sum()
+    assert np.allclose(project_totals.to_numpy(dtype=float), np.ones(len(project_totals)))
+    repeated = train[train.canonical_project_id.eq("TRAIN-0")]
+    assert len(repeated) == 2
+    assert np.allclose(repeated.sample_weight, [0.5, 0.5])
+
+
 def test_reconstructed_output_is_still_final_cost_overrun():
     current = np.array([20.0, 5.0, 0.0])
     predicted_remaining = np.array([12.0, 7.5, -1.0])
