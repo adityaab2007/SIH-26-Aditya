@@ -9,7 +9,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.monthly_lifecycle import OUTCOMES, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
+from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, SNAPSHOTS_GZ, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
+from backend.app.ml.provenance import file_sha256
 from backend.app.services.simulation_service import _shap_factors_for_model
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -21,6 +22,14 @@ def lifecycle_comparison() -> dict:
     if not COMPARISON.exists():
         return {"available": False, "reason": "Monthly lifecycle training report has not been generated yet.", "windows": []}
     return {"available": True, **json.loads(COMPARISON.read_text())}
+
+
+def _current_source_hashes() -> dict[str, str | None]:
+    snapshot_path = SNAPSHOTS if SNAPSHOTS.exists() else SNAPSHOTS_GZ
+    return {
+        "monthly_snapshots": file_sha256(snapshot_path) if snapshot_path.exists() else None,
+        "completed_outcomes": file_sha256(OUTCOMES) if OUTCOMES.exists() else None,
+    }
 
 
 def _validate_bundle_provenance(window: str, metadata: dict, manifest: dict) -> None:
@@ -42,6 +51,15 @@ def _validate_bundle_provenance(window: str, metadata: dict, manifest: dict) -> 
         raise RuntimeError(f"Lifecycle model {window} failed provenance validation: manifest/metadata run IDs differ.")
     if manifest_dataset != metadata_dataset:
         raise RuntimeError(f"Lifecycle model {window} failed provenance validation: manifest/metadata dataset fingerprints differ.")
+
+    expected_sources = manifest.get("source_dataset_files") or {}
+    current_sources = _current_source_hashes()
+    for name, expected in expected_sources.items():
+        current = current_sources.get(name)
+        if expected and current and expected != current:
+            raise RuntimeError(
+                f"Lifecycle model {window} was trained against a different {name} dataset. Retrain before inference."
+            )
 
 
 @lru_cache(maxsize=2)
