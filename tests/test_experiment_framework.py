@@ -121,3 +121,12 @@ def test_production_retrain_stamp_marks_both_persisted_truth_sources(tmp_path: P
     assert result["metadata"]["model_role"] == "production"
     assert json.loads((target / "metadata.json").read_text())["model_role"] == "production"
     assert json.loads((target / "evaluation_results.json").read_text())["metadata"]["model_role"] == "production"
+
+
+def test_judge_facing_pages_do_not_invoke_experiment_endpoints():
+    root = Path(__file__).resolve().parents[1]
+    simulation = (root / "frontend" / "src" / "pages" / "ModelSimulationPage.js").read_text()
+    accuracy = (root / "frontend" / "src" / "pages" / "PredictionAccuracyPage.js").read_text()
+    assert "residualOverrunExperiment(" not in simulation
+    assert "residualOverrunExperiment(" not in accuracy
+    assert "api.retrainModel(" in simulation
