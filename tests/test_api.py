@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
-from backend.app.ml.monthly_lifecycle import SNAPSHOTS
+from backend.app.ml.monthly_lifecycle import SNAPSHOTS, SNAPSHOTS_GZ
 
 client = TestClient(app)
 
@@ -124,16 +124,23 @@ def test_real_paimana_model_simulation_contract():
     assert {"predicted_cost_overrun", "actual_cost_overrun", "predicted_delay_days", "actual_delay_days", "shap_explanation"}.issubset(first)
 
 
+def test_lifecycle_catalog_does_not_label_legacy_years_as_lifecycle(monkeypatch):
+    import backend.app.routes.simulations as simulations_route
+
+    def unavailable():
+        raise FileNotFoundError("Official processed monthly PAIMANA dataset is unavailable")
+
+    monkeypatch.setattr(simulations_route, "available_data_years", unavailable)
+    response = client.get("/api/model-simulations")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["lifecycle_data_available"] is False
+    assert payload["data_years"] == []
+    assert "lifecycle_data_unavailable_reason" in payload
+
+
 def test_judge_controlled_backtest_hides_actual_until_reveal():
     trained = client.post("/api/model-simulations/custom/train", json={"start_year": 2001, "end_year": 2015})
-    if not SNAPSHOTS.exists():
-        # The 195k-row canonical lifecycle dataset is intentionally not checked
-        # into Git. A fresh clone must rebuild it before live lifecycle retraining;
-        # critically, the API must not silently fall back to the five-feature model.
-        assert trained.status_code == 409
-        assert "paimana_monthly_snapshots.csv" in trained.json()["detail"]
-        return
-
     assert trained.status_code == 200
     training = trained.json()
     assert training["model_family"] == "monthly_lifecycle"

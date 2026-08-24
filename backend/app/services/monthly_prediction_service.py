@@ -9,7 +9,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, TRAJECTORIES, engineer_as_of_features, resolve_identities
+from backend.app.ml.monthly_lifecycle import OUTCOMES, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL_ROOT = ROOT / "models" / "monthly_lifecycle"
@@ -38,7 +38,7 @@ def _inference_frame() -> pd.DataFrame:
         frame = pd.read_csv(TRAJECTORIES, dtype={"project_id": "string"}, low_memory=False)
         frame["snapshot_date"] = pd.to_datetime(frame.snapshot_date, errors="coerce")
         return frame
-    snapshots = pd.read_csv(SNAPSHOTS, dtype={"project_id": "string"}, low_memory=False)
+    snapshots = load_monthly_snapshots()
     outcomes = pd.read_csv(OUTCOMES, dtype={"project_id": "string"}, low_memory=False)
     resolved, _ = resolve_identities(snapshots, outcomes)
     return engineer_as_of_features(resolved, outcomes)

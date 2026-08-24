@@ -53,6 +53,11 @@ function predictionCard(prediction, actual = null) {
 
 export async function ModelSimulationPage(root) {
   const catalog = await api.simulationVersions();
+  if (!catalog.lifecycle_data_available) {
+    root.innerHTML = `<header class="page-head"><div><span class="kicker">Judge-controlled historical lifecycle backtest</span><h1>Live Model Verification</h1><p>Live retraining requires the official processed PAIMANA monthly lifecycle dataset.</p></div></header>
+    <section class="panel"><div class="error-state">Official PAIMANA monthly lifecycle dataset is not available in this checkout.</div><p class="muted">Refresh the official archive separately, then rebuild <code>data/processed/paimana_monthly_snapshots.csv</code>. The Retrain button does not download or parse PAIMANA PDFs.</p><button class="primary-btn" disabled>Retrain Lifecycle Models Live</button></section>`;
+    return;
+  }
   const years = catalog.data_years || [];
   if (!years.length) throw new Error('No identity-verified PAIMANA lifecycle years are available.');
 

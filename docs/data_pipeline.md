@@ -21,6 +21,10 @@ The ingestion service reads the MoSPI PAIMANA Project Monitoring archive at `htt
 
 Run a live refresh with `python scripts/build_monthly_ml_pipeline.py`. Use `--local-only` to reproduce processed outputs from cached immutable PDFs. Discovery alone is available through `--discover-only`.
 
+## Data refresh versus model retraining
+
+The archive refresh is an occasional, explicit operation: it may discover/cache the official PAIMANA PDFs, parse them, resolve identities and rebuild `data/processed/paimana_monthly_snapshots.csv`. The normal website flow does not run that operation. `POST /api/models/retrain` loads the already-committed official processed snapshot dataset and trains the selected monthly lifecycle window. It never downloads or parses the 291-report archive. If the processed dataset is unavailable, the lifecycle catalog reports an explicit unavailable state instead of showing legacy completed-project counts as lifecycle data.
+
 ## Normalized schema
 
 The processed dataset contains project ID/name, sector, ministry, state, implementing agency, original/revised cost, expenditure, planned/revised/actual dates, snapshot month, physical/financial progress, milestone status, delay months and source provenance.

@@ -107,7 +107,7 @@ PYTHONPATH=. python scripts/build_monthly_ml_pipeline.py --local-only --train \
   --training-start 2001 --training-end 2015 --test-end 2021
 ```
 
-Generated data and model binaries remain reproducible/ignored. Versioned metadata, comparison reports, ingestion audits and the human-readable `reports/monthly_lifecycle_upgrade_report.md` capture exact evidence and limitations.
+The official processed monthly snapshot dataset is committed at `data/processed/paimana_monthly_snapshots.csv` so a normal clone can retrain immediately. Raw PDFs, parser caches and model binaries remain reproducible/ignored. Refreshing the official dataset is an occasional data operation; clicking **Retrain Lifecycle Models Live** only loads this processed file and trains the selected window. Versioned metadata, comparison reports, ingestion audits and the human-readable `reports/monthly_lifecycle_upgrade_report.md` capture exact evidence and limitations.
 
 ## Architecture
 
