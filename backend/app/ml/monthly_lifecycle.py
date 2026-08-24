@@ -33,13 +33,57 @@ CANDIDATE_FEATURES = list(dict.fromkeys(DIRECT_FEATURES + TRAJECTORY_FEATURES + 
 TARGETS = ["actual_cost_overrun_percentage", "actual_delay_days", "actual_risk"]
 DATE_COLUMNS = ["snapshot_date", "approval_date", "planned_start_date", "planned_completion_date", "revised_completion_date", "actual_completion_date"]
 
+_SNAPSHOT_SOURCE = "same official PAIMANA snapshot; no later report is consulted"
+_TRAJECTORY_SOURCE = "current snapshot plus strictly earlier snapshots for the same canonical project"
+_PRIOR_SOURCE = "completed projects with completion_date strictly earlier than the current snapshot_date"
+
+AS_OF_FEATURE_LINEAGE: dict[str, dict] = {
+    "approved_cost_cr": {"proven": True, "kind": "snapshot", "sources": ["approved_cost_cr"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "cumulative_expenditure_cr": {"proven": True, "kind": "snapshot", "sources": ["cumulative_expenditure_cr"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "expenditure_ratio": {"proven": True, "kind": "snapshot_derived", "sources": ["cumulative_expenditure_cr", "approved_cost_cr"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "physical_progress": {"proven": True, "kind": "snapshot", "sources": ["physical_progress"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "schedule_slippage_days": {"proven": True, "kind": "snapshot_derived", "sources": ["revised_completion_date", "planned_completion_date"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "schedule_slippage_ratio": {"proven": True, "kind": "snapshot_derived", "sources": ["revised_completion_date", "planned_completion_date", "planned_start_date", "approval_date"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "elapsed_duration_days": {"proven": True, "kind": "snapshot_derived", "sources": ["snapshot_date", "planned_start_date", "approval_date"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "planned_duration_days": {"proven": True, "kind": "snapshot_derived", "sources": ["planned_start_date", "approval_date", "planned_completion_date"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "duration_ratio": {"proven": True, "kind": "snapshot_derived", "sources": ["snapshot_date", "planned_start_date", "approval_date", "planned_completion_date"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "expected_progress_percentage": {"proven": True, "kind": "snapshot_derived", "sources": ["duration_ratio"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "progress_deviation": {"proven": True, "kind": "snapshot_derived", "sources": ["physical_progress", "expected_progress_percentage"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "revised_cost_cr": {"proven": True, "kind": "snapshot", "sources": ["revised_cost_cr"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "cost_escalation_percentage": {"proven": True, "kind": "snapshot_derived", "sources": ["revised_cost_cr", "approved_cost_cr"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "current_schedule_status": {"proven": True, "kind": "snapshot", "sources": ["current_schedule_status"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "sector": {"proven": True, "kind": "snapshot", "sources": ["sector"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "project_size_category": {"proven": True, "kind": "snapshot_derived", "sources": ["approved_cost_cr"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "implementing_agency": {"proven": True, "kind": "snapshot", "sources": ["implementing_agency"], "temporal_rule": _SNAPSHOT_SOURCE},
+    "ministry": {"proven": True, "kind": "snapshot", "sources": ["ministry"], "temporal_rule": _SNAPSHOT_SOURCE},
+}
+for _feature in TRAJECTORY_FEATURES:
+    AS_OF_FEATURE_LINEAGE[_feature] = {
+        "proven": True,
+        "kind": "trajectory",
+        "sources": ["snapshot_date", "revised_cost_cr" if _feature.startswith("cost_") else "physical_progress"],
+        "temporal_rule": _TRAJECTORY_SOURCE,
+    }
+for _feature in PRIOR_FEATURES:
+    AS_OF_FEATURE_LINEAGE[_feature] = {
+        "proven": True,
+        "kind": "historical_prior",
+        "sources": ["completion_date", "actual_delay_days", "actual_cost_overrun_percentage"],
+        "temporal_rule": _PRIOR_SOURCE,
+    }
+
+
+def as_of_feature_evidence(feature_names: list[str] | None = None) -> dict[str, dict]:
+    names = feature_names or CANDIDATE_FEATURES
+    return {name: dict(AS_OF_FEATURE_LINEAGE[name]) for name in names if name in AS_OF_FEATURE_LINEAGE}
+
 
 def load_monthly_snapshots(snapshot_path: Path | None = None) -> pd.DataFrame:
     """Load the official processed monthly snapshots without archive ingestion.
 
-    The uncompressed CSV is preferred for local development.  A tracked gzip
+    The uncompressed CSV is preferred for local development. A tracked gzip
     artifact is supported for clones where the uncompressed file is too large
-    for normal Git storage.  Neither path triggers PDF discovery or parsing.
+    for normal Git storage. Neither path triggers PDF discovery or parsing.
     """
     requested = Path(snapshot_path) if snapshot_path is not None else None
     candidates = [requested] if requested is not None else [SNAPSHOTS, SNAPSHOTS_GZ]
@@ -94,11 +138,7 @@ def _prepare_outcomes(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def resolve_identities(snapshots: pd.DataFrame, outcomes: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Resolve exact IDs first; exact normalized-name matches require uniqueness.
-
-    Name similarity is never used. Ambiguous rows receive a stable trajectory key
-    but are explicitly unverified and therefore excluded from supervised training.
-    """
+    """Resolve exact IDs first; exact normalized-name matches require uniqueness."""
     snap = snapshots.copy(); outcome = _prepare_outcomes(outcomes)
     snap["project_id"] = snap.project_id.map(_clean_id); snap["name_key"] = snap.project_name.map(normalize_name)
     id_counts = outcome.dropna(subset=["project_id"]).groupby("project_id").size()
@@ -166,16 +206,12 @@ def _slope_as_of(group: pd.DataFrame, value_column: str, window_months: int) -> 
 
 def _historical_priors(frame: pd.DataFrame, outcomes: pd.DataFrame, minimum: int = 3) -> pd.DataFrame:
     result = frame.copy()
-    # Build prior outcomes from exactly linked trajectories, using each
-    # project's earliest official snapshot as the stable original-cost/schedule
-    # basis. This avoids propagating malformed legacy table cells into priors.
     known = result[
         result.identity_verified.eq(True)
         & result[["completion_date", "actual_delay_days", "actual_cost_overrun_percentage"]].notna().all(axis=1)
     ].sort_values("snapshot_date").drop_duplicates("canonical_project_id", keep="first").copy()
     for column in PRIOR_FEATURES:
         result[column] = np.nan
-
     known = known.dropna(subset=["completion_date", "actual_delay_days", "actual_cost_overrun_percentage"]).copy()
 
     def lookup(snapshot_dates: pd.Series, history: pd.DataFrame) -> tuple[np.ndarray, ...]:
@@ -248,10 +284,38 @@ def engineer_as_of_features(frame: pd.DataFrame, outcomes: pd.DataFrame) -> pd.D
     data["cost_acceleration"] = data.cost_growth_velocity_3m - data.cost_growth_velocity_6m
     data["progress_acceleration"] = data.progress_velocity_3m - data.progress_velocity_6m
     data = _historical_priors(data, outcomes)
-    counts = data.groupby("canonical_project_id").canonical_project_id.transform("size")
-    data["sample_weight"] = 1.0 / counts.clip(lower=1)
     data["lifecycle_stage"] = pd.cut(data.duration_ratio, [-np.inf, .30, .60, .90, np.inf], labels=["early", "mid", "late", "very_late"]).astype("string")
     return data
+
+
+def assign_project_balanced_weights(frame: pd.DataFrame) -> pd.DataFrame:
+    """Assign equal total training mass to each project in the final sampled cohort."""
+    weighted = frame.copy()
+    counts = weighted.groupby("canonical_project_id").canonical_project_id.transform("size")
+    weighted["sample_weight"] = 1.0 / counts.clip(lower=1)
+    sums = weighted.groupby("canonical_project_id").sample_weight.sum()
+    if not sums.empty and not np.allclose(sums.to_numpy(dtype=float), 1.0, rtol=0, atol=1e-10):
+        raise AssertionError("Per-project sample weights must sum to one after final snapshot sampling.")
+    return weighted
+
+
+def training_as_of_invariants(frame: pd.DataFrame) -> dict:
+    snapshot = pd.to_datetime(frame.get("snapshot_date"), errors="coerce")
+    completion = pd.to_datetime(frame.get("completion_date"), errors="coerce")
+    post_completion = int((snapshot.notna() & completion.notna() & snapshot.ge(completion)).sum())
+    unverified = int((~frame.get("identity_verified", pd.Series(False, index=frame.index)).fillna(False).astype(bool)).sum())
+    return {
+        "rows_checked": int(len(frame)),
+        "post_or_at_completion_rows": post_completion,
+        "unverified_identity_rows": unverified,
+        "passed": post_completion == 0 and unverified == 0,
+        "rules": [
+            "every supervised snapshot must precede the linked completion date",
+            "every supervised row must have an identity-verified completed outcome",
+            _TRAJECTORY_SOURCE,
+            _PRIOR_SOURCE,
+        ],
+    }
 
 
 def build_training_dataset(snapshot_path: Path | None = None, outcome_path: Path = OUTCOMES) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -266,6 +330,12 @@ def build_training_dataset(snapshot_path: Path | None = None, outcome_path: Path
     # Deterministic quarterly sampling limits autocorrelation and compute cost.
     eligible["snapshot_quarter"] = eligible.snapshot_date.dt.to_period("Q").astype(str)
     eligible = eligible.sort_values("snapshot_date").drop_duplicates(["canonical_project_id", "snapshot_quarter"], keep="last")
+    # Weight only after all filtering/sampling. Otherwise projects with denser raw
+    # monthly histories receive less total weight than projects with sparse histories.
+    eligible = assign_project_balanced_weights(eligible)
+    invariants = training_as_of_invariants(eligible)
+    if not invariants["passed"]:
+        raise ValueError(f"Lifecycle as-of invariant failure: {invariants}")
     TRAJECTORIES.parent.mkdir(parents=True, exist_ok=True); trajectories.to_csv(TRAJECTORIES, index=False, date_format="%Y-%m-%d")
     eligible.to_csv(TRAINING_DATA, index=False, date_format="%Y-%m-%d"); identity.to_csv(IDENTITY_AUDIT, index=False)
     return eligible, identity
