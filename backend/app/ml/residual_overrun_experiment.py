@@ -11,11 +11,16 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
+from backend.app.ml.experiments.framework import (
+    build_experiment_context,
+    experiment_run_directory,
+    new_experiment_manifest,
+)
+from backend.app.ml.experiments.registry import decision_from_improvement, record_experiment
 from backend.app.ml.feature_audit import audit_features
 from backend.app.ml.monthly_lifecycle import (
     BASELINE_FEATURES,
@@ -31,8 +36,6 @@ from backend.app.ml.monthly_training import (
     temporal_project_split,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
-REPORT_DIR = ROOT / "reports" / "experiments"
 CURRENT_OVERRUN = "cost_escalation_percentage"
 FINAL_TARGET = "actual_cost_overrun_percentage"
 RESIDUAL_TARGET = "remaining_cost_overrun_percentage"
@@ -152,6 +155,23 @@ def run_residual_overrun_experiment(
         },
     )
     features = list(dict.fromkeys(BASELINE_FEATURES + audit["features_used"]))
+    context = build_experiment_context(
+        experiment_id="exp_03",
+        full_data=frame,
+        train=train,
+        test=test,
+        features=features,
+        training_start=int(training_start),
+        training_end=int(training_end),
+        testing_end=int(test_end),
+        weighting_policy="per-project weights renormalized after common-cohort filtering",
+    )
+    manifest = new_experiment_manifest(
+        context=context,
+        name="remaining_overrun_target",
+        changed_dimension="cost_target",
+        hypothesis="Predict remaining cost deterioration and reconstruct final overrun instead of predicting final overrun directly.",
+    )
 
     algorithm, direct_model, direct_internal = _select_regressor(train, features, FINAL_TARGET, 27103)
     residual_model = _fit_pipeline(_regressors(27103)[algorithm], train, features, RESIDUAL_TARGET)
@@ -169,6 +189,8 @@ def run_residual_overrun_experiment(
     improvement = None
     if direct_mae not in (None, 0) and residual_mae is not None:
         improvement = round((float(direct_mae) - float(residual_mae)) / float(direct_mae) * 100, 3)
+    decision = decision_from_improvement(improvement, 10.0)
+    manifest["decision"] = decision
 
     rows = test[[
         "canonical_project_id", "project_name", "snapshot_date", "completion_year", "lifecycle_stage",
@@ -184,7 +206,12 @@ def run_residual_overrun_experiment(
     test_digest = _cohort_digest(test)
     report = {
         "experiment": "experiment_3_residual_remaining_overrun",
-        "status": "complete",
+        "experiment_id": "exp_03",
+        "model_role": "experiment",
+        "run_id": manifest["run_id"],
+        "status": "COMPLETED",
+        "decision": decision,
+        "promotion_allowed": False,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "training_period": [int(training_start), int(training_end)],
         "testing_period": [int(training_end) + 1, int(test_end)],
@@ -202,6 +229,11 @@ def run_residual_overrun_experiment(
             "post_sampling_project_weights": True,
             "common_cohort_weights_renormalized": True,
             "explicit_as_of_lineage": True,
+            "dataset_fingerprint": context.dataset_fingerprint,
+            "training_fingerprint": context.training_fingerprint,
+            "test_fingerprint": context.test_fingerprint,
+            "feature_schema_fingerprint": context.feature_schema_fingerprint,
+            "weighting_policy": context.weighting_policy,
             "train_snapshot_digest": train_digest,
             "test_snapshot_digest": test_digest,
             "training_rows": int(len(train)),
@@ -231,8 +263,30 @@ def run_residual_overrun_experiment(
     }
 
     if persist:
-        REPORT_DIR.mkdir(parents=True, exist_ok=True)
-        stem = f"residual_overrun_{int(training_start)}_{int(training_end)}"
-        (REPORT_DIR / f"{stem}.json").write_text(json.dumps(report, indent=2, allow_nan=False))
-        rows.to_csv(REPORT_DIR / f"{stem}_predictions.csv", index=False, date_format="%Y-%m-%d")
+        destination = experiment_run_directory("exp_03", context.window, manifest["run_id"])
+        destination.mkdir(parents=True, exist_ok=False)
+        (destination / "manifest.json").write_text(json.dumps(manifest, indent=2, allow_nan=False))
+        (destination / "results.json").write_text(json.dumps(report, indent=2, allow_nan=False))
+        rows.to_csv(destination / "prediction_validation.csv", index=False, date_format="%Y-%m-%d")
+        record_experiment({
+            "experiment_id": "exp_03",
+            "name": "remaining_overrun_target",
+            "model_role": "experiment",
+            "run_id": manifest["run_id"],
+            "status": "COMPLETED",
+            "decision": decision,
+            "promotion_allowed": False,
+            "changed_dimension": "cost_target",
+            "training_period": report["training_period"],
+            "testing_period": report["testing_period"],
+            "baseline_final_cost_mae": direct_metrics.get("MAE"),
+            "candidate_final_cost_mae": residual_final_metrics.get("MAE"),
+            "improvement_percentage": improvement,
+            "dataset_fingerprint": context.dataset_fingerprint,
+            "training_fingerprint": context.training_fingerprint,
+            "test_fingerprint": context.test_fingerprint,
+            "feature_schema_fingerprint": context.feature_schema_fingerprint,
+            "created_at": report["generated_at"],
+        })
+        report["artifact_directory"] = str(destination)
     return report
