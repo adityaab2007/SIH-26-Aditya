@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+import json
 import math
 import uuid
 from typing import Any
@@ -50,9 +51,6 @@ def _dataset() -> pd.DataFrame:
 
 
 def available_data_years() -> list[dict]:
-    # The catalog is needed before the user starts a retrain.  Reading the
-    # identity-resolved trajectory index avoids rebuilding all lifecycle
-    # features just to populate the year selectors on page load.
     if TRAJECTORIES.exists():
         indexed = pd.read_csv(
             TRAJECTORIES,
@@ -72,13 +70,47 @@ def available_data_years() -> list[dict]:
     return [{"year": int(year), "completed_projects": int(count)} for year, count in counts.items()]
 
 
-def _artifact_bundle(start_year: int, end_year: int) -> dict:
+def _artifact_bundle(start_year: int, end_year: int, expected_run_id: str | None = None) -> dict:
+    """Load only a complete provenance-verified lifecycle artifact bundle."""
     target = MODEL_ROOT / f"{start_year}_{end_year}"
     metadata_path = target / "metadata.json"
-    required = [metadata_path, target / "cost_model.pkl", target / "delay_model.pkl", target / "risk_model.pkl"]
-    if not all(path.exists() for path in required):
-        retrain_lifecycle(start_year, end_year)
-    metadata = __import__("json").loads(metadata_path.read_text())
+    manifest_path = target / "run_manifest.json"
+    required = [metadata_path, manifest_path, target / "cost_model.pkl", target / "delay_model.pkl", target / "risk_model.pkl"]
+
+    def valid_identity() -> tuple[dict, dict] | None:
+        if not all(path.exists() for path in required):
+            return None
+        try:
+            metadata = json.loads(metadata_path.read_text())
+            manifest = json.loads(manifest_path.read_text())
+        except (OSError, json.JSONDecodeError):
+            return None
+        metadata_run = metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id")
+        metadata_dataset = metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint")
+        if manifest.get("status") != "complete":
+            return None
+        if not metadata_run or not metadata_dataset:
+            return None
+        if manifest.get("run_id") != metadata_run or manifest.get("dataset_fingerprint") != metadata_dataset:
+            return None
+        return metadata, manifest
+
+    identity = valid_identity()
+    if identity is None:
+        retrained = retrain_lifecycle(start_year, end_year)
+        if expected_run_id and retrained.get("run_id") != expected_run_id:
+            raise ValueError("Requested lifecycle run is no longer available; retrain to create a new judge session.")
+        identity = valid_identity()
+        if identity is None:
+            raise RuntimeError("Lifecycle retraining did not publish a provenance-verified artifact bundle.")
+
+    metadata, _manifest = identity
+    actual_run_id = metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id")
+    if expected_run_id and actual_run_id != expected_run_id:
+        raise ValueError(
+            "Lifecycle artifacts for this year range were replaced by a different training run. "
+            "Retrain and use the newly returned run_id before opening a judge session."
+        )
     return {
         "metadata": metadata,
         "cost": joblib.load(target / "cost_model.pkl"),
@@ -87,13 +119,8 @@ def _artifact_bundle(start_year: int, end_year: int) -> dict:
     }
 
 
-def train_custom(start_year: int, end_year: int) -> dict:
-    """Open a judge session using the lifecycle models for the selected range.
-
-    The UI calls /api/models/retrain immediately before this endpoint.  If this
-    endpoint is used directly, it will train the lifecycle artifacts itself when
-    they are absent.
-    """
+def train_custom(start_year: int, end_year: int, run_id: str | None = None) -> dict:
+    """Open a judge session bound to one exact, verified lifecycle training run."""
     start_year = int(start_year)
     end_year = int(end_year)
     if start_year > end_year:
@@ -110,8 +137,12 @@ def train_custom(start_year: int, end_year: int) -> dict:
     if end_year < min_year or start_year > max_year:
         raise ValueError(f"Training range must overlap lifecycle data ({min_year}-{max_year}).")
 
-    bundle = _artifact_bundle(start_year, end_year)
-    features = list(bundle["metadata"]["features_used"])
+    bundle = _artifact_bundle(start_year, end_year, run_id)
+    metadata = bundle["metadata"]
+    provenance = metadata.get("provenance") or {}
+    artifact_run_id = metadata.get("run_id") or provenance.get("run_id")
+    dataset_fingerprint = metadata.get("dataset_fingerprint") or provenance.get("dataset_fingerprint")
+    features = list(metadata["features_used"])
 
     train_projects = set(data.loc[data.completion_year.between(start_year, end_year), "canonical_project_id"].dropna())
     held_all = data[data.completion_year.gt(end_year)].copy()
@@ -121,9 +152,6 @@ def train_custom(start_year: int, end_year: int) -> dict:
     if held_all.empty:
         raise ValueError("No later lifecycle projects are available for a leakage-free historical test.")
 
-    # The judge chooses a project, not an arbitrary repeated monthly row.  Use
-    # the latest official pre-completion snapshot for that project's displayed
-    # prediction while keeping every earlier snapshot available for audit counts.
     held_all = held_all.sort_values(["canonical_project_id", "snapshot_date"])
     held_latest = held_all.drop_duplicates("canonical_project_id", keep="last").reset_index(drop=True)
     held_latest["record_index"] = np.arange(len(held_latest), dtype=int)
@@ -133,6 +161,8 @@ def train_custom(start_year: int, end_year: int) -> dict:
     _CUSTOM_SESSIONS[session_id] = {
         "training_start": start_year,
         "training_end": end_year,
+        "run_id": artifact_run_id,
+        "dataset_fingerprint": dataset_fingerprint,
         "features": features,
         "models": bundle,
         "held_out": held_latest,
@@ -143,9 +173,10 @@ def train_custom(start_year: int, end_year: int) -> dict:
         _CUSTOM_SESSIONS.pop(next(iter(_CUSTOM_SESSIONS)), None)
 
     year_counts = held_latest.groupby("completion_year").size().sort_index()
-    metadata = bundle["metadata"]
     return {
         "session_id": session_id,
+        "run_id": artifact_run_id,
+        "dataset_fingerprint": dataset_fingerprint,
         "model_version": metadata["model_version"],
         "model_family": "monthly_lifecycle",
         "training_start": start_year,
@@ -189,6 +220,8 @@ def custom_projects(session_id: str, year: int) -> dict:
         })
     return {
         "session_id": session_id,
+        "run_id": session.get("run_id"),
+        "dataset_fingerprint": session.get("dataset_fingerprint"),
         "year": int(year),
         "items": items,
         "actual_outcomes_sent_to_browser": False,
@@ -231,6 +264,8 @@ def predict_custom(session_id: str, record_index: int) -> dict:
     session["predictions"][int(record_index)] = prediction
     return {
         "session_id": session_id,
+        "run_id": session.get("run_id"),
+        "dataset_fingerprint": session.get("dataset_fingerprint"),
         "record_index": int(record_index),
         "project": {"project_id": project_id, "project_name": _value(row.get("project_name")), "sector": _value(row.get("sector"))},
         "snapshot_date": _value(row.get("snapshot_date")),
@@ -239,9 +274,11 @@ def predict_custom(session_id: str, record_index: int) -> dict:
         "model_inputs": inputs,
         "shap_explanation": factors,
         "confidence_calibration_status": "not_calibrated_for_live_lifecycle_retrain",
-        "model_confidence_percentage": 0.0,
+        "model_confidence_percentage": None,
         "audit": {
             "model_family": "monthly_lifecycle",
+            "run_id": session.get("run_id"),
+            "dataset_fingerprint": session.get("dataset_fingerprint"),
             "project_excluded_from_training": True,
             "actual_outcomes_sent_to_browser": False,
             "training_end_year": session["training_end"],
@@ -259,6 +296,8 @@ def reveal_custom(session_id: str, record_index: int) -> dict:
     actual_delay = float(row.actual_delay_days)
     return {
         "session_id": session_id,
+        "run_id": session.get("run_id"),
+        "dataset_fingerprint": session.get("dataset_fingerprint"),
         "record_index": int(record_index),
         "actual_cost_overrun": round(actual_cost, 4),
         "actual_delay_days": round(actual_delay, 4),

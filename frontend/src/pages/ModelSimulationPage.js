@@ -8,6 +8,7 @@ const fractionPercent = (value, digits = 1) => missing(value) ? 'N/A' : `${(Numb
 const text = (value, fallback = 'Not reported') => missing(value) ? fallback : String(value);
 const escape = (value = '') => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const officialUrl = (value = '') => String(value).startsWith('https://paimana-proj.mospi.gov.in/') ? String(value) : '';
+const shortFingerprint = (value) => value ? String(value).replace('sha256:', '').slice(0, 12) : 'Not recorded';
 
 function yearOptions(years, selected) {
   return years.map((item) => `<option value="${item.year}" ${item.year === selected ? 'selected' : ''}>${item.year} · ${item.completed_projects} lifecycle projects</option>`).join('');
@@ -19,7 +20,12 @@ function predictionCard(prediction, actual = null) {
   const confidenceText = prediction.confidence_calibration_status === 'not_calibrated_for_live_lifecycle_retrain'
     ? 'Not calibrated for this live retrain'
     : `${fixed(prediction.model_confidence_percentage, 1)}% · ${escape(prediction.confidence_calibration_status || 'unavailable').replaceAll('_', ' ')}`;
-  return `<div class="model-grid">
+  const factors = Array.isArray(prediction.shap_explanation) ? prediction.shap_explanation : [];
+  const explanation = factors.length
+    ? horizontalBars(factors.map((factor) => ({ label: `${factor.feature} (${factor.direction})`, value: Math.abs(factor.impact) })), { format: (v) => fixed(v, 3) })
+    : '<p class="muted">No project-specific explanation factors were generated.</p>';
+  return `<div class="notice compact"><strong>Run identity:</strong> ${escape(prediction.run_id || 'Not recorded')} · <strong>dataset:</strong> ${escape(shortFingerprint(prediction.dataset_fingerprint))}</div>
+  <div class="model-grid">
     <section class="panel">
       <span class="kicker">Monthly lifecycle AI prediction generated first</span>
       <h2>${escape(text(prediction.project.project_name))}</h2>
@@ -43,16 +49,16 @@ function predictionCard(prediction, actual = null) {
         <div><span>Sector</span><strong>${escape(text(prediction.model_inputs.sector))}</strong></div>
         <div><span>Implementing agency</span><strong>${escape(text(prediction.model_inputs.implementing_agency))}</strong></div>
       </div>
-      ${range ? `<div class="notice compact"><strong>Uncertainty range:</strong> Cost P10–P90 ${fixed(range.cost_overrun_percentage.p10)}% to ${fixed(range.cost_overrun_percentage.p90)}%; delay P10–P90 ${fixed(range.delay_days.p10)} to ${fixed(range.delay_days.p90)} days.</div>` : ''}
+      ${range ? `<div class="notice compact"><strong>Uncertainty range:</strong> Cost P10–P90 ${fixed(range.cost_overrun_percentage?.p10)}% to ${fixed(range.cost_overrun_percentage?.p90)}%; delay P10–P90 ${fixed(range.delay_days?.p10)} to ${fixed(range.delay_days?.p90)} days.</div>` : ''}
     </section>
     <section class="panel">
       <span class="kicker">Explainability</span>
       <h2>Why the lifecycle model predicted this</h2>
-      ${horizontalBars((prediction.shap_explanation || []).map((factor) => ({ label: `${factor.feature} (${factor.direction})`, value: Math.abs(factor.impact) })), { format: (v) => fixed(v, 3) })}
+      ${explanation}
       <div class="notice compact"><strong>Leakage audit:</strong> This project is excluded from the selected training years: ${prediction.audit.project_excluded_from_training ? 'YES' : 'NO'}.</div>
     </section>
   </div>
-  ${actual ? `<section class="panel"><span class="kicker">Official outcome revealed after prediction</span><h2>Prediction vs actual</h2><div class="detail-financial"><div><span>AI cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div><div><span>Actual cost overrun</span><strong>${fixed(actual.actual_cost_overrun)}%</strong></div><div><span>Absolute cost error</span><strong>${fixed(actual.cost_error_absolute_pp)} pp</strong></div><div><span>AI delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div><div><span>Actual delay</span><strong>${fixed(actual.actual_delay_days)} days</strong></div><div><span>Absolute delay error</span><strong>${fixed(actual.delay_error_absolute_days)} days</strong></div><div><span>AI / actual risk</span><strong>${escape(text(prediction.predicted_risk))} / ${escape(text(actual.actual_risk))}</strong></div><div><span>Recorded completion</span><strong>${escape(text(actual.completion_date))}</strong></div></div><div class="notice compact"><strong>Reveal audit:</strong> ${escape(actual.reveal_policy)}</div>${source ? `<a class="secondary-btn" href="${escape(source)}" target="_blank" rel="noopener noreferrer">Open official PAIMANA source</a>` : ''}</section>` : '<div class="notice compact"><strong>Actual outcome is still hidden.</strong> Click Reveal Actual Outcome only after the judge has seen the AI prediction.</div>'}`;
+  ${actual ? `<section class="panel"><span class="kicker">Official outcome revealed after prediction</span><h2>Prediction vs actual</h2><div class="detail-financial"><div><span>AI cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div><div><span>Actual cost overrun</span><strong>${fixed(actual.actual_cost_overrun)}%</strong></div><div><span>Absolute cost error</span><strong>${fixed(actual.cost_error_absolute_pp)} pp</strong></div><div><span>AI delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div><div><span>Actual delay</span><strong>${fixed(actual.actual_delay_days)} days</strong></div><div><span>Absolute delay error</span><strong>${fixed(actual.delay_error_absolute_days)} days</strong></div><div><span>AI / actual risk</span><strong>${escape(text(prediction.predicted_risk))} / ${escape(text(actual.actual_risk))}</strong></div><div><span>Recorded completion</span><strong>${escape(text(actual.completion_date))}</strong></div></div><div class="notice compact"><strong>Reveal audit:</strong> ${escape(actual.reveal_policy)} · run ${escape(actual.run_id || 'Not recorded')}</div>${source ? `<a class="secondary-btn" href="${escape(source)}" target="_blank" rel="noopener noreferrer">Open official PAIMANA source</a>` : ''}</section>` : '<div class="notice compact"><strong>Actual outcome is still hidden.</strong> Click Reveal Actual Outcome only after the judge has seen the AI prediction.</div>'}`;
 }
 
 function trainingReceipt(registryRun, session = null, restored = false) {
@@ -62,7 +68,7 @@ function trainingReceipt(registryRun, session = null, restored = false) {
   const algorithms = registryRun.selected_algorithms || {};
   const balanced = registryRun.balanced_stage_summary || registryRun.metrics?.metadata?.balanced_stage_summary || {};
   const sessionAudit = session ? ` <strong>Leakage guard:</strong> ${escape(session.leakage_guard)} Browser received actual held-out outcomes: <strong>${session.actual_outcomes_sent_to_browser ? 'YES' : 'NO'}</strong>.` : '';
-  const provenance = registryRun.run_id ? ` <strong>Run ID:</strong> ${escape(registryRun.run_id)}.` : '';
+  const provenance = registryRun.run_id ? ` <strong>Run ID:</strong> ${escape(registryRun.run_id)} · <strong>dataset:</strong> ${escape(shortFingerprint(registryRun.dataset_fingerprint))}.` : '';
   return `${restored ? '<strong>Restored active browser-session run.</strong> ' : ''}<strong>${escape(registryRun.model_version)} retrained from scratch.</strong> Training: ${escape(registryRun.training_years)} · internal validation: ${escape(registryRun.internal_validation_year)} · untouched future holdout: ${escape(registryRun.testing_years)}. <strong>Lifecycle features:</strong> ${registryRun.feature_count} retained · ${quality.removed_invalid_feature_count ?? 'N/A'} rejected by the selected window audit. <strong>Selected models:</strong> cost ${escape(algorithms.cost || 'unknown')} · delay ${escape(algorithms.delay || 'unknown')} · risk Random Forest. <strong>Fresh holdout metrics:</strong> cost MAE ${fixed(registryRun.metrics?.cost_model?.MAE)} pp · delay MAE ${fixed(registryRun.metrics?.delay_model?.MAE)} days · risk macro-F1 ${fractionPercent(registryRun.metrics?.risk_model?.macro_f1)}. <strong>Equal-stage diagnostic:</strong> cost MAE ${fixed(balanced.cost_mae)} pp · delay MAE ${fixed(balanced.delay_mae)} days · risk macro-F1 ${fractionPercent(balanced.risk_macro_f1)}. <strong>Five-feature benchmark:</strong> cost MAE ${fixed(baseline.cost_mae)} pp · delay MAE ${fixed(baseline.delay_mae)} days · risk macro-F1 ${fractionPercent(baseline.risk_macro_f1)}. <strong>Feature quality:</strong> ${fixed(quality.data_quality_score, 1)}%.${provenance}${sessionAudit}<br><a class="secondary-btn" href="#/prediction-accuracy">View Prediction Accuracy</a>`;
 }
 
@@ -142,6 +148,8 @@ export async function ModelSimulationPage(root) {
     heldOutNote.innerHTML = '<div class="loading">Loading held-out official lifecycle projects…</div>';
     try {
       const response = await api.customSimulationProjects(session.session_id, Number(testYear.value));
+      if (session.run_id && response.run_id !== session.run_id) throw new Error('Held-out project response belongs to a different model run. Retrain this range.');
+      if (session.dataset_fingerprint && response.dataset_fingerprint !== session.dataset_fingerprint) throw new Error('Held-out project response belongs to a different dataset snapshot. Retrain this range.');
       projectRows = response.items;
       project.innerHTML = projectRows.map((row) => `<option value="${row.record_index}">${escape(row.project_id)} · ${escape(row.project_name)}</option>`).join('');
       project.disabled = !projectRows.length;
@@ -151,7 +159,7 @@ export async function ModelSimulationPage(root) {
     } catch (error) {
       projectRows = [];
       project.innerHTML = '<option>No projects available</option>';
-      heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div><p class="muted">If the backend was restarted, retrain this saved range to create a new judge session.</p>`;
+      heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div><p class="muted">If the backend was restarted or this run was replaced, retrain this saved range to create a new judge session.</p>`;
     }
   };
 
@@ -162,6 +170,8 @@ export async function ModelSimulationPage(root) {
     output.innerHTML = '<div class="loading">Generating prediction from the freshly trained monthly lifecycle model…</div>';
     try {
       prediction = await api.predictCustomSimulation(session.session_id, Number(project.value));
+      if (session.run_id && prediction.run_id !== session.run_id) throw new Error('Prediction belongs to a different model run. Retrain this range.');
+      if (session.dataset_fingerprint && prediction.dataset_fingerprint !== session.dataset_fingerprint) throw new Error('Prediction belongs to a different dataset snapshot. Retrain this range.');
       revealButton.disabled = false;
       output.innerHTML = predictionCard(prediction);
     } catch (error) {
@@ -190,6 +200,8 @@ export async function ModelSimulationPage(root) {
       const activeBase = {
         window: registryRun.window,
         model_version: registryRun.model_version,
+        run_id: registryRun.run_id,
+        dataset_fingerprint: registryRun.dataset_fingerprint,
         start_year: startYear,
         end_year: endYear,
         receipt: registryRun,
@@ -198,7 +210,9 @@ export async function ModelSimulationPage(root) {
       receipt.innerHTML = `${trainingReceipt(registryRun)}<div class="loading">Preparing judge-controlled held-out project session…</div>`;
 
       try {
-        session = await api.trainCustomSimulation(startYear, endYear);
+        session = await api.trainCustomSimulation(startYear, endYear, registryRun.run_id);
+        if (registryRun.run_id && session.run_id !== registryRun.run_id) throw new Error('Judge session did not bind to the exact retrained model run. Retrain again.');
+        if (registryRun.dataset_fingerprint && session.dataset_fingerprint !== registryRun.dataset_fingerprint) throw new Error('Judge session dataset fingerprint does not match the retrained model. Retrain again.');
         api.setActiveLifecycleRun({ ...activeBase, session });
       } catch (sessionError) {
         session = null;
@@ -233,6 +247,8 @@ export async function ModelSimulationPage(root) {
     revealButton.disabled = true;
     try {
       actual = await api.revealCustomSimulation(session.session_id, prediction.record_index);
+      if (session.run_id && actual.run_id !== session.run_id) throw new Error('Reveal response belongs to a different model run.');
+      if (session.dataset_fingerprint && actual.dataset_fingerprint !== session.dataset_fingerprint) throw new Error('Reveal response belongs to a different dataset snapshot.');
       output.innerHTML = predictionCard(prediction, actual);
     } catch (error) {
       output.innerHTML += `<div class="error-state">${escape(error.message)}</div>`;
