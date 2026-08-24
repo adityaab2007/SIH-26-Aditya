@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -52,7 +54,13 @@ def _write_fake_artifacts(artifact_root, start, end):
     target = artifact_root / f"{start}_{end}"
     target.mkdir(parents=True, exist_ok=True)
     for name in retraining._REQUIRED_ARTIFACTS:
-        (target / name).write_bytes(b"unit-test-artifact")
+        path = target / name
+        if name == "metadata.json":
+            path.write_text(json.dumps(_comparison_result()["metadata"]))
+        elif name == "evaluation_results.json":
+            path.write_text(json.dumps(_comparison_result()))
+        else:
+            path.write_bytes(b"unit-test-artifact")
 
 
 def test_year_range_retrain_calls_monthly_lifecycle_trainer(tmp_path, monkeypatch):
