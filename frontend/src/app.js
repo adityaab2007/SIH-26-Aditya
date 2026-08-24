@@ -45,7 +45,8 @@ async function render() {
     else await (routes[route.page]||DashboardPage)(page);
   } catch (err) {
     console.error(err);
-    page.innerHTML=`<div class="error-state"><strong>Unable to load this view</strong><span>${err.message}</span><a href="#/dashboard">Return to dashboard</a></div>`;
+    page.innerHTML=`<div class="error-state"><strong>Unable to load this view</strong><span>${err.message}</span><div><button class="secondary-btn" id="retry-view">Retry</button> <a href="#/dashboard">Return to dashboard</a></div></div>`;
+    page.querySelector('#retry-view')?.addEventListener('click', render);
   }
   window.scrollTo({top:0,behavior:'instant'});
 }
