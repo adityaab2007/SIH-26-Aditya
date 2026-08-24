@@ -52,6 +52,8 @@ def _lifecycle_report(raw: dict, model_path: Path) -> dict:
     features = list(metadata.get("features_used") or feature_quality.get("features_used") or [])
     training = metadata.get("training_period") or []
     testing = metadata.get("testing_period") or []
+    manifest_path = model_path / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     metadata.update({
         "training_start": training[0] if len(training) > 0 else None,
         "training_end": training[1] if len(training) > 1 else None,
@@ -63,6 +65,15 @@ def _lifecycle_report(raw: dict, model_path: Path) -> dict:
         "feature_quality": {
             "data_quality_score": feature_quality.get("data_quality_score"),
             "removed_invalid_feature_count": feature_quality.get("removed_invalid_feature_count"),
+            "as_of_evidence_coverage": feature_quality.get("as_of_evidence_coverage"),
+        },
+        "lifecycle_stage_metrics": lifecycle.get("lifecycle_stages") or metadata.get("lifecycle_stage_metrics") or {},
+        "lifecycle_stage_distribution": lifecycle.get("stage_distribution") or metadata.get("lifecycle_stage_distribution") or {},
+        "balanced_stage_summary": lifecycle.get("balanced_stage_summary") or metadata.get("balanced_stage_summary") or {},
+        "provenance": {
+            "run_id": metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id"),
+            "dataset_fingerprint": metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint"),
+            "manifest_status": manifest.get("status") if manifest else "legacy_missing_manifest",
         },
     })
     return {
@@ -72,6 +83,9 @@ def _lifecycle_report(raw: dict, model_path: Path) -> dict:
         "cost_model": metrics.get("cost", {}),
         "delay_model": metrics.get("delay", {}),
         "risk_model": metrics.get("risk", {}),
+        "lifecycle_stages": metadata["lifecycle_stage_metrics"],
+        "stage_distribution": metadata["lifecycle_stage_distribution"],
+        "balanced_stage_summary": metadata["balanced_stage_summary"],
         "shap": raw.get("shap") or {},
         "sector_validation": None,
     }

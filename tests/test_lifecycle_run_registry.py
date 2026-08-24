@@ -9,16 +9,23 @@ from backend.app.services import lifecycle_run_service, validation_service
 client = TestClient(app)
 
 
-def _evaluation(start=2004, end=2020):
+def _evaluation(start=2004, end=2020, *, with_provenance=False):
+    metadata = {
+        "model_version": f"monthly-{start}-{end}",
+        "training_period": [start, end],
+        "testing_period": [end + 1, 2025],
+        "features_used": ["approved_cost_cr", "schedule_slippage_days"],
+        "feature_availability": {"data_quality_score": 97.2, "removed_invalid_feature_count": 2},
+    }
+    if with_provenance:
+        metadata.update({
+            "run_id": f"run-{start}-{end}",
+            "dataset_fingerprint": f"dataset-{start}-{end}",
+            "provenance": {"run_id": f"run-{start}-{end}", "dataset_fingerprint": f"dataset-{start}-{end}"},
+        })
     return {
         "window": f"{start}_{end}",
-        "metadata": {
-            "model_version": f"monthly-{start}-{end}",
-            "training_period": [start, end],
-            "testing_period": [end + 1, 2025],
-            "features_used": ["approved_cost_cr", "schedule_slippage_days"],
-            "feature_availability": {"data_quality_score": 97.2, "removed_invalid_feature_count": 2},
-        },
+        "metadata": metadata,
         "lifecycle": {
             "metrics": {
                 "cost": {"MAE": 29.5},
@@ -29,6 +36,26 @@ def _evaluation(start=2004, end=2020):
     }
 
 
+def _write_complete_run(path, start=2004, end=2020, manifest=None):
+    evaluation = _evaluation(start, end, with_provenance=True)
+    path.mkdir(parents=True)
+    (path / "evaluation_results.json").write_text(json.dumps(evaluation))
+    (path / "metadata.json").write_text(json.dumps(evaluation["metadata"]))
+    (path / "prediction_validation.csv").write_text(
+        "canonical_project_id,actual_cost_overrun_percentage,actual_delay_days,predicted_cost_overrun,predicted_delay_days,cost_error,delay_error\n"
+        "P-1,20,100,18,90,-2,-10\n"
+    )
+    for name in ("cost", "delay", "risk"):
+        (path / f"{name}_model.pkl").touch()
+    payload = manifest or {
+        "status": "complete",
+        "run_id": f"run-{start}-{end}",
+        "dataset_fingerprint": f"dataset-{start}-{end}",
+        "created_at": "2026-08-24T00:00:00Z",
+    }
+    (path / "run_manifest.json").write_text(json.dumps(payload))
+
+
 def test_lifecycle_run_registry_discovers_runtime_windows(tmp_path, monkeypatch):
     root = tmp_path / "monthly_lifecycle"
 
@@ -37,16 +64,7 @@ def test_lifecycle_run_registry_discovers_runtime_windows(tmp_path, monkeypatch)
     (summary / "evaluation_results.json").write_text(json.dumps(_evaluation(2001, 2015)))
 
     complete = root / "2004_2020"
-    complete.mkdir(parents=True)
-    (complete / "evaluation_results.json").write_text(json.dumps(_evaluation()))
-    (complete / "metadata.json").write_text(json.dumps(_evaluation()["metadata"]))
-    (complete / "prediction_validation.csv").write_text(
-        "canonical_project_id,actual_cost_overrun_percentage,actual_delay_days,predicted_cost_overrun,predicted_delay_days,cost_error,delay_error\n"
-        "P-1,20,100,18,90,-2,-10\n"
-    )
-    for name in ("cost", "delay", "risk"):
-        (complete / f"{name}_model.pkl").touch()
-    (complete / "run_manifest.json").write_text(json.dumps({"status": "complete", "created_at": "2026-08-24T00:00:00Z"}))
+    _write_complete_run(complete)
 
     monkeypatch.setattr(lifecycle_run_service, "MODELS_DIR", tmp_path)
     response = client.get("/api/models/lifecycle-runs")
@@ -57,9 +75,22 @@ def test_lifecycle_run_registry_discovers_runtime_windows(tmp_path, monkeypatch)
     assert by_window["2001_2015"]["summary_available"] is True
     assert by_window["2001_2015"]["complete"] is False
     assert by_window["2004_2020"]["complete"] is True
+    assert by_window["2004_2020"]["provenance_verified"] is True
+    assert by_window["2004_2020"]["provenance_status"] == "verified"
     assert by_window["2004_2020"]["has_validation_rows"] is True
     assert by_window["2004_2020"]["cost_mae"] == 29.5
     assert by_window["2004_2020"]["testing_start"] == 2021
+
+
+def test_invalid_manifest_cannot_make_run_complete(tmp_path, monkeypatch):
+    root = tmp_path / "monthly_lifecycle" / "2004_2020"
+    _write_complete_run(root, manifest={"status": "complete", "created_at": "2026-08-24T00:00:00Z"})
+    monkeypatch.setattr(lifecycle_run_service, "MODELS_DIR", tmp_path)
+    item = client.get("/api/models/lifecycle-runs").json()["items"][0]
+    assert item["complete"] is False
+    assert item["provenance_verified"] is False
+    assert item["provenance_status"] == "missing_run_or_dataset_fingerprint"
+    assert item["status"] == "provenance_error"
 
 
 def test_training_marker_prevents_half_written_run_from_looking_complete(tmp_path, monkeypatch):

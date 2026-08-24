@@ -2,15 +2,28 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from backend.app.services import lifecycle_retraining_service as retraining
 from backend.app.services import lifecycle_simulation_service as simulation
 
 
 def _comparison_result():
-    audit = {"data_quality_score": 97.5, "removed_invalid_feature_count": 2, "removed_features": ["x", "y"]}
+    audit = {"data_quality_score": 97.5, "removed_invalid_feature_count": 2, "removed_features": ["x", "y"], "as_of_evidence_coverage": 100.0}
+    provenance = {
+        "run_id": "unit-test-run",
+        "dataset_fingerprint": "dataset-test-sha",
+        "training_fingerprint": "train-test-sha",
+        "test_fingerprint": "holdout-test-sha",
+        "feature_schema_fingerprint": "schema-test-sha",
+        "source_commit": "test-commit",
+    }
     metadata = {
         "model_version": "monthly-2001-2015",
+        "run_id": provenance["run_id"],
+        "dataset_fingerprint": provenance["dataset_fingerprint"],
+        "training_period": [2001, 2015],
+        "testing_period": [2016, 2024],
         "training_snapshots": 100,
         "unique_training_projects": 20,
         "test_snapshots": 30,
@@ -20,25 +33,39 @@ def _comparison_result():
         "selected_algorithms": {"cost": "xgboost", "delay": "lightgbm"},
         "leakage_policy": "future holdout excluded",
         "snapshot_weighting_policy": "per-project weights",
+        "balanced_stage_summary": {"cost_mae": 31.0, "delay_mae": 510.0, "risk_macro_f1": 0.42},
+        "provenance": provenance,
     }
     return {
         "metadata": metadata,
-        "baseline": {"metrics": {"cost": {"MAE": 50.0}, "delay": {"MAE": 800.0}, "risk": {"macro_f1": 0.2}}},
+        "baseline": {"features": ["approved_cost_cr"], "metrics": {"cost": {"MAE": 50.0}, "delay": {"MAE": 800.0}, "risk": {"macro_f1": 0.2}}},
         "lifecycle": {
             "metrics": {"cost": {"MAE": 30.0}, "delay": {"MAE": 500.0}, "risk": {"macro_f1": 0.45}},
             "lifecycle_stages": {"early": {"available": True}},
+            "stage_distribution": {"early": {"rows": 10, "unique_projects": 5}},
+            "balanced_stage_summary": metadata["balanced_stage_summary"],
         },
     }
 
 
-def test_year_range_retrain_calls_monthly_lifecycle_trainer(monkeypatch):
+def _write_fake_artifacts(artifact_root, start, end):
+    target = artifact_root / f"{start}_{end}"
+    target.mkdir(parents=True, exist_ok=True)
+    for name in retraining._REQUIRED_ARTIFACTS:
+        (target / name).write_bytes(b"unit-test-artifact")
+
+
+def test_year_range_retrain_calls_monthly_lifecycle_trainer(tmp_path, monkeypatch):
     data = pd.DataFrame({"completion_year": [2001, 2015, 2020, 2024]})
     identity = pd.DataFrame()
+    isolated_root = tmp_path / "monthly_lifecycle"
+    monkeypatch.setattr(retraining, "MODEL_ROOT", isolated_root)
     monkeypatch.setattr(retraining, "_training_data", lambda: (data, identity, 2001, 2024))
     called = {}
 
-    def fake_train_window(start, end, test_end, data=None, identity=None):
-        called.update({"start": start, "end": end, "test_end": test_end, "data": data, "identity": identity})
+    def fake_train_window(start, end, test_end, data=None, identity=None, artifact_root=None):
+        called.update({"start": start, "end": end, "test_end": test_end, "data": data, "identity": identity, "artifact_root": artifact_root})
+        _write_fake_artifacts(artifact_root, start, end)
         return _comparison_result()
 
     monkeypatch.setattr(retraining, "train_window", fake_train_window)
@@ -48,11 +75,32 @@ def test_year_range_retrain_calls_monthly_lifecycle_trainer(monkeypatch):
     assert called["end"] == 2015
     assert called["test_end"] == 2024
     assert called["data"] is data
+    assert str(called["artifact_root"]).startswith(str(isolated_root / ".staging"))
     assert result["model_family"] == "monthly_lifecycle"
     assert result["selected_algorithms"] == {"cost": "xgboost", "delay": "lightgbm", "risk": "random_forest"}
     assert result["metrics"]["cost_model"]["MAE"] == 30.0
     assert result["baseline_comparison"]["cost_mae"] == 50.0
     assert result["future_holdout_start"] == 2016
+    assert result["run_id"] == "unit-test-run"
+    assert (isolated_root / "2001_2015" / "run_manifest.json").exists()
+    assert not (isolated_root / "2001_2015" / ".training").exists()
+
+
+def test_failed_retrain_always_removes_training_marker(tmp_path, monkeypatch):
+    data = pd.DataFrame({"completion_year": [2001, 2015, 2020, 2024]})
+    identity = pd.DataFrame()
+    isolated_root = tmp_path / "monthly_lifecycle"
+    monkeypatch.setattr(retraining, "MODEL_ROOT", isolated_root)
+    monkeypatch.setattr(retraining, "_training_data", lambda: (data, identity, 2001, 2024))
+
+    def fail(*args, **kwargs):
+        raise RuntimeError("simulated training failure")
+
+    monkeypatch.setattr(retraining, "train_window", fail)
+    with pytest.raises(RuntimeError, match="simulated training failure"):
+        retraining.retrain_lifecycle(2001, 2015)
+    assert not (isolated_root / "2001_2015" / ".training").exists()
+    assert not (isolated_root / ".staging").exists() or not any((isolated_root / ".staging").iterdir())
 
 
 class _Regressor:

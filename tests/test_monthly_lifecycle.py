@@ -6,7 +6,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backend.app.ml.monthly_lifecycle import engineer_as_of_features, resolve_identities
+from backend.app.ml.monthly_lifecycle import (
+    CANDIDATE_FEATURES,
+    PRIOR_FEATURES,
+    as_of_feature_evidence,
+    assign_project_balanced_weights,
+    engineer_as_of_features,
+    resolve_identities,
+)
 from backend.app.ml.monthly_training import temporal_project_split
 from backend.app.services import paimana_ingestion_service as ingestion
 from backend.app.services.paimana_parsers import ParseContext, detect_parser, parse_report
@@ -157,10 +164,25 @@ def test_future_completed_projects_cannot_influence_priors():
     assert (pd.isna(before.sector_average_cost_overrun) and pd.isna(after.sector_average_cost_overrun)) or before.sector_average_cost_overrun == after.sector_average_cost_overrun
 
 
-def test_project_balancing_weights_sum_to_one_per_project():
-    resolved, _ = resolve_identities(snapshots().iloc[:2], outcomes())
-    frame = engineer_as_of_features(resolved, outcomes())
-    assert frame.groupby("canonical_project_id").sample_weight.sum().iloc[0] == pytest.approx(1.0)
+def test_project_balancing_weights_sum_to_one_after_final_sampling():
+    final_sampled = pd.DataFrame({
+        "canonical_project_id": ["A", "A", "B", "B", "B"],
+        "snapshot_quarter": ["2020Q1", "2020Q2", "2020Q1", "2020Q2", "2020Q3"],
+    })
+    weighted = assign_project_balanced_weights(final_sampled)
+    sums = weighted.groupby("canonical_project_id").sample_weight.sum()
+    assert sums["A"] == pytest.approx(1.0)
+    assert sums["B"] == pytest.approx(1.0)
+    assert weighted.loc[weighted.canonical_project_id.eq("A"), "sample_weight"].iloc[0] == pytest.approx(0.5)
+    assert weighted.loc[weighted.canonical_project_id.eq("B"), "sample_weight"].iloc[0] == pytest.approx(1 / 3)
+
+
+def test_every_candidate_feature_has_explicit_as_of_lineage():
+    evidence = as_of_feature_evidence(CANDIDATE_FEATURES)
+    assert set(evidence) == set(CANDIDATE_FEATURES)
+    assert all(item["proven"] for item in evidence.values())
+    assert all(item.get("temporal_rule") for item in evidence.values())
+    assert all("strictly earlier" in evidence[name]["temporal_rule"] for name in PRIOR_FEATURES)
 
 
 def test_temporal_split_rejects_same_project_in_train_and_test():
@@ -218,7 +240,7 @@ def test_monthly_inference_uses_latest_real_snapshot_and_trajectory(monkeypatch)
         {"project_id": "N18000001", "project_name": "Project", "snapshot_date": pd.Timestamp("2020-04-30"), "approved_cost_cr": 100, "progress_velocity_3m": 5.0},
     ])
     bundle = {"metadata": {"features_used": ["approved_cost_cr", "progress_velocity_3m"], "model_version": "monthly-test"},
-              "cost": _Model(12), "delay": _Model(90), "risk": _Model("MEDIUM"),
+              "cost": _Model(12), "delay": _Model(90), "risk": _Model("MEDIUM"), "manifest": {},
               "importance": {"cost": {"features": [{"feature": "progress_velocity_3m", "importance": .7}]}}}
     monkeypatch.setattr(monthly_prediction, "_inference_frame", lambda: frame)
     monkeypatch.setattr(monthly_prediction, "_bundle", lambda _: bundle)
@@ -226,13 +248,15 @@ def test_monthly_inference_uses_latest_real_snapshot_and_trajectory(monkeypatch)
     assert result["snapshot_date"] == "2020-04-30"
     assert result["history_snapshots"] == 2
     assert result["model_inputs"]["progress_velocity_3m"] == 5.0
+    assert result["global_feature_importance"][0]["feature"] == "progress_velocity_3m"
+    assert result["explanation_scope"].startswith("shap_explanation is project-specific")
 
 
 def test_monthly_inference_keeps_missing_single_snapshot_trajectory_null(monkeypatch):
     frame = pd.DataFrame([{"project_id": "N18000001", "project_name": "Project", "snapshot_date": pd.Timestamp("2020-01-31"),
                            "approved_cost_cr": 100, "progress_velocity_3m": np.nan}])
     bundle = {"metadata": {"features_used": ["approved_cost_cr", "progress_velocity_3m"], "model_version": "monthly-test"},
-              "cost": _Model(12), "delay": _Model(90), "risk": _Model("MEDIUM"),
+              "cost": _Model(12), "delay": _Model(90), "risk": _Model("MEDIUM"), "manifest": {},
               "importance": {"cost": {"features": []}}}
     monkeypatch.setattr(monthly_prediction, "_inference_frame", lambda: frame)
     monkeypatch.setattr(monthly_prediction, "_bundle", lambda _: bundle)

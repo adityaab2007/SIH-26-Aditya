@@ -18,14 +18,26 @@ def _read_json(path: Path) -> dict:
         return {}
 
 
-def lifecycle_runs(models_dir: Path | None = None) -> dict:
-    """Discover lifecycle runs that actually exist on disk.
+def _provenance_status(manifest: dict, metadata: dict) -> tuple[bool, str]:
+    if not manifest:
+        return False, "legacy_missing_manifest"
+    if manifest.get("status") != "complete":
+        return False, str(manifest.get("status") or "invalid_manifest")
+    manifest_run = manifest.get("run_id")
+    metadata_run = metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id")
+    manifest_dataset = manifest.get("dataset_fingerprint")
+    metadata_dataset = metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint")
+    if not manifest_run or not metadata_run or not manifest_dataset or not metadata_dataset:
+        return False, "missing_run_or_dataset_fingerprint"
+    if manifest_run != metadata_run:
+        return False, "run_id_mismatch"
+    if manifest_dataset != metadata_dataset:
+        return False, "dataset_fingerprint_mismatch"
+    return True, "verified"
 
-    The endpoint deliberately reflects runtime artifacts rather than a hard-coded
-    list, so an arbitrary successful live retrain becomes selectable immediately.
-    Older committed benchmark runs without model binaries/validation rows remain
-    visible as summary-only runs when their evaluation report is available.
-    """
+
+def lifecycle_runs(models_dir: Path | None = None) -> dict:
+    """Discover lifecycle runs and expose artifact/provenance integrity."""
     root = (models_dir or MODELS_DIR) / "monthly_lifecycle"
     if not root.exists():
         return {"items": [], "count": 0}
@@ -61,15 +73,13 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
         has_feature_quality = quality_path.exists() or bool(quality)
         has_shap = (path / "shap_importance.json").exists() or bool(evaluation.get("shap"))
         in_progress = training_marker.exists()
-        manifest_complete = manifest.get("status") == "complete"
-        complete = bool(
-            not in_progress
-            and has_evaluation
-            and has_metadata
-            and has_validation_rows
-            and has_models
-            and (manifest_complete or not manifest)
-        )
+        provenance_verified, provenance_status = _provenance_status(manifest, metadata)
+        base_complete = bool(not in_progress and has_evaluation and has_metadata and has_validation_rows and has_models)
+        # Legacy runs remain inspectable but are not called provenance-verified.
+        # A present-but-invalid manifest is more dangerous than no manifest and
+        # therefore makes the run incomplete until it is retrained.
+        manifest_invalid = bool(manifest_path.exists() and not provenance_verified)
+        complete = bool(base_complete and not manifest_invalid)
 
         training = metadata.get("training_period") or [start_year, end_year]
         testing = metadata.get("testing_period") or []
@@ -78,9 +88,24 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
         delay = lifecycle_metrics.get("delay") or {}
         risk = lifecycle_metrics.get("risk") or {}
 
+        if in_progress:
+            status = "training"
+        elif manifest_invalid:
+            status = "provenance_error"
+        elif complete and provenance_verified:
+            status = "complete"
+        elif complete:
+            status = "legacy_unverified"
+        elif has_evaluation:
+            status = "summary_only"
+        else:
+            status = "incomplete"
+
         items.append({
             "window": path.name,
             "model_version": metadata.get("model_version") or f"monthly-{start_year}-{end_year}",
+            "run_id": metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id"),
+            "dataset_fingerprint": metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint"),
             "training_start": training[0] if len(training) > 0 else start_year,
             "training_end": training[1] if len(training) > 1 else end_year,
             "testing_start": testing[0] if len(testing) > 0 else None,
@@ -90,6 +115,7 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
             "cost_mae": cost.get("MAE"),
             "delay_mae": delay.get("MAE"),
             "risk_macro_f1": risk.get("macro_f1"),
+            "balanced_stage_summary": metadata.get("balanced_stage_summary") or (evaluation.get("lifecycle") or {}).get("balanced_stage_summary"),
             "has_evaluation": has_evaluation,
             "has_validation_rows": has_validation_rows,
             "has_models": has_models,
@@ -97,9 +123,11 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
             "has_shap": has_shap,
             "has_manifest": manifest_path.exists(),
             "in_progress": in_progress,
+            "provenance_verified": provenance_verified,
+            "provenance_status": provenance_status,
             "complete": complete,
             "summary_available": has_evaluation,
-            "status": "training" if in_progress else ("complete" if complete else ("summary_only" if has_evaluation else "incomplete")),
+            "status": status,
             "created_at": manifest.get("created_at") or metadata.get("created_at"),
         })
 

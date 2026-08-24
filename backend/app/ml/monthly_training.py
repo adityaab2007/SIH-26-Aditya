@@ -20,8 +20,12 @@ from xgboost import XGBRegressor
 
 from backend.app.ml.feature_audit import audit_features, write_feature_quality_report
 from backend.app.ml.monthly_lifecycle import (
-    BASELINE_FEATURES, CANDIDATE_FEATURES, DIRECT_FEATURES, PRIOR_FEATURES, TARGETS,
-    TRAJECTORY_FEATURES, build_training_dataset,
+    BASELINE_FEATURES, CANDIDATE_FEATURES, TRAJECTORY_FEATURES,
+    as_of_feature_evidence, build_training_dataset, training_as_of_invariants,
+)
+from backend.app.ml.provenance import (
+    artifact_fingerprints, feature_schema_fingerprint, frame_fingerprint,
+    git_commit_sha, new_run_id,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -130,6 +134,32 @@ def _stage_metrics(rows: pd.DataFrame) -> dict:
     return result
 
 
+def _stage_distribution(rows: pd.DataFrame) -> dict:
+    distribution = {}
+    for stage in ["early", "mid", "late", "very_late"]:
+        part = rows[rows.lifecycle_stage.eq(stage)]
+        distribution[stage] = {"rows": int(len(part)), "unique_projects": int(part.canonical_project_id.nunique())}
+    return distribution
+
+
+def _balanced_stage_summary(stages: dict) -> dict:
+    available = [value for value in stages.values() if value.get("available")]
+    if not available:
+        return {"available": False}
+    def avg(path: tuple[str, str]) -> float | None:
+        values = [stage.get(path[0], {}).get(path[1]) for stage in available]
+        values = [float(value) for value in values if value is not None]
+        return round(float(np.mean(values)), 4) if values else None
+    return {
+        "available": True,
+        "policy": "macro-average across lifecycle stages so very-late snapshots cannot dominate the headline diagnostic",
+        "cost_mae": avg(("cost", "MAE")),
+        "delay_mae": avg(("delay", "MAE")),
+        "risk_macro_f1": avg(("risk", "macro_f1")),
+        "early_warning": {stage: stages.get(stage) for stage in ("early", "mid")},
+    }
+
+
 def _importance(pipe: Pipeline, sample: pd.DataFrame, features: list[str]) -> dict:
     preprocess = pipe.named_steps["preprocess"]; model = pipe.named_steps["model"]; transformed = preprocess.transform(sample[features])
     names = preprocess.get_feature_names_out().tolist(); method = "tree_feature_importance"
@@ -151,7 +181,7 @@ def _importance(pipe: Pipeline, sample: pd.DataFrame, features: list[str]) -> di
         feature = next((candidate for candidate in features if clean == candidate or clean.startswith(candidate + "_")), clean)
         aggregate[feature] = aggregate.get(feature, 0.0) + float(score)
     total = sum(aggregate.values()) or 1.0
-    return {"method": method, "features": [{"feature": name, "importance": round(value / total, 6)} for name, value in sorted(aggregate.items(), key=lambda item: item[1], reverse=True)]}
+    return {"method": method, "scope": "global_training_sample", "features": [{"feature": name, "importance": round(value / total, 6)} for name, value in sorted(aggregate.items(), key=lambda item: item[1], reverse=True)]}
 
 
 def _train_variant(train: pd.DataFrame, test: pd.DataFrame, features: list[str], seed: int, selected: dict[str, str] | None = None) -> tuple[dict, dict, pd.DataFrame]:
@@ -179,16 +209,41 @@ def temporal_project_split(data: pd.DataFrame, training_start: int, training_end
 
 
 def train_window(training_start: int, training_end: int, test_end: int,
-                 data: pd.DataFrame | None = None, identity: pd.DataFrame | None = None) -> dict:
+                 data: pd.DataFrame | None = None, identity: pd.DataFrame | None = None,
+                 artifact_root: Path | None = None) -> dict:
     if data is None or identity is None:
         data, identity = build_training_dataset()
     data = data.copy(); data["completion_year"] = pd.to_numeric(data.completion_year, errors="coerce")
     train, test = temporal_project_split(data, training_start, training_end, test_end)
     if train.canonical_project_id.nunique() < 10 or test.canonical_project_id.nunique() < 2:
         raise ValueError(f"Insufficient identity-verified monthly trajectories: train projects={train.canonical_project_id.nunique()}, test projects={test.canonical_project_id.nunique()}")
-    audit = audit_features(train, CANDIDATE_FEATURES, minimum_availability=10, minimum_year_coverage=2, safely_as_of_features=set(CANDIDATE_FEATURES),
-                           leakage_risks={"revised_cost_cr": "potential late-stage target proxy; evaluated by ablation", "cost_escalation_percentage": "potential late-stage target proxy; evaluated by ablation"})
+    train_invariants = training_as_of_invariants(train)
+    test_invariants = training_as_of_invariants(test)
+    if not train_invariants["passed"] or not test_invariants["passed"]:
+        raise ValueError(f"As-of safety invariant failure: train={train_invariants}, test={test_invariants}")
+
+    audit = audit_features(
+        train,
+        CANDIDATE_FEATURES,
+        minimum_availability=10,
+        minimum_year_coverage=2,
+        as_of_evidence=as_of_feature_evidence(CANDIDATE_FEATURES),
+        leakage_risks={
+            "revised_cost_cr": "late-stage signal available in the same official snapshot; evaluated by ablation",
+            "cost_escalation_percentage": "late-stage signal derived from same-snapshot revised cost; evaluated by ablation",
+        },
+    )
     lifecycle_features = list(dict.fromkeys(BASELINE_FEATURES + audit["features_used"])); baseline_features = [name for name in BASELINE_FEATURES if name in train]
+    run_id = new_run_id()
+    provenance = {
+        "run_id": run_id,
+        "dataset_fingerprint": frame_fingerprint(data),
+        "training_fingerprint": frame_fingerprint(train),
+        "test_fingerprint": frame_fingerprint(test),
+        "feature_schema_fingerprint": feature_schema_fingerprint(lifecycle_features),
+        "source_commit": git_commit_sha(ROOT),
+    }
+
     baseline_bundle, baseline_metrics, baseline_rows = _train_variant(train, test, baseline_features, 26103)
     lifecycle_bundle, lifecycle_metrics, lifecycle_rows = _train_variant(train, test, lifecycle_features, 26203)
     variants = {
@@ -202,7 +257,9 @@ def train_window(training_start: int, training_end: int, test_end: int,
         ablations[name] = {"features": features, "selected_algorithms": bundle["selected_algorithms"],
                            "internal_algorithm_comparisons": bundle["internal_comparisons"],
                            "metrics": metrics, "lifecycle_stages": _stage_metrics(rows)}
-    target = MODEL_ROOT / f"{training_start}_{training_end}"; target.mkdir(parents=True, exist_ok=True)
+
+    root = artifact_root or MODEL_ROOT
+    target = root / f"{training_start}_{training_end}"; target.mkdir(parents=True, exist_ok=True)
     for name, model in lifecycle_bundle["models"].items():
         joblib.dump(model, target / f"{name}_model.pkl")
     write_feature_quality_report(audit, target / "feature_quality_report.json")
@@ -212,19 +269,40 @@ def train_window(training_start: int, training_end: int, test_end: int,
     ingestion_audit_path = ROOT / "data" / "processed" / "paimana_monthly_ingestion_audit.json"
     ingestion_audit = json.loads(ingestion_audit_path.read_text()) if ingestion_audit_path.exists() else {}
     lifecycle_stages = _stage_metrics(lifecycle_rows)
-    metadata = {"model_version": f"monthly-{training_start}-{training_end}", "training_period": [training_start, training_end], "testing_period": [training_end + 1, test_end],
-                "unique_training_projects": int(train.canonical_project_id.nunique()), "training_snapshots": int(len(train)),
-                "unique_test_projects": int(test.canonical_project_id.nunique()), "test_snapshots": int(len(test)),
-                "features_used": lifecycle_features, "feature_availability": audit, "data_source": "Official PAIMANA/MoSPI monthly Flash Reports only",
-                "raw_archive_coverage": {key: ingestion_audit.get(key) for key in ["reports_discovered", "financial_years", "missing_months", "reports_parsed", "monthly_observations"]},
-                "parser_versions": ingestion_audit.get("parser_report_counts", {}),
-                "identity_verified_training_only": True, "leakage_policy": "Features and priors use only observations/outcomes known at or before snapshot T; final holdout is excluded from selection.",
-                "snapshot_weighting_policy": "Quarterly last-observation sampling plus per-project weights summing to approximately one.",
-                "selected_algorithms": lifecycle_bundle["selected_algorithms"], "hyperparameters": {name: lifecycle_bundle["models"][name].named_steps["model"].get_params() for name in ["cost", "delay", "risk"]},
-                "internal_algorithm_comparisons": lifecycle_bundle["internal_comparisons"], "baseline_metrics": baseline_metrics,
-                "lifecycle_metrics": lifecycle_metrics, "lifecycle_stage_metrics": lifecycle_stages, "ablation_results": ablations,
-                "shap_available": {name: value["method"] == "mean_absolute_shap" for name, value in importance.items()},
-                "created_at": datetime.now(timezone.utc).isoformat()}
+    stage_distribution = _stage_distribution(lifecycle_rows)
+    balanced_stage = _balanced_stage_summary(lifecycle_stages)
+    provenance["artifact_fingerprints"] = artifact_fingerprints(target, [
+        "cost_model.pkl", "delay_model.pkl", "risk_model.pkl",
+        "feature_quality_report.json", "shap_importance.json", "prediction_validation.csv",
+    ])
+
+    metadata = {
+        "model_version": f"monthly-{training_start}-{training_end}",
+        "run_id": run_id,
+        "dataset_fingerprint": provenance["dataset_fingerprint"],
+        "training_period": [training_start, training_end],
+        "testing_period": [training_end + 1, test_end],
+        "unique_training_projects": int(train.canonical_project_id.nunique()), "training_snapshots": int(len(train)),
+        "unique_test_projects": int(test.canonical_project_id.nunique()), "test_snapshots": int(len(test)),
+        "features_used": lifecycle_features, "feature_availability": audit, "data_source": "Official PAIMANA/MoSPI monthly Flash Reports only",
+        "raw_archive_coverage": {key: ingestion_audit.get(key) for key in ["reports_discovered", "financial_years", "missing_months", "reports_parsed", "monthly_observations"]},
+        "parser_versions": ingestion_audit.get("parser_report_counts", {}),
+        "identity_verified_training_only": True,
+        "leakage_policy": "Direct features are same-snapshot values, trajectory features use only current/earlier project snapshots, historical priors require completion_date < snapshot_date, and the future holdout is excluded from selection.",
+        "as_of_invariants": {"training": train_invariants, "testing": test_invariants},
+        "snapshot_weighting_policy": "Quarterly last-observation sampling followed by per-project weights summing exactly to one in the final sampled cohort.",
+        "selected_algorithms": lifecycle_bundle["selected_algorithms"],
+        "hyperparameters": {name: lifecycle_bundle["models"][name].named_steps["model"].get_params() for name in ["cost", "delay", "risk"]},
+        "internal_algorithm_comparisons": lifecycle_bundle["internal_comparisons"], "baseline_metrics": baseline_metrics,
+        "lifecycle_metrics": lifecycle_metrics, "lifecycle_stage_metrics": lifecycle_stages,
+        "lifecycle_stage_distribution": stage_distribution,
+        "balanced_stage_summary": balanced_stage,
+        "evaluation_policy": "Report overall weighted metrics together with equal-stage macro diagnostics and early/mid metrics; overall scores must not be presented as early-warning accuracy.",
+        "ablation_results": ablations,
+        "shap_available": {name: value["method"] == "mean_absolute_shap" for name, value in importance.items()},
+        "provenance": provenance,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
     metadata = _json_safe(metadata)
     (target / "metadata.json").write_text(json.dumps(metadata, indent=2, allow_nan=False))
     evolution = []
@@ -240,11 +318,14 @@ def train_window(training_start: int, training_end: int, test_end: int,
                       "predicted_risk": row.predicted_risk, "actual_risk": row.actual_risk}
                      for _, row in group.sort_values("snapshot_date").iterrows()]
         break
-    result = {"window": f"{training_start}_{training_end}", "metadata": metadata,
-              "identity_resolution": {"rows": int(len(identity)), "verified_rows": int(identity.identity_verified.sum()), "ambiguous_rows": int(identity.identity_method.eq("ambiguous_exact_name").sum())},
-              "baseline": {"features": baseline_features, "metrics": baseline_metrics, "lifecycle_stages": _stage_metrics(baseline_rows)},
-              "lifecycle": {"features": lifecycle_features, "metrics": lifecycle_metrics, "lifecycle_stages": lifecycle_stages},
-              "ablations": ablations, "shap": importance, "forecast_evolution_example": evolution}
+    result = {
+        "window": f"{training_start}_{training_end}", "metadata": metadata,
+        "identity_resolution": {"rows": int(len(identity)), "verified_rows": int(identity.identity_verified.sum()), "ambiguous_rows": int(identity.identity_method.eq("ambiguous_exact_name").sum())},
+        "baseline": {"features": baseline_features, "metrics": baseline_metrics, "lifecycle_stages": _stage_metrics(baseline_rows)},
+        "lifecycle": {"features": lifecycle_features, "metrics": lifecycle_metrics, "lifecycle_stages": lifecycle_stages,
+                      "stage_distribution": stage_distribution, "balanced_stage_summary": balanced_stage},
+        "ablations": ablations, "shap": importance, "forecast_evolution_example": evolution,
+    }
     result = _json_safe(result)
     (target / "evaluation_results.json").write_text(json.dumps(result, indent=2, allow_nan=False)); return result
 
@@ -256,9 +337,11 @@ def train_required_windows(data: pd.DataFrame | None = None, identity: pd.DataFr
     payload = {"generated_at": datetime.now(timezone.utc).isoformat(), "windows": windows}
     payload = _json_safe(payload)
     REPORTS.mkdir(parents=True, exist_ok=True); COMPARISON_JSON.write_text(json.dumps(payload, indent=2, allow_nan=False))
-    lines = ["# Monthly PAIMANA lifecycle model comparison", "", "All results use official monthly snapshots, exact/audited identity linkage, project-balanced weighting and out-of-time test periods.", ""]
+    lines = ["# Monthly PAIMANA lifecycle model comparison", "", "All results use official monthly snapshots, exact/audited identity linkage, final-cohort project-balanced weighting and out-of-time test periods.", ""]
     for item in windows:
+        balanced = item["lifecycle"].get("balanced_stage_summary") or {}
         lines.extend([f"## Window {item['window']}", "", "| Model | Cost MAE | Cost R2 | Delay MAE | Delay R2 | Risk macro F1 |", "|---|---:|---:|---:|---:|---:|",
                       f"| Five-feature baseline | {item['baseline']['metrics']['cost']['MAE']} | {item['baseline']['metrics']['cost']['R2']} | {item['baseline']['metrics']['delay']['MAE']} | {item['baseline']['metrics']['delay']['R2']} | {item['baseline']['metrics']['risk']['macro_f1']} |",
-                      f"| Monthly lifecycle | {item['lifecycle']['metrics']['cost']['MAE']} | {item['lifecycle']['metrics']['cost']['R2']} | {item['lifecycle']['metrics']['delay']['MAE']} | {item['lifecycle']['metrics']['delay']['R2']} | {item['lifecycle']['metrics']['risk']['macro_f1']} |", ""])
+                      f"| Monthly lifecycle | {item['lifecycle']['metrics']['cost']['MAE']} | {item['lifecycle']['metrics']['cost']['R2']} | {item['lifecycle']['metrics']['delay']['MAE']} | {item['lifecycle']['metrics']['delay']['R2']} | {item['lifecycle']['metrics']['risk']['macro_f1']} |", "",
+                      f"Equal-stage diagnostic: cost MAE {balanced.get('cost_mae')}, delay MAE {balanced.get('delay_mae')}, risk macro-F1 {balanced.get('risk_macro_f1')}. Early and mid metrics remain separate in the JSON report.", ""])
     COMPARISON_MD.write_text("\n".join(lines)); return payload
