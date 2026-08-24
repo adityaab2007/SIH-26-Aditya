@@ -1,17 +1,17 @@
 {
-  "model_version": "monthly-2001-2015",
+  "model_version": "monthly-2018-2021",
   "training_period": [
-    2001,
-    2015
+    2018,
+    2021
   ],
   "testing_period": [
-    2016,
+    2022,
     2025
   ],
-  "unique_training_projects": 757,
-  "training_snapshots": 7306,
-  "unique_test_projects": 1549,
-  "test_snapshots": 24186,
+  "unique_training_projects": 506,
+  "training_snapshots": 7981,
+  "unique_test_projects": 728,
+  "test_snapshots": 11546,
   "features_used": [
     "approved_cost_cr",
     "sector_average_delay",
@@ -40,7 +40,7 @@
     "agency_cost_overrun_rate"
   ],
   "feature_availability": {
-    "training_rows": 7306,
+    "training_rows": 7981,
     "feature_count_audited": 32,
     "features_used": [
       "approved_cost_cr",
@@ -79,27 +79,20 @@
       "progress_acceleration"
     ],
     "removed_invalid_feature_count": 7,
-    "data_quality_score": 96.56,
+    "data_quality_score": 97.88,
     "features": [
       {
         "feature": "approved_cost_cr",
         "datatype": "float64",
         "missing_percentage": 0.0,
-        "zero_percentage": 0.03,
-        "unique_value_count": 739,
+        "zero_percentage": 0.0,
+        "unique_value_count": 538,
         "constant": false,
         "availability": 100.0,
         "availability_percentage": 100.0,
-        "temporal_year_coverage": 15,
-        "project_coverage": 757,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -107,11 +100,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 100.0
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -122,21 +122,14 @@
         "feature": "cumulative_expenditure_cr",
         "datatype": "float64",
         "missing_percentage": 0.0,
-        "zero_percentage": 0.01,
-        "unique_value_count": 5819,
+        "zero_percentage": 0.64,
+        "unique_value_count": 5643,
         "constant": false,
         "availability": 100.0,
         "availability_percentage": 100.0,
-        "temporal_year_coverage": 15,
-        "project_coverage": 757,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -144,11 +137,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 100.0
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -158,34 +158,34 @@
       {
         "feature": "expenditure_ratio",
         "datatype": "float64",
-        "missing_percentage": 0.03,
-        "zero_percentage": 0.01,
-        "unique_value_count": 6108,
+        "missing_percentage": 0.0,
+        "zero_percentage": 0.64,
+        "unique_value_count": 5889,
         "constant": false,
-        "availability": 99.97,
-        "availability_percentage": 99.97,
-        "temporal_year_coverage": 15,
-        "project_coverage": 757,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
-          "2010": 99.86,
+          "2010": 100.0,
           "2011": 100.0,
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
-          "classic-code-v3": 99.97,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -204,13 +204,6 @@
         "temporal_year_coverage": 0,
         "project_coverage": 0,
         "availability_by_year": {
-          "2001": 0.0,
-          "2002": 0.0,
-          "2003": 0.0,
-          "2004": 0.0,
-          "2005": 0.0,
-          "2006": 0.0,
-          "2007": 0.0,
           "2008": 0.0,
           "2009": 0.0,
           "2010": 0.0,
@@ -218,11 +211,18 @@
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 0.0
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -232,34 +232,34 @@
       {
         "feature": "schedule_slippage_days",
         "datatype": "float64",
-        "missing_percentage": 4.09,
-        "zero_percentage": 28.61,
-        "unique_value_count": 397,
+        "missing_percentage": 4.92,
+        "zero_percentage": 46.06,
+        "unique_value_count": 447,
         "constant": false,
-        "availability": 95.91,
-        "availability_percentage": 95.91,
-        "temporal_year_coverage": 15,
-        "project_coverage": 751,
+        "availability": 95.08,
+        "availability_percentage": 95.08,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
-          "2009": 96.54,
-          "2010": 93.25,
-          "2011": 90.65,
-          "2012": 96.38,
-          "2013": 98.09,
-          "2014": 97.47,
-          "2015": 98.21
+          "2009": 80.95,
+          "2010": 81.45,
+          "2011": 84.69,
+          "2012": 96.25,
+          "2013": 93.46,
+          "2014": 91.71,
+          "2015": 92.23,
+          "2016": 94.04,
+          "2017": 94.16,
+          "2018": 98.47,
+          "2019": 99.7,
+          "2020": 99.72,
+          "2021": 100.0
         },
         "availability_by_parser": {
-          "classic-code-v3": 94.85,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 94.88,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -269,34 +269,34 @@
       {
         "feature": "schedule_slippage_ratio",
         "datatype": "float64",
-        "missing_percentage": 4.49,
-        "zero_percentage": 28.37,
-        "unique_value_count": 2044,
+        "missing_percentage": 5.78,
+        "zero_percentage": 45.58,
+        "unique_value_count": 1539,
         "constant": false,
-        "availability": 95.51,
-        "availability_percentage": 95.51,
-        "temporal_year_coverage": 15,
-        "project_coverage": 747,
+        "availability": 94.22,
+        "availability_percentage": 94.22,
+        "temporal_year_coverage": 14,
+        "project_coverage": 500,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
-          "2009": 95.48,
-          "2010": 92.76,
-          "2011": 90.2,
-          "2012": 96.15,
-          "2013": 97.79,
-          "2014": 97.24,
-          "2015": 98.21
+          "2009": 80.95,
+          "2010": 81.45,
+          "2011": 84.69,
+          "2012": 96.25,
+          "2013": 92.52,
+          "2014": 89.6,
+          "2015": 90.82,
+          "2016": 93.26,
+          "2017": 93.84,
+          "2018": 97.94,
+          "2019": 98.62,
+          "2020": 98.18,
+          "2021": 98.54
         },
         "availability_by_parser": {
-          "classic-code-v3": 94.35,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 94.08,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 97.96
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -308,20 +308,13 @@
         "datatype": "int64",
         "missing_percentage": 0.0,
         "zero_percentage": 0.0,
-        "unique_value_count": 715,
+        "unique_value_count": 886,
         "constant": false,
         "availability": 100.0,
         "availability_percentage": 100.0,
-        "temporal_year_coverage": 15,
-        "project_coverage": 757,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -329,11 +322,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 100.0
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -343,34 +343,34 @@
       {
         "feature": "planned_duration_days",
         "datatype": "float64",
-        "missing_percentage": 4.09,
-        "zero_percentage": 0.3,
-        "unique_value_count": 255,
+        "missing_percentage": 4.92,
+        "zero_percentage": 0.28,
+        "unique_value_count": 249,
         "constant": false,
-        "availability": 95.91,
-        "availability_percentage": 95.91,
-        "temporal_year_coverage": 15,
-        "project_coverage": 751,
+        "availability": 95.08,
+        "availability_percentage": 95.08,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
-          "2009": 96.54,
-          "2010": 93.25,
-          "2011": 90.65,
-          "2012": 96.38,
-          "2013": 98.09,
-          "2014": 97.47,
-          "2015": 98.21
+          "2009": 80.95,
+          "2010": 81.45,
+          "2011": 84.69,
+          "2012": 96.25,
+          "2013": 93.46,
+          "2014": 91.71,
+          "2015": 92.23,
+          "2016": 94.04,
+          "2017": 94.16,
+          "2018": 98.47,
+          "2019": 99.7,
+          "2020": 99.72,
+          "2021": 100.0
         },
         "availability_by_parser": {
-          "classic-code-v3": 94.85,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 94.88,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -380,34 +380,34 @@
       {
         "feature": "duration_ratio",
         "datatype": "float64",
-        "missing_percentage": 4.49,
+        "missing_percentage": 5.78,
         "zero_percentage": 0.0,
-        "unique_value_count": 5162,
+        "unique_value_count": 6192,
         "constant": false,
-        "availability": 95.51,
-        "availability_percentage": 95.51,
-        "temporal_year_coverage": 15,
-        "project_coverage": 747,
+        "availability": 94.22,
+        "availability_percentage": 94.22,
+        "temporal_year_coverage": 14,
+        "project_coverage": 500,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
-          "2009": 95.48,
-          "2010": 92.76,
-          "2011": 90.2,
-          "2012": 96.15,
-          "2013": 97.79,
-          "2014": 97.24,
-          "2015": 98.21
+          "2009": 80.95,
+          "2010": 81.45,
+          "2011": 84.69,
+          "2012": 96.25,
+          "2013": 92.52,
+          "2014": 89.6,
+          "2015": 90.82,
+          "2016": 93.26,
+          "2017": 93.84,
+          "2018": 97.94,
+          "2019": 98.62,
+          "2020": 98.18,
+          "2021": 98.54
         },
         "availability_by_parser": {
-          "classic-code-v3": 94.35,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 94.08,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 97.96
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -417,34 +417,34 @@
       {
         "feature": "expected_progress_percentage",
         "datatype": "float64",
-        "missing_percentage": 4.49,
+        "missing_percentage": 5.78,
         "zero_percentage": 0.0,
-        "unique_value_count": 1759,
+        "unique_value_count": 1800,
         "constant": false,
-        "availability": 95.51,
-        "availability_percentage": 95.51,
-        "temporal_year_coverage": 15,
-        "project_coverage": 747,
+        "availability": 94.22,
+        "availability_percentage": 94.22,
+        "temporal_year_coverage": 14,
+        "project_coverage": 500,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
-          "2009": 95.48,
-          "2010": 92.76,
-          "2011": 90.2,
-          "2012": 96.15,
-          "2013": 97.79,
-          "2014": 97.24,
-          "2015": 98.21
+          "2009": 80.95,
+          "2010": 81.45,
+          "2011": 84.69,
+          "2012": 96.25,
+          "2013": 92.52,
+          "2014": 89.6,
+          "2015": 90.82,
+          "2016": 93.26,
+          "2017": 93.84,
+          "2018": 97.94,
+          "2019": 98.62,
+          "2020": 98.18,
+          "2021": 98.54
         },
         "availability_by_parser": {
-          "classic-code-v3": 94.35,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 94.08,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 97.96
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -463,13 +463,6 @@
         "temporal_year_coverage": 0,
         "project_coverage": 0,
         "availability_by_year": {
-          "2001": 0.0,
-          "2002": 0.0,
-          "2003": 0.0,
-          "2004": 0.0,
-          "2005": 0.0,
-          "2006": 0.0,
-          "2007": 0.0,
           "2008": 0.0,
           "2009": 0.0,
           "2010": 0.0,
@@ -477,11 +470,18 @@
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 0.0
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -491,22 +491,15 @@
       {
         "feature": "revised_cost_cr",
         "datatype": "float64",
-        "missing_percentage": 0.56,
-        "zero_percentage": 0.0,
-        "unique_value_count": 1134,
+        "missing_percentage": 0.0,
+        "zero_percentage": 2.89,
+        "unique_value_count": 986,
         "constant": false,
-        "availability": 99.44,
-        "availability_percentage": 99.44,
-        "temporal_year_coverage": 15,
-        "project_coverage": 747,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 96.85,
-          "2002": 98.37,
-          "2003": 95.32,
-          "2004": 99.16,
-          "2005": 96.09,
-          "2006": 96.85,
-          "2007": 97.2,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -514,11 +507,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 97.26
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
@@ -528,34 +528,34 @@
       {
         "feature": "cost_escalation_percentage",
         "datatype": "float64",
-        "missing_percentage": 0.59,
-        "zero_percentage": 58.53,
-        "unique_value_count": 693,
+        "missing_percentage": 0.0,
+        "zero_percentage": 58.1,
+        "unique_value_count": 631,
         "constant": false,
-        "availability": 99.41,
-        "availability_percentage": 99.41,
-        "temporal_year_coverage": 15,
-        "project_coverage": 747,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 96.85,
-          "2002": 98.37,
-          "2003": 95.32,
-          "2004": 99.16,
-          "2005": 96.09,
-          "2006": 96.85,
-          "2007": 97.2,
           "2008": 100.0,
           "2009": 100.0,
-          "2010": 99.86,
+          "2010": 100.0,
           "2011": 100.0,
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
-          "classic-code-v3": 99.97,
-          "legacy-sector-v1": 97.26
+          "classic-code-v3": 100.0,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
@@ -565,34 +565,34 @@
       {
         "feature": "current_schedule_status",
         "datatype": "object",
-        "missing_percentage": 90.79,
+        "missing_percentage": 100.0,
         "zero_percentage": 0.0,
-        "unique_value_count": 1,
+        "unique_value_count": 0,
         "constant": true,
-        "availability": 9.21,
-        "availability_percentage": 9.21,
-        "temporal_year_coverage": 9,
-        "project_coverage": 113,
+        "availability": 0.0,
+        "availability_percentage": 0.0,
+        "temporal_year_coverage": 0,
+        "project_coverage": 0,
         "availability_by_year": {
-          "2001": 33.33,
-          "2002": 33.88,
-          "2003": 45.68,
-          "2004": 56.12,
-          "2005": 50.28,
-          "2006": 59.06,
-          "2007": 44.86,
-          "2008": 52.17,
-          "2009": 0.89,
+          "2008": 0.0,
+          "2009": 0.0,
           "2010": 0.0,
           "2011": 0.0,
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 44.99
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -602,34 +602,34 @@
       {
         "feature": "sector",
         "datatype": "object",
-        "missing_percentage": 2.56,
+        "missing_percentage": 0.91,
         "zero_percentage": 0.0,
-        "unique_value_count": 1705,
+        "unique_value_count": 1667,
         "constant": false,
-        "availability": 97.44,
-        "availability_percentage": 97.44,
-        "temporal_year_coverage": 15,
-        "project_coverage": 755,
+        "availability": 99.09,
+        "availability_percentage": 99.09,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
-          "2009": 99.02,
-          "2010": 99.37,
-          "2011": 98.13,
+          "2009": 100.0,
+          "2010": 100.0,
+          "2011": 94.22,
           "2012": 100.0,
-          "2013": 78.53,
+          "2013": 86.92,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
-          "classic-code-v3": 96.78,
-          "legacy-sector-v1": 100.0
+          "classic-code-v3": 99.05,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -645,16 +645,9 @@
         "constant": false,
         "availability": 100.0,
         "availability_percentage": 100.0,
-        "temporal_year_coverage": 15,
-        "project_coverage": 757,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 100.0,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -662,11 +655,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 100.0
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -676,34 +676,34 @@
       {
         "feature": "implementing_agency",
         "datatype": "object",
-        "missing_percentage": 26.49,
+        "missing_percentage": 2.29,
         "zero_percentage": 0.0,
-        "unique_value_count": 214,
+        "unique_value_count": 116,
         "constant": false,
-        "availability": 73.51,
-        "availability_percentage": 73.51,
-        "temporal_year_coverage": 15,
-        "project_coverage": 621,
+        "availability": 97.71,
+        "availability_percentage": 97.71,
+        "temporal_year_coverage": 13,
+        "project_coverage": 505,
         "availability_by_year": {
-          "2001": 82.88,
-          "2002": 89.9,
-          "2003": 88.13,
-          "2004": 86.92,
-          "2005": 81.01,
-          "2006": 70.08,
-          "2007": 58.88,
-          "2008": 13.04,
-          "2009": 11.26,
-          "2010": 55.15,
+          "2008": 0.0,
+          "2009": 30.95,
+          "2010": 70.14,
           "2011": 100.0,
-          "2012": 98.48,
-          "2013": 98.82,
+          "2012": 95.39,
+          "2013": 98.83,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 99.76,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 99.86,
+          "2021": 99.64
         },
         "availability_by_parser": {
-          "classic-code-v3": 71.57,
-          "legacy-sector-v1": 81.08
+          "classic-code-v3": 97.7,
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -722,13 +722,6 @@
         "temporal_year_coverage": 0,
         "project_coverage": 0,
         "availability_by_year": {
-          "2001": 0.0,
-          "2002": 0.0,
-          "2003": 0.0,
-          "2004": 0.0,
-          "2005": 0.0,
-          "2006": 0.0,
-          "2007": 0.0,
           "2008": 0.0,
           "2009": 0.0,
           "2010": 0.0,
@@ -736,11 +729,18 @@
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 0.0
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -750,34 +750,34 @@
       {
         "feature": "cost_growth_velocity_3m",
         "datatype": "float64",
-        "missing_percentage": 12.47,
-        "zero_percentage": 80.33,
-        "unique_value_count": 498,
+        "missing_percentage": 7.77,
+        "zero_percentage": 83.34,
+        "unique_value_count": 702,
         "constant": false,
-        "availability": 87.53,
-        "availability_percentage": 87.53,
-        "temporal_year_coverage": 15,
-        "project_coverage": 690,
+        "availability": 92.23,
+        "availability_percentage": 92.23,
+        "temporal_year_coverage": 14,
+        "project_coverage": 495,
         "availability_by_year": {
-          "2001": 90.09,
-          "2002": 89.58,
-          "2003": 93.88,
-          "2004": 97.05,
-          "2005": 89.94,
-          "2006": 95.28,
-          "2007": 94.39,
-          "2008": 95.65,
-          "2009": 36.35,
-          "2010": 97.21,
-          "2011": 98.13,
-          "2012": 98.83,
-          "2013": 98.97,
-          "2014": 98.85,
-          "2015": 99.4
+          "2008": 100.0,
+          "2009": 38.89,
+          "2010": 98.19,
+          "2011": 97.96,
+          "2012": 99.71,
+          "2013": 97.9,
+          "2014": 97.3,
+          "2015": 93.22,
+          "2016": 98.06,
+          "2017": 73.58,
+          "2018": 94.96,
+          "2019": 97.24,
+          "2020": 99.3,
+          "2021": 93.8
         },
         "availability_by_parser": {
-          "classic-code-v3": 86.25,
-          "legacy-sector-v1": 92.51
+          "classic-code-v3": 92.83,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 76.53
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -787,34 +787,34 @@
       {
         "feature": "cost_growth_velocity_6m",
         "datatype": "float64",
-        "missing_percentage": 7.99,
-        "zero_percentage": 79.76,
-        "unique_value_count": 850,
+        "missing_percentage": 6.97,
+        "zero_percentage": 80.33,
+        "unique_value_count": 990,
         "constant": false,
-        "availability": 92.01,
-        "availability_percentage": 92.01,
-        "temporal_year_coverage": 15,
-        "project_coverage": 692,
+        "availability": 93.03,
+        "availability_percentage": 93.03,
+        "temporal_year_coverage": 14,
+        "project_coverage": 496,
         "availability_by_year": {
-          "2001": 90.99,
-          "2002": 90.23,
-          "2003": 94.24,
-          "2004": 97.05,
-          "2005": 90.5,
-          "2006": 95.28,
-          "2007": 94.39,
-          "2008": 95.65,
-          "2009": 63.92,
-          "2010": 97.35,
-          "2011": 98.84,
-          "2012": 98.83,
-          "2013": 98.97,
-          "2014": 98.85,
-          "2015": 99.4
+          "2008": 100.0,
+          "2009": 66.67,
+          "2010": 98.64,
+          "2011": 98.3,
+          "2012": 99.71,
+          "2013": 98.13,
+          "2014": 97.5,
+          "2015": 93.36,
+          "2016": 98.19,
+          "2017": 73.98,
+          "2018": 95.42,
+          "2019": 97.24,
+          "2020": 99.3,
+          "2021": 98.18
         },
         "availability_by_parser": {
-          "classic-code-v3": 91.77,
-          "legacy-sector-v1": 92.91
+          "classic-code-v3": 93.49,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 80.95
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -824,34 +824,34 @@
       {
         "feature": "cost_acceleration",
         "datatype": "float64",
-        "missing_percentage": 12.47,
-        "zero_percentage": 76.05,
-        "unique_value_count": 812,
+        "missing_percentage": 7.77,
+        "zero_percentage": 79.24,
+        "unique_value_count": 1027,
         "constant": false,
-        "availability": 87.53,
-        "availability_percentage": 87.53,
-        "temporal_year_coverage": 15,
-        "project_coverage": 690,
+        "availability": 92.23,
+        "availability_percentage": 92.23,
+        "temporal_year_coverage": 14,
+        "project_coverage": 495,
         "availability_by_year": {
-          "2001": 90.09,
-          "2002": 89.58,
-          "2003": 93.88,
-          "2004": 97.05,
-          "2005": 89.94,
-          "2006": 95.28,
-          "2007": 94.39,
-          "2008": 95.65,
-          "2009": 36.35,
-          "2010": 97.21,
-          "2011": 98.13,
-          "2012": 98.83,
-          "2013": 98.97,
-          "2014": 98.85,
-          "2015": 99.4
+          "2008": 100.0,
+          "2009": 38.89,
+          "2010": 98.19,
+          "2011": 97.96,
+          "2012": 99.71,
+          "2013": 97.9,
+          "2014": 97.3,
+          "2015": 93.22,
+          "2016": 98.06,
+          "2017": 73.58,
+          "2018": 94.96,
+          "2019": 97.24,
+          "2020": 99.3,
+          "2021": 93.8
         },
         "availability_by_parser": {
-          "classic-code-v3": 86.25,
-          "legacy-sector-v1": 92.51
+          "classic-code-v3": 92.83,
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 76.53
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -870,13 +870,6 @@
         "temporal_year_coverage": 0,
         "project_coverage": 0,
         "availability_by_year": {
-          "2001": 0.0,
-          "2002": 0.0,
-          "2003": 0.0,
-          "2004": 0.0,
-          "2005": 0.0,
-          "2006": 0.0,
-          "2007": 0.0,
           "2008": 0.0,
           "2009": 0.0,
           "2010": 0.0,
@@ -884,11 +877,18 @@
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 0.0
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -907,13 +907,6 @@
         "temporal_year_coverage": 0,
         "project_coverage": 0,
         "availability_by_year": {
-          "2001": 0.0,
-          "2002": 0.0,
-          "2003": 0.0,
-          "2004": 0.0,
-          "2005": 0.0,
-          "2006": 0.0,
-          "2007": 0.0,
           "2008": 0.0,
           "2009": 0.0,
           "2010": 0.0,
@@ -921,11 +914,18 @@
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 0.0
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -944,13 +944,6 @@
         "temporal_year_coverage": 0,
         "project_coverage": 0,
         "availability_by_year": {
-          "2001": 0.0,
-          "2002": 0.0,
-          "2003": 0.0,
-          "2004": 0.0,
-          "2005": 0.0,
-          "2006": 0.0,
-          "2007": 0.0,
           "2008": 0.0,
           "2009": 0.0,
           "2010": 0.0,
@@ -958,11 +951,18 @@
           "2012": 0.0,
           "2013": 0.0,
           "2014": 0.0,
-          "2015": 0.0
+          "2015": 0.0,
+          "2016": 0.0,
+          "2017": 0.0,
+          "2018": 0.0,
+          "2019": 0.0,
+          "2020": 0.0,
+          "2021": 0.0
         },
         "availability_by_parser": {
           "classic-code-v3": 0.0,
-          "legacy-sector-v1": 0.0
+          "legacy-sector-v1": 0.0,
+          "redesigned-code-v1": 0.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -972,22 +972,15 @@
       {
         "feature": "sector_average_delay",
         "datatype": "float64",
-        "missing_percentage": 0.14,
+        "missing_percentage": 0.0,
         "zero_percentage": 0.0,
-        "unique_value_count": 145,
+        "unique_value_count": 153,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -995,11 +988,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1009,22 +1009,15 @@
       {
         "feature": "sector_average_cost_overrun",
         "datatype": "float64",
-        "missing_percentage": 0.14,
+        "missing_percentage": 0.0,
         "zero_percentage": 0.0,
-        "unique_value_count": 145,
+        "unique_value_count": 153,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1032,11 +1025,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1046,22 +1046,15 @@
       {
         "feature": "sector_delay_rate",
         "datatype": "float64",
-        "missing_percentage": 0.14,
+        "missing_percentage": 0.0,
         "zero_percentage": 0.0,
-        "unique_value_count": 125,
+        "unique_value_count": 127,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1069,11 +1062,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1083,22 +1083,15 @@
       {
         "feature": "sector_cost_overrun_rate",
         "datatype": "float64",
-        "missing_percentage": 0.14,
-        "zero_percentage": 2.15,
-        "unique_value_count": 128,
+        "missing_percentage": 0.0,
+        "zero_percentage": 2.99,
+        "unique_value_count": 124,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1106,11 +1099,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1120,22 +1120,15 @@
       {
         "feature": "agency_average_delay",
         "datatype": "float64",
-        "missing_percentage": 0.14,
-        "zero_percentage": 0.0,
-        "unique_value_count": 222,
+        "missing_percentage": 0.0,
+        "zero_percentage": 1.69,
+        "unique_value_count": 304,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1143,11 +1136,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1157,22 +1157,15 @@
       {
         "feature": "agency_average_cost_overrun",
         "datatype": "float64",
-        "missing_percentage": 0.14,
+        "missing_percentage": 0.0,
         "zero_percentage": 0.0,
-        "unique_value_count": 222,
+        "unique_value_count": 308,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1180,11 +1173,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1194,22 +1194,15 @@
       {
         "feature": "agency_delay_rate",
         "datatype": "float64",
-        "missing_percentage": 0.14,
-        "zero_percentage": 3.65,
-        "unique_value_count": 137,
+        "missing_percentage": 0.0,
+        "zero_percentage": 5.54,
+        "unique_value_count": 183,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1217,11 +1210,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1231,22 +1231,15 @@
       {
         "feature": "agency_cost_overrun_rate",
         "datatype": "float64",
-        "missing_percentage": 0.14,
-        "zero_percentage": 13.15,
-        "unique_value_count": 138,
+        "missing_percentage": 0.0,
+        "zero_percentage": 14.56,
+        "unique_value_count": 168,
         "constant": false,
-        "availability": 99.86,
-        "availability_percentage": 99.86,
-        "temporal_year_coverage": 15,
-        "project_coverage": 752,
+        "availability": 100.0,
+        "availability_percentage": 100.0,
+        "temporal_year_coverage": 14,
+        "project_coverage": 506,
         "availability_by_year": {
-          "2001": 95.5,
-          "2002": 100.0,
-          "2003": 100.0,
-          "2004": 100.0,
-          "2005": 100.0,
-          "2006": 100.0,
-          "2007": 100.0,
           "2008": 100.0,
           "2009": 100.0,
           "2010": 100.0,
@@ -1254,11 +1247,18 @@
           "2012": 100.0,
           "2013": 100.0,
           "2014": 100.0,
-          "2015": 100.0
+          "2015": 100.0,
+          "2016": 100.0,
+          "2017": 100.0,
+          "2018": 100.0,
+          "2019": 100.0,
+          "2020": 100.0,
+          "2021": 100.0
         },
         "availability_by_parser": {
           "classic-code-v3": 100.0,
-          "legacy-sector-v1": 99.33
+          "legacy-sector-v1": 100.0,
+          "redesigned-code-v1": 100.0
         },
         "safely_as_of_available": true,
         "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1324,7 +1324,7 @@
   "snapshot_weighting_policy": "Quarterly last-observation sampling plus per-project weights summing to approximately one.",
   "selected_algorithms": {
     "cost": "xgboost",
-    "delay": "lightgbm"
+    "delay": "extra_trees"
   },
   "hyperparameters": {
     "cost": {
@@ -1370,26 +1370,24 @@
       "verbosity": null
     },
     "delay": {
-      "boosting_type": "gbdt",
-      "class_weight": null,
-      "colsample_bytree": 1.0,
-      "importance_type": "split",
-      "learning_rate": 0.035,
-      "max_depth": 5,
-      "min_child_samples": 20,
-      "min_child_weight": 0.001,
-      "min_split_gain": 0.0,
-      "n_estimators": 240,
-      "n_jobs": null,
-      "num_leaves": 24,
-      "objective": null,
+      "bootstrap": false,
+      "ccp_alpha": 0.0,
+      "criterion": "squared_error",
+      "max_depth": null,
+      "max_features": 0.8,
+      "max_leaf_nodes": null,
+      "max_samples": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 3,
+      "min_samples_split": 2,
+      "min_weight_fraction_leaf": 0.0,
+      "monotonic_cst": null,
+      "n_estimators": 260,
+      "n_jobs": 2,
+      "oob_score": false,
       "random_state": 26204,
-      "reg_alpha": 0.0,
-      "reg_lambda": 0.0,
-      "subsample": 1.0,
-      "subsample_for_bin": 200000,
-      "subsample_freq": 0,
-      "verbosity": -1
+      "verbose": 0,
+      "warm_start": false
     },
     "risk": {
       "bootstrap": true,
@@ -1417,108 +1415,108 @@
     "cost": [
       {
         "algorithm": "lightgbm",
-        "MAE": 41.234,
-        "RMSE": 89.397,
-        "R2": 0.2021,
-        "MAPE": 175.728,
-        "rows": 1096,
-        "unique_projects": 71
+        "MAE": 30.39,
+        "RMSE": 62.008,
+        "R2": 0.5858,
+        "MAPE": 157.067,
+        "rows": 2613,
+        "unique_projects": 154
       },
       {
         "algorithm": "xgboost",
-        "MAE": 38.891,
-        "RMSE": 84.162,
-        "R2": 0.2928,
-        "MAPE": 167.626,
-        "rows": 1096,
-        "unique_projects": 71
+        "MAE": 29.495,
+        "RMSE": 60.105,
+        "R2": 0.6108,
+        "MAPE": 157.669,
+        "rows": 2613,
+        "unique_projects": 154
       },
       {
         "algorithm": "extra_trees",
-        "MAE": 41.605,
-        "RMSE": 81.144,
-        "R2": 0.3426,
-        "MAPE": 170.177,
-        "rows": 1096,
-        "unique_projects": 71
+        "MAE": 31.172,
+        "RMSE": 62.302,
+        "R2": 0.5819,
+        "MAPE": 146.715,
+        "rows": 2613,
+        "unique_projects": 154
       }
     ],
     "delay": [
       {
         "algorithm": "lightgbm",
-        "MAE": 346.871,
-        "RMSE": 557.681,
-        "R2": 0.5768,
-        "MAPE": 59.508,
-        "rows": 1096,
-        "unique_projects": 71
+        "MAE": 453.436,
+        "RMSE": 619.83,
+        "R2": 0.7124,
+        "MAPE": 55.252,
+        "rows": 2613,
+        "unique_projects": 154
       },
       {
         "algorithm": "xgboost",
-        "MAE": 368.534,
-        "RMSE": 564.141,
-        "R2": 0.567,
-        "MAPE": 64.323,
-        "rows": 1096,
-        "unique_projects": 71
+        "MAE": 463.436,
+        "RMSE": 630.976,
+        "R2": 0.702,
+        "MAPE": 51.241,
+        "rows": 2613,
+        "unique_projects": 154
       },
       {
         "algorithm": "extra_trees",
-        "MAE": 363.767,
-        "RMSE": 539.726,
-        "R2": 0.6036,
-        "MAPE": 75.641,
-        "rows": 1096,
-        "unique_projects": 71
+        "MAE": 446.264,
+        "RMSE": 621.565,
+        "R2": 0.7108,
+        "MAPE": 56.126,
+        "rows": 2613,
+        "unique_projects": 154
       }
     ]
   },
   "baseline_metrics": {
     "cost": {
-      "MAE": 43.782,
-      "RMSE": 78.457,
-      "R2": 0.0059,
-      "MAPE": 124.993,
-      "rows": 24186,
-      "unique_projects": 1549
+      "MAE": 37.762,
+      "RMSE": 73.975,
+      "R2": -0.0123,
+      "MAPE": 182.66,
+      "rows": 11546,
+      "unique_projects": 728
     },
     "delay": {
-      "MAE": 844.423,
-      "RMSE": 1215.08,
-      "R2": -0.1879,
-      "MAPE": 133.994,
-      "rows": 24186,
-      "unique_projects": 1549
+      "MAE": 763.083,
+      "RMSE": 1013.605,
+      "R2": 0.0345,
+      "MAPE": 127.258,
+      "rows": 11546,
+      "unique_projects": 728
     },
     "risk": {
-      "accuracy": 0.1687,
-      "macro_precision": 0.2672,
-      "macro_recall": 0.2709,
-      "macro_f1": 0.1365,
+      "accuracy": 0.4164,
+      "macro_precision": 0.2786,
+      "macro_recall": 0.2834,
+      "macro_f1": 0.2657,
       "confusion_matrix": [
         [
-          39.2157,
-          2.0754,
-          3.9093,
-          2.3045
+          1.4138,
+          2.8577,
+          4.3546,
+          13.0241
         ],
         [
-          61.4698,
-          1.1979,
-          6.6966,
-          6.346
+          0.4801,
+          5.7405,
+          11.9129,
+          13.7488
         ],
         [
-          72.0226,
-          2.2816,
-          10.5431,
-          9.8002
+          2.1983,
+          8.4461,
+          17.8069,
+          17.1129
         ],
         [
-          279.5674,
-          15.4109,
-          32.3124,
-          49.3402
+          8.6655,
+          42.5045,
+          49.8384,
+          100.0081
         ]
       ],
       "labels": [
@@ -1531,50 +1529,50 @@
   },
   "lifecycle_metrics": {
     "cost": {
-      "MAE": 40.265,
-      "RMSE": 72.035,
-      "R2": 0.162,
-      "MAPE": 222.842,
-      "rows": 24186,
-      "unique_projects": 1549
+      "MAE": 27.096,
+      "RMSE": 53.332,
+      "R2": 0.4738,
+      "MAPE": 134.539,
+      "rows": 11546,
+      "unique_projects": 728
     },
     "delay": {
-      "MAE": 535.48,
-      "RMSE": 812.6,
-      "R2": 0.4687,
-      "MAPE": 54.885,
-      "rows": 24186,
-      "unique_projects": 1549
+      "MAE": 568.238,
+      "RMSE": 705.19,
+      "R2": 0.5326,
+      "MAPE": 85.054,
+      "rows": 11546,
+      "unique_projects": 728
     },
     "risk": {
-      "accuracy": 0.5617,
-      "macro_precision": 0.4348,
-      "macro_recall": 0.523,
-      "macro_f1": 0.4408,
+      "accuracy": 0.5606,
+      "macro_precision": 0.3746,
+      "macro_recall": 0.3575,
+      "macro_f1": 0.3641,
       "confusion_matrix": [
         [
-          39.721,
-          4.2589,
-          2.0592,
-          1.4657
+          7.301,
+          1.825,
+          8.2682,
+          4.2561
         ],
         [
-          28.4619,
-          23.7225,
-          16.5302,
-          6.9956
+          2.1714,
+          5.7459,
+          7.0086,
+          16.9564
         ],
         [
-          26.2106,
-          17.864,
-          28.3666,
-          22.2064
+          3.3818,
+          10.1445,
+          8.2752,
+          23.7627
         ],
         [
-          41.142,
-          44.1432,
-          49.2165,
-          242.1291
+          4.3109,
+          20.2144,
+          29.5718,
+          146.9193
         ]
       ],
       "labels": [
@@ -1589,50 +1587,50 @@
     "early": {
       "available": true,
       "cost": {
-        "MAE": 42.488,
-        "RMSE": 63.956,
-        "R2": -0.1964,
-        "MAPE": 202.352,
-        "rows": 671,
-        "unique_projects": 302
+        "MAE": 38.542,
+        "RMSE": 48.373,
+        "R2": -0.1631,
+        "MAPE": 204.426,
+        "rows": 197,
+        "unique_projects": 102
       },
       "delay": {
-        "MAE": 482.857,
-        "RMSE": 729.254,
-        "R2": -0.137,
-        "MAPE": 86.607,
-        "rows": 671,
-        "unique_projects": 302
+        "MAE": 485.741,
+        "RMSE": 622.288,
+        "R2": 0.4102,
+        "MAPE": 79.991,
+        "rows": 197,
+        "unique_projects": 102
       },
       "risk": {
-        "accuracy": 0.3481,
-        "macro_precision": 0.2799,
-        "macro_recall": 0.2605,
-        "macro_f1": 0.1805,
+        "accuracy": 0.2251,
+        "macro_precision": 0.2618,
+        "macro_recall": 0.2446,
+        "macro_f1": 0.1999,
         "confusion_matrix": [
           [
-            4.1764,
-            0.1765,
-            0.0237,
+            0.3682,
+            0.7037,
+            0.0172,
             0.1818
           ],
           [
-            2.0679,
-            0.1713,
-            0.0934,
+            0.2051,
+            0.3185,
+            0.1293,
             0.0
           ],
           [
-            2.2136,
-            0.1361,
-            0.0972,
+            0.3873,
+            0.5655,
+            0.0,
             0.0
           ],
           [
-            3.1972,
-            0.2329,
-            0.0864,
-            0.0451
+            0.3936,
+            0.7424,
+            0.1428,
+            0.3212
           ]
         ],
         "labels": [
@@ -1646,50 +1644,50 @@
     "mid": {
       "available": true,
       "cost": {
-        "MAE": 39.486,
-        "RMSE": 58.617,
-        "R2": -0.2902,
-        "MAPE": 235.43,
-        "rows": 1934,
-        "unique_projects": 649
+        "MAE": 35.077,
+        "RMSE": 49.822,
+        "R2": -0.2136,
+        "MAPE": 201.51,
+        "rows": 726,
+        "unique_projects": 260
       },
       "delay": {
-        "MAE": 471.106,
-        "RMSE": 704.625,
-        "R2": -0.1148,
-        "MAPE": 94.737,
-        "rows": 1934,
-        "unique_projects": 649
+        "MAE": 576.464,
+        "RMSE": 676.163,
+        "R2": 0.2247,
+        "MAPE": 145.546,
+        "rows": 726,
+        "unique_projects": 260
       },
       "risk": {
-        "accuracy": 0.3814,
-        "macro_precision": 0.3145,
-        "macro_recall": 0.2708,
-        "macro_f1": 0.1932,
+        "accuracy": 0.3399,
+        "macro_precision": 0.396,
+        "macro_recall": 0.2665,
+        "macro_f1": 0.2625,
         "confusion_matrix": [
           [
-            17.1793,
-            0.5068,
-            0.3652,
-            0.0078
+            5.195,
+            0.5047,
+            3.5996,
+            0.0714
           ],
           [
-            6.4959,
-            0.5113,
-            0.2344,
-            0.2639
+            0.5988,
+            0.3909,
+            0.4711,
+            0.1181
           ],
           [
-            7.7582,
-            0.747,
-            0.4279,
+            1.3199,
+            1.683,
+            0.2774,
             0.0
           ],
           [
-            10.9503,
-            1.8267,
-            0.5896,
-            0.2185
+            1.5376,
+            2.9088,
+            0.8102,
+            1.1505
           ]
         ],
         "labels": [
@@ -1703,50 +1701,50 @@
     "late": {
       "available": true,
       "cost": {
-        "MAE": 37.976,
-        "RMSE": 68.888,
-        "R2": 0.061,
-        "MAPE": 235.993,
-        "rows": 2945,
-        "unique_projects": 901
+        "MAE": 31.802,
+        "RMSE": 75.498,
+        "R2": 0.2864,
+        "MAPE": 191.585,
+        "rows": 1204,
+        "unique_projects": 389
       },
       "delay": {
-        "MAE": 526.774,
-        "RMSE": 787.218,
-        "R2": -0.2343,
-        "MAPE": 97.42,
-        "rows": 2945,
-        "unique_projects": 901
+        "MAE": 536.906,
+        "RMSE": 674.756,
+        "R2": 0.2345,
+        "MAPE": 142.885,
+        "rows": 1204,
+        "unique_projects": 389
       },
       "risk": {
-        "accuracy": 0.2434,
-        "macro_precision": 0.2767,
-        "macro_recall": 0.2876,
-        "macro_f1": 0.1848,
+        "accuracy": 0.2468,
+        "macro_precision": 0.2858,
+        "macro_recall": 0.2388,
+        "macro_f1": 0.2299,
         "confusion_matrix": [
           [
-            13.8894,
-            0.497,
-            0.671,
-            0.5046
+            1.1321,
+            0.3833,
+            3.1989,
+            1.397
           ],
           [
-            13.1919,
-            2.3587,
-            0.67,
-            0.4041
+            1.112,
+            0.8082,
+            2.5314,
+            0.2967
           ],
           [
-            12.0764,
-            1.9578,
-            1.1636,
-            0.6128
+            1.2902,
+            2.1413,
+            1.8533,
+            0.2237
           ],
           [
-            18.3115,
-            5.5299,
-            3.4414,
-            1.2031
+            1.6806,
+            5.6559,
+            3.4466,
+            3.8582
           ]
         ],
         "labels": [
@@ -1760,50 +1758,50 @@
     "very_late": {
       "available": true,
       "cost": {
-        "MAE": 37.643,
-        "RMSE": 67.72,
-        "R2": 0.2169,
-        "MAPE": 218.386,
-        "rows": 17162,
-        "unique_projects": 1421
+        "MAE": 24.084,
+        "RMSE": 48.745,
+        "R2": 0.4763,
+        "MAPE": 120.692,
+        "rows": 8547,
+        "unique_projects": 685
       },
       "delay": {
-        "MAE": 529.61,
-        "RMSE": 790.837,
-        "R2": 0.5126,
-        "MAPE": 42.641,
-        "rows": 17162,
-        "unique_projects": 1421
+        "MAE": 571.846,
+        "RMSE": 701.574,
+        "R2": 0.551,
+        "MAPE": 73.83,
+        "rows": 8547,
+        "unique_projects": 685
       },
       "risk": {
-        "accuracy": 0.6623,
-        "macro_precision": 0.4237,
-        "macro_recall": 0.521,
-        "macro_f1": 0.4472,
+        "accuracy": 0.6375,
+        "macro_precision": 0.3585,
+        "macro_recall": 0.2992,
+        "macro_f1": 0.3111,
         "confusion_matrix": [
           [
-            4.4688,
-            2.4772,
-            0.9022,
-            0.5948
+            0.6057,
+            0.2333,
+            1.4525,
+            2.425
           ],
           [
-            6.7063,
-            16.2765,
-            15.2128,
-            6.2162
+            0.2554,
+            1.406,
+            3.8769,
+            16.0533
           ],
           [
-            4.1623,
-            8.8754,
-            26.3389,
-            21.0035
+            0.2479,
+            2.6759,
+            5.9627,
+            22.3621
           ],
           [
-            8.3258,
-            26.3497,
-            42.3472,
-            233.6977
+            0.5792,
+            5.4384,
+            24.7916,
+            133.43
           ]
         ],
         "labels": [
@@ -1843,115 +1841,115 @@
         "agency_cost_overrun_rate"
       ],
       "selected_algorithms": {
-        "cost": "xgboost",
-        "delay": "lightgbm"
+        "cost": "lightgbm",
+        "delay": "extra_trees"
       },
       "internal_algorithm_comparisons": {
         "cost": [
           {
             "algorithm": "lightgbm",
-            "MAE": 41.195,
-            "RMSE": 89.365,
-            "R2": 0.2027,
-            "MAPE": 181.532,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 31.17,
+            "RMSE": 65.886,
+            "R2": 0.5324,
+            "MAPE": 180.285,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "xgboost",
-            "MAE": 40.354,
-            "RMSE": 90.614,
-            "R2": 0.1802,
-            "MAPE": 170.254,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 31.893,
+            "RMSE": 66.776,
+            "R2": 0.5197,
+            "MAPE": 173.04,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 42.653,
-            "RMSE": 85.409,
-            "R2": 0.2717,
-            "MAPE": 173.96,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 32.711,
+            "RMSE": 67.547,
+            "R2": 0.5085,
+            "MAPE": 153.848,
+            "rows": 2613,
+            "unique_projects": 154
           }
         ],
         "delay": [
           {
             "algorithm": "lightgbm",
-            "MAE": 352.052,
-            "RMSE": 564.184,
-            "R2": 0.5669,
-            "MAPE": 60.473,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 455.952,
+            "RMSE": 619.203,
+            "R2": 0.713,
+            "MAPE": 55.136,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "xgboost",
-            "MAE": 376.8,
-            "RMSE": 577.149,
-            "R2": 0.5468,
-            "MAPE": 65.493,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 456.918,
+            "RMSE": 623.836,
+            "R2": 0.7087,
+            "MAPE": 52.03,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 368.479,
-            "RMSE": 551.81,
-            "R2": 0.5857,
-            "MAPE": 75.95,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 444.862,
+            "RMSE": 624.7,
+            "R2": 0.7079,
+            "MAPE": 55.694,
+            "rows": 2613,
+            "unique_projects": 154
           }
         ]
       },
       "metrics": {
         "cost": {
-          "MAE": 38.675,
-          "RMSE": 71.072,
-          "R2": 0.1842,
-          "MAPE": 199.088,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 28.86,
+          "RMSE": 56.383,
+          "R2": 0.4119,
+          "MAPE": 160.522,
+          "rows": 11546,
+          "unique_projects": 728
         },
         "delay": {
-          "MAE": 534.668,
-          "RMSE": 808.341,
-          "R2": 0.4743,
-          "MAPE": 57.311,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 578.477,
+          "RMSE": 714.453,
+          "R2": 0.5203,
+          "MAPE": 87.499,
+          "rows": 11546,
+          "unique_projects": 728
         },
         "risk": {
-          "accuracy": 0.5607,
-          "macro_precision": 0.4318,
-          "macro_recall": 0.5217,
-          "macro_f1": 0.4348,
+          "accuracy": 0.5442,
+          "macro_precision": 0.3668,
+          "macro_recall": 0.3494,
+          "macro_f1": 0.3559,
           "confusion_matrix": [
             [
-              41.3656,
-              2.935,
-              2.0622,
-              1.1422
+              7.2114,
+              1.7062,
+              9.1468,
+              3.5858
             ],
             [
-              31.0193,
-              19.8178,
-              19.0069,
-              5.8663
+              1.9053,
+              5.6151,
+              6.3468,
+              18.0151
             ],
             [
-              27.4691,
-              16.3724,
-              29.3195,
-              21.4867
+              3.3274,
+              10.7908,
+              8.235,
+              23.2109
             ],
             [
-              44.3486,
-              36.8257,
-              52.6443,
-              242.8123
+              4.9764,
+              18.4772,
+              35.3026,
+              142.2602
             ]
           ],
           "labels": [
@@ -1966,50 +1964,50 @@
         "early": {
           "available": true,
           "cost": {
-            "MAE": 41.569,
-            "RMSE": 62.123,
-            "R2": -0.1288,
-            "MAPE": 197.552,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 40.955,
+            "RMSE": 55.337,
+            "R2": -0.5221,
+            "MAPE": 199.536,
+            "rows": 197,
+            "unique_projects": 102
           },
           "delay": {
-            "MAE": 491.191,
-            "RMSE": 740.177,
-            "R2": -0.1714,
-            "MAPE": 83.942,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 488.03,
+            "RMSE": 627.843,
+            "R2": 0.3996,
+            "MAPE": 73.66,
+            "rows": 197,
+            "unique_projects": 102
           },
           "risk": {
-            "accuracy": 0.3568,
-            "macro_precision": 0.4226,
-            "macro_recall": 0.2633,
-            "macro_f1": 0.1742,
+            "accuracy": 0.215,
+            "macro_precision": 0.2543,
+            "macro_recall": 0.2255,
+            "macro_f1": 0.1939,
             "confusion_matrix": [
               [
-                4.3532,
-                0.1873,
-                0.0058,
-                0.012
+                0.3682,
+                0.586,
+                0.1349,
+                0.1818
               ],
               [
-                2.1437,
-                0.118,
-                0.0709,
+                0.2051,
+                0.2658,
+                0.1819,
                 0.0
               ],
               [
-                2.0925,
-                0.2684,
-                0.086,
+                0.4841,
+                0.4687,
+                0.0,
                 0.0
               ],
               [
-                3.1912,
-                0.2682,
-                0.0571,
-                0.0451
+                0.4855,
+                0.6505,
+                0.1356,
+                0.3284
               ]
             ],
             "labels": [
@@ -2023,50 +2021,50 @@
         "mid": {
           "available": true,
           "cost": {
-            "MAE": 39.582,
-            "RMSE": 56.704,
-            "R2": -0.2073,
-            "MAPE": 229.496,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 36.985,
+            "RMSE": 49.777,
+            "R2": -0.2114,
+            "MAPE": 250.874,
+            "rows": 726,
+            "unique_projects": 260
           },
           "delay": {
-            "MAE": 478.838,
-            "RMSE": 708.628,
-            "R2": -0.1275,
-            "MAPE": 98.148,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 589.126,
+            "RMSE": 689.695,
+            "R2": 0.1934,
+            "MAPE": 141.711,
+            "rows": 726,
+            "unique_projects": 260
           },
           "risk": {
-            "accuracy": 0.3808,
-            "macro_precision": 0.3191,
-            "macro_recall": 0.268,
-            "macro_f1": 0.1877,
+            "accuracy": 0.3464,
+            "macro_precision": 0.3895,
+            "macro_recall": 0.2902,
+            "macro_f1": 0.2717,
             "confusion_matrix": [
               [
-                17.2794,
-                0.5177,
-                0.2302,
-                0.0319
-              ],
-              [
-                6.6882,
-                0.4188,
-                0.1346,
-                0.2639
-              ],
-              [
-                7.7479,
-                0.8173,
-                0.3678,
+                5.1777,
+                0.5391,
+                3.6538,
                 0.0
               ],
               [
-                11.1457,
-                1.6956,
-                0.4987,
-                0.2451
+                0.4445,
+                0.5312,
+                0.3393,
+                0.2639
+              ],
+              [
+                1.4459,
+                1.5181,
+                0.3163,
+                0.0
+              ],
+              [
+                1.7616,
+                2.7042,
+                0.8181,
+                1.1231
               ]
             ],
             "labels": [
@@ -2080,50 +2078,50 @@
         "late": {
           "available": true,
           "cost": {
-            "MAE": 36.955,
-            "RMSE": 69.191,
-            "R2": 0.0527,
-            "MAPE": 225.345,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 32.236,
+            "RMSE": 78.029,
+            "R2": 0.2377,
+            "MAPE": 194.685,
+            "rows": 1204,
+            "unique_projects": 389
           },
           "delay": {
-            "MAE": 524.113,
-            "RMSE": 783.634,
-            "R2": -0.2231,
-            "MAPE": 102.647,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 544.444,
+            "RMSE": 678.679,
+            "R2": 0.2256,
+            "MAPE": 144.613,
+            "rows": 1204,
+            "unique_projects": 389
           },
           "risk": {
-            "accuracy": 0.2244,
-            "macro_precision": 0.2524,
-            "macro_recall": 0.2666,
-            "macro_f1": 0.1523,
+            "accuracy": 0.1927,
+            "macro_precision": 0.2645,
+            "macro_recall": 0.2026,
+            "macro_f1": 0.1873,
             "confusion_matrix": [
               [
-                14.1791,
-                0.25,
-                0.7544,
-                0.3784
+                1.001,
+                0.3477,
+                3.9765,
+                0.7862
               ],
               [
-                14.7722,
-                0.8424,
-                0.606,
-                0.4041
+                1.0594,
+                0.8608,
+                2.3291,
+                0.499
               ],
               [
-                12.6893,
-                1.5826,
-                1.0429,
-                0.4958
+                1.0249,
+                2.7033,
+                1.6291,
+                0.1513
               ],
               [
-                19.7018,
-                5.048,
-                2.6367,
-                1.0994
+                1.7848,
+                5.1813,
+                5.1895,
+                2.4858
               ]
             ],
             "labels": [
@@ -2137,50 +2135,50 @@
         "very_late": {
           "available": true,
           "cost": {
-            "MAE": 35.906,
-            "RMSE": 67.105,
-            "R2": 0.2311,
-            "MAPE": 189.662,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 25.791,
+            "RMSE": 51.519,
+            "R2": 0.415,
+            "MAPE": 147.545,
+            "rows": 8547,
+            "unique_projects": 685
           },
           "delay": {
-            "MAE": 529.798,
-            "RMSE": 785.685,
-            "R2": 0.519,
-            "MAPE": 44.98,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 583.647,
+            "RMSE": 712.014,
+            "R2": 0.5376,
+            "MAPE": 76.807,
+            "rows": 8547,
+            "unique_projects": 685
           },
           "risk": {
-            "accuracy": 0.6672,
-            "macro_precision": 0.4333,
-            "macro_recall": 0.5503,
-            "macro_f1": 0.4574,
+            "accuracy": 0.6222,
+            "macro_precision": 0.3569,
+            "macro_recall": 0.2946,
+            "macro_f1": 0.3065,
             "confusion_matrix": [
               [
-                5.5468,
-                1.4326,
-                0.9206,
-                0.543
+                0.6646,
+                0.2333,
+                1.3817,
+                2.4369
               ],
               [
-                7.2108,
-                15.0726,
-                16.9942,
-                5.1343
+                0.1962,
+                1.1349,
+                3.4965,
+                16.7639
               ],
               [
-                4.6421,
-                8.2096,
-                27.0475,
-                20.4808
+                0.1913,
+                2.7143,
+                6.0066,
+                22.3364
               ],
               [
-                9.451,
-                21.9211,
-                44.1633,
-                235.185
+                0.6611,
+                4.6486,
+                28.7304,
+                130.1991
               ]
             ],
             "labels": [
@@ -2220,114 +2218,114 @@
       ],
       "selected_algorithms": {
         "cost": "xgboost",
-        "delay": "lightgbm"
+        "delay": "extra_trees"
       },
       "internal_algorithm_comparisons": {
         "cost": [
           {
             "algorithm": "lightgbm",
-            "MAE": 40.74,
-            "RMSE": 87.576,
-            "R2": 0.2343,
-            "MAPE": 170.29,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 30.405,
+            "RMSE": 62.041,
+            "R2": 0.5854,
+            "MAPE": 152.737,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "xgboost",
-            "MAE": 39.284,
-            "RMSE": 84.68,
-            "R2": 0.2841,
-            "MAPE": 167.167,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 29.23,
+            "RMSE": 59.935,
+            "R2": 0.613,
+            "MAPE": 156.507,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 42.124,
-            "RMSE": 82.008,
-            "R2": 0.3286,
-            "MAPE": 175.057,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 31.8,
+            "RMSE": 62.667,
+            "R2": 0.577,
+            "MAPE": 151.164,
+            "rows": 2613,
+            "unique_projects": 154
           }
         ],
         "delay": [
           {
             "algorithm": "lightgbm",
-            "MAE": 344.685,
-            "RMSE": 558.209,
-            "R2": 0.576,
-            "MAPE": 58.029,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 452.321,
+            "RMSE": 616.771,
+            "R2": 0.7153,
+            "MAPE": 54.428,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "xgboost",
-            "MAE": 369.963,
-            "RMSE": 566.205,
-            "R2": 0.5638,
-            "MAPE": 63.781,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 457.577,
+            "RMSE": 628.596,
+            "R2": 0.7042,
+            "MAPE": 52.63,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 363.426,
-            "RMSE": 539.465,
-            "R2": 0.604,
-            "MAPE": 75.39,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 446.394,
+            "RMSE": 620.596,
+            "R2": 0.7117,
+            "MAPE": 54.688,
+            "rows": 2613,
+            "unique_projects": 154
           }
         ]
       },
       "metrics": {
         "cost": {
-          "MAE": 39.958,
-          "RMSE": 72.331,
-          "R2": 0.1551,
-          "MAPE": 220.377,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 27.001,
+          "RMSE": 53.423,
+          "R2": 0.472,
+          "MAPE": 133.374,
+          "rows": 11546,
+          "unique_projects": 728
         },
         "delay": {
-          "MAE": 532.811,
-          "RMSE": 809.813,
-          "R2": 0.4723,
-          "MAPE": 55.143,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 560.093,
+          "RMSE": 698.684,
+          "R2": 0.5412,
+          "MAPE": 82.616,
+          "rows": 11546,
+          "unique_projects": 728
         },
         "risk": {
-          "accuracy": 0.5563,
-          "macro_precision": 0.4333,
-          "macro_recall": 0.5234,
-          "macro_f1": 0.4376,
+          "accuracy": 0.5587,
+          "macro_precision": 0.3813,
+          "macro_recall": 0.3622,
+          "macro_f1": 0.3693,
           "confusion_matrix": [
             [
-              40.6846,
-              2.9297,
-              1.5903,
-              2.3004
+              7.6682,
+              1.882,
+              8.9041,
+              3.1959
             ],
             [
-              30.2857,
-              21.3581,
-              17.9267,
-              6.1397
+              2.1104,
+              5.796,
+              8.0776,
+              15.8984
             ],
             [
-              26.8763,
-              15.9757,
-              30.5415,
-              21.254
+              3.2843,
+              10.8098,
+              8.5928,
+              22.8772
             ],
             [
-              42.5035,
-              39.7908,
-              56.2218,
-              238.1148
+              4.0682,
+              20.3028,
+              31.0416,
+              145.6037
             ]
           ],
           "labels": [
@@ -2342,50 +2340,50 @@
         "early": {
           "available": true,
           "cost": {
-            "MAE": 42.054,
-            "RMSE": 63.451,
-            "R2": -0.1775,
-            "MAPE": 197.328,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 39.466,
+            "RMSE": 50.348,
+            "R2": -0.26,
+            "MAPE": 200.134,
+            "rows": 197,
+            "unique_projects": 102
           },
           "delay": {
-            "MAE": 480.467,
-            "RMSE": 728.551,
-            "R2": -0.1349,
-            "MAPE": 85.347,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 490.516,
+            "RMSE": 623.372,
+            "R2": 0.4081,
+            "MAPE": 77.9,
+            "rows": 197,
+            "unique_projects": 102
           },
           "risk": {
-            "accuracy": 0.3483,
-            "macro_precision": 0.2216,
-            "macro_recall": 0.2515,
-            "macro_f1": 0.1525,
+            "accuracy": 0.1994,
+            "macro_precision": 0.2502,
+            "macro_recall": 0.1956,
+            "macro_f1": 0.1821,
             "confusion_matrix": [
               [
-                4.3645,
-                0.0,
-                0.012,
+                0.3854,
+                0.6864,
+                0.0172,
                 0.1818
               ],
               [
-                2.2061,
-                0.0556,
-                0.0709,
+                0.2051,
+                0.1787,
+                0.269,
                 0.0
               ],
               [
-                2.3582,
-                0.054,
-                0.0347,
+                0.4267,
+                0.5261,
+                0.0,
                 0.0
               ],
               [
-                3.242,
-                0.2029,
-                0.0786,
-                0.038
+                0.4037,
+                0.6931,
+                0.1748,
+                0.3284
               ]
             ],
             "labels": [
@@ -2399,50 +2397,50 @@
         "mid": {
           "available": true,
           "cost": {
-            "MAE": 39.279,
-            "RMSE": 58.396,
-            "R2": -0.2804,
-            "MAPE": 229.096,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 36.077,
+            "RMSE": 50.729,
+            "R2": -0.2582,
+            "MAPE": 217.874,
+            "rows": 726,
+            "unique_projects": 260
           },
           "delay": {
-            "MAE": 469.529,
-            "RMSE": 703.811,
-            "R2": -0.1122,
-            "MAPE": 97.01,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 575.346,
+            "RMSE": 676.916,
+            "R2": 0.223,
+            "MAPE": 139.405,
+            "rows": 726,
+            "unique_projects": 260
           },
           "risk": {
-            "accuracy": 0.3825,
-            "macro_precision": 0.2759,
-            "macro_recall": 0.2624,
-            "macro_f1": 0.1717,
+            "accuracy": 0.3437,
+            "macro_precision": 0.4011,
+            "macro_recall": 0.2764,
+            "macro_f1": 0.2666,
             "confusion_matrix": [
               [
-                17.733,
-                0.0,
-                0.2351,
-                0.091
-              ],
-              [
-                6.8884,
-                0.1947,
-                0.1584,
-                0.2639
-              ],
-              [
-                8.2246,
-                0.5055,
-                0.203,
+                5.2444,
+                0.5391,
+                3.5871,
                 0.0
               ],
               [
-                11.4129,
-                1.4376,
-                0.475,
-                0.2597
+                0.4825,
+                0.4406,
+                0.4753,
+                0.1806
+              ],
+              [
+                1.3915,
+                1.573,
+                0.3158,
+                0.0
+              ],
+              [
+                1.5492,
+                2.8021,
+                0.9637,
+                1.092
               ]
             ],
             "labels": [
@@ -2456,50 +2454,50 @@
         "late": {
           "available": true,
           "cost": {
-            "MAE": 37.578,
-            "RMSE": 68.627,
-            "R2": 0.0681,
-            "MAPE": 230.409,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 31.75,
+            "RMSE": 75.898,
+            "R2": 0.2788,
+            "MAPE": 194.721,
+            "rows": 1204,
+            "unique_projects": 389
           },
           "delay": {
-            "MAE": 523.446,
-            "RMSE": 783.741,
-            "R2": -0.2234,
-            "MAPE": 98.665,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 539.431,
+            "RMSE": 672.825,
+            "R2": 0.2389,
+            "MAPE": 141.25,
+            "rows": 1204,
+            "unique_projects": 389
           },
           "risk": {
-            "accuracy": 0.233,
-            "macro_precision": 0.2639,
-            "macro_recall": 0.2755,
-            "macro_f1": 0.1756,
+            "accuracy": 0.2399,
+            "macro_precision": 0.3073,
+            "macro_recall": 0.2343,
+            "macro_f1": 0.2283,
             "confusion_matrix": [
               [
-                13.6035,
-                0.4232,
-                0.6731,
-                0.8621
+                1.231,
+                0.4231,
+                3.8367,
+                0.6205
               ],
               [
-                14.6198,
-                0.8154,
-                0.7854,
-                0.4041
+                1.1072,
+                0.8129,
+                2.4133,
+                0.4148
               ],
               [
-                11.6401,
-                1.3708,
-                2.1078,
-                0.6919
+                1.0619,
+                2.4987,
+                1.7332,
+                0.2148
               ],
               [
-                19.0155,
-                5.1936,
-                2.9816,
-                1.2952
+                1.5327,
+                5.7887,
+                3.6594,
+                3.6606
               ]
             ],
             "labels": [
@@ -2513,50 +2511,50 @@
         "very_late": {
           "available": true,
           "cost": {
-            "MAE": 37.421,
-            "RMSE": 68.119,
-            "R2": 0.2077,
-            "MAPE": 217.728,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 23.883,
+            "RMSE": 48.773,
+            "R2": 0.4757,
+            "MAPE": 117.258,
+            "rows": 8547,
+            "unique_projects": 685
           },
           "delay": {
-            "MAE": 527.006,
-            "RMSE": 787.896,
-            "R2": 0.5163,
-            "MAPE": 42.672,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 560.414,
+            "RMSE": 692.763,
+            "R2": 0.5622,
+            "MAPE": 71.312,
+            "rows": 8547,
+            "unique_projects": 685
           },
           "risk": {
-            "accuracy": 0.6558,
-            "macro_precision": 0.4284,
-            "macro_recall": 0.5367,
-            "macro_f1": 0.4524,
+            "accuracy": 0.6331,
+            "macro_precision": 0.3709,
+            "macro_recall": 0.309,
+            "macro_f1": 0.323,
             "confusion_matrix": [
               [
-                4.9765,
-                1.9787,
-                0.4991,
-                0.9887
+                0.8074,
+                0.2333,
+                1.4631,
+                2.2127
               ],
               [
-                6.5626,
-                16.0578,
-                16.5019,
-                5.2896
+                0.3155,
+                1.2944,
+                4.92,
+                15.0617
               ],
               [
-                4.6231,
-                8.1224,
-                27.6308,
-                20.0037
+                0.2784,
+                2.8255,
+                6.271,
+                21.8736
               ],
               [
-                8.3897,
-                24.487,
-                48.4697,
-                229.3741
+                0.5139,
+                5.7362,
+                25.9321,
+                132.0569
               ]
             ],
             "labels": [
@@ -2595,114 +2593,114 @@
       ],
       "selected_algorithms": {
         "cost": "xgboost",
-        "delay": "lightgbm"
+        "delay": "extra_trees"
       },
       "internal_algorithm_comparisons": {
         "cost": [
           {
             "algorithm": "lightgbm",
-            "MAE": 41.186,
-            "RMSE": 87.567,
-            "R2": 0.2344,
-            "MAPE": 175.463,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 29.965,
+            "RMSE": 61.728,
+            "R2": 0.5895,
+            "MAPE": 158.739,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "xgboost",
-            "MAE": 40.128,
-            "RMSE": 83.797,
-            "R2": 0.2989,
-            "MAPE": 170.315,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 29.454,
+            "RMSE": 60.331,
+            "R2": 0.6079,
+            "MAPE": 156.728,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 42.39,
-            "RMSE": 81.172,
-            "R2": 0.3422,
-            "MAPE": 176.444,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 30.983,
+            "RMSE": 62.07,
+            "R2": 0.585,
+            "MAPE": 148.573,
+            "rows": 2613,
+            "unique_projects": 154
           }
         ],
         "delay": [
           {
             "algorithm": "lightgbm",
-            "MAE": 346.041,
-            "RMSE": 555.881,
-            "R2": 0.5795,
-            "MAPE": 59.671,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 468.896,
+            "RMSE": 627.481,
+            "R2": 0.7053,
+            "MAPE": 48.935,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "xgboost",
-            "MAE": 370.816,
-            "RMSE": 567.224,
-            "R2": 0.5622,
-            "MAPE": 66.398,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 479.173,
+            "RMSE": 645.033,
+            "R2": 0.6886,
+            "MAPE": 53.014,
+            "rows": 2613,
+            "unique_projects": 154
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 366.0,
-            "RMSE": 548.462,
-            "R2": 0.5907,
-            "MAPE": 74.825,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 445.57,
+            "RMSE": 626.062,
+            "R2": 0.7066,
+            "MAPE": 52.069,
+            "rows": 2613,
+            "unique_projects": 154
           }
         ]
       },
       "metrics": {
         "cost": {
-          "MAE": 38.866,
-          "RMSE": 71.33,
-          "R2": 0.1783,
-          "MAPE": 212.824,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 27.263,
+          "RMSE": 53.507,
+          "R2": 0.4704,
+          "MAPE": 139.766,
+          "rows": 11546,
+          "unique_projects": 728
         },
         "delay": {
-          "MAE": 531.617,
-          "RMSE": 807.808,
-          "R2": 0.475,
-          "MAPE": 56.192,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 543.678,
+          "RMSE": 689.872,
+          "R2": 0.5527,
+          "MAPE": 77.499,
+          "rows": 11546,
+          "unique_projects": 728
         },
         "risk": {
-          "accuracy": 0.531,
-          "macro_precision": 0.4325,
-          "macro_recall": 0.5248,
-          "macro_f1": 0.4334,
+          "accuracy": 0.557,
+          "macro_precision": 0.3743,
+          "macro_recall": 0.3741,
+          "macro_f1": 0.3725,
           "confusion_matrix": [
             [
-              40.1025,
-              4.5103,
-              1.549,
-              1.3432
+              7.9143,
+              3.1074,
+              8.3687,
+              2.2598
             ],
             [
-              28.9822,
-              25.6668,
-              16.6831,
-              4.3781
+              2.4505,
+              8.0192,
+              5.0047,
+              16.4078
             ],
             [
-              25.9835,
-              20.4823,
-              31.9377,
-              16.244
+              4.0419,
+              10.4272,
+              7.4797,
+              23.6154
             ],
             [
-              43.4875,
-              49.3029,
-              65.865,
-              217.9754
+              5.8545,
+              21.2451,
+              30.1701,
+              143.7467
             ]
           ],
           "labels": [
@@ -2717,50 +2715,50 @@
         "early": {
           "available": true,
           "cost": {
-            "MAE": 42.397,
-            "RMSE": 63.425,
-            "R2": -0.1766,
-            "MAPE": 205.523,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 40.794,
+            "RMSE": 51.672,
+            "R2": -0.3271,
+            "MAPE": 210.557,
+            "rows": 197,
+            "unique_projects": 102
           },
           "delay": {
-            "MAE": 481.928,
-            "RMSE": 726.115,
-            "R2": -0.1273,
-            "MAPE": 90.97,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 468.223,
+            "RMSE": 613.574,
+            "R2": 0.4266,
+            "MAPE": 70.386,
+            "rows": 197,
+            "unique_projects": 102
           },
           "risk": {
-            "accuracy": 0.341,
-            "macro_precision": 0.2043,
-            "macro_recall": 0.2505,
-            "macro_f1": 0.1612,
+            "accuracy": 0.1954,
+            "macro_precision": 0.2156,
+            "macro_recall": 0.2265,
+            "macro_f1": 0.1657,
             "confusion_matrix": [
               [
-                4.1881,
-                0.1765,
+                0.3854,
+                0.5688,
+                0.1349,
+                0.1818
+              ],
+              [
+                0.2696,
+                0.3277,
+                0.0556,
+                0.0
+              ],
+              [
+                0.3897,
+                0.5632,
                 0.0,
-                0.1939
-              ],
-              [
-                2.1226,
-                0.1583,
-                0.0516,
                 0.0
               ],
               [
-                2.3345,
-                0.1055,
-                0.0069,
-                0.0
-              ],
-              [
-                3.1703,
-                0.2642,
-                0.082,
-                0.0451
+                0.5112,
+                0.8153,
+                0.1118,
+                0.1616
               ]
             ],
             "labels": [
@@ -2774,50 +2772,50 @@
         "mid": {
           "available": true,
           "cost": {
-            "MAE": 38.918,
-            "RMSE": 58.314,
-            "R2": -0.2768,
-            "MAPE": 225.699,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 35.737,
+            "RMSE": 50.128,
+            "R2": -0.2286,
+            "MAPE": 222.336,
+            "rows": 726,
+            "unique_projects": 260
           },
           "delay": {
-            "MAE": 470.636,
-            "RMSE": 703.359,
-            "R2": -0.1108,
-            "MAPE": 99.902,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 549.429,
+            "RMSE": 654.512,
+            "R2": 0.2736,
+            "MAPE": 126.1,
+            "rows": 726,
+            "unique_projects": 260
           },
           "risk": {
-            "accuracy": 0.3877,
-            "macro_precision": 0.3197,
-            "macro_recall": 0.2719,
-            "macro_f1": 0.1868,
+            "accuracy": 0.3217,
+            "macro_precision": 0.3452,
+            "macro_recall": 0.2599,
+            "macro_f1": 0.234,
             "confusion_matrix": [
               [
-                17.6794,
-                0.2353,
-                0.1125,
-                0.0319
+                5.2558,
+                0.4305,
+                3.6317,
+                0.0526
               ],
               [
-                6.6218,
-                0.4919,
-                0.1278,
+                0.6549,
+                0.5185,
+                0.1416,
                 0.2639
               ],
               [
-                8.1362,
-                0.5815,
-                0.2153,
+                1.6121,
+                1.5656,
+                0.1027,
                 0.0
               ],
               [
-                11.5678,
-                1.2436,
-                0.5185,
-                0.2553
+                1.9079,
+                2.9316,
+                0.8058,
+                0.7617
               ]
             ],
             "labels": [
@@ -2831,50 +2829,50 @@
         "late": {
           "available": true,
           "cost": {
-            "MAE": 37.104,
-            "RMSE": 68.874,
-            "R2": 0.0614,
-            "MAPE": 221.735,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 31.955,
+            "RMSE": 75.687,
+            "R2": 0.2828,
+            "MAPE": 199.004,
+            "rows": 1204,
+            "unique_projects": 389
           },
           "delay": {
-            "MAE": 519.13,
-            "RMSE": 780.922,
-            "R2": -0.2146,
-            "MAPE": 99.651,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 535.643,
+            "RMSE": 676.719,
+            "R2": 0.2301,
+            "MAPE": 133.13,
+            "rows": 1204,
+            "unique_projects": 389
           },
           "risk": {
-            "accuracy": 0.2362,
-            "macro_precision": 0.2722,
-            "macro_recall": 0.2794,
-            "macro_f1": 0.1697,
+            "accuracy": 0.226,
+            "macro_precision": 0.2875,
+            "macro_recall": 0.2381,
+            "macro_f1": 0.2201,
             "confusion_matrix": [
               [
-                14.175,
-                0.55,
-                0.4652,
-                0.3718
+                1.6085,
+                0.7577,
+                3.0416,
+                0.7035
               ],
               [
-                14.0539,
-                1.7814,
-                0.3853,
-                0.4041
+                1.2271,
+                1.4444,
+                1.4592,
+                0.6175
               ],
               [
-                11.5872,
-                2.7641,
-                0.9077,
-                0.5516
+                1.6361,
+                2.7566,
+                1.0148,
+                0.1011
               ],
               [
-                19.7544,
-                4.5434,
-                2.9881,
-                1.2
+                2.6751,
+                6.0732,
+                2.9519,
+                2.9413
               ]
             ],
             "labels": [
@@ -2888,50 +2886,50 @@
         "very_late": {
           "available": true,
           "cost": {
-            "MAE": 36.126,
-            "RMSE": 66.943,
-            "R2": 0.2348,
-            "MAPE": 209.209,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 24.257,
+            "RMSE": 49.004,
+            "R2": 0.4707,
+            "MAPE": 124.057,
+            "rows": 8547,
+            "unique_projects": 685
           },
           "delay": {
-            "MAE": 527.281,
-            "RMSE": 787.002,
-            "R2": 0.5173,
-            "MAPE": 43.375,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 541.345,
+            "RMSE": 681.562,
+            "R2": 0.5763,
+            "MAPE": 66.704,
+            "rows": 8547,
+            "unique_projects": 685
           },
           "risk": {
-            "accuracy": 0.6223,
-            "macro_precision": 0.4164,
-            "macro_recall": 0.5214,
-            "macro_f1": 0.4367,
+            "accuracy": 0.6384,
+            "macro_precision": 0.3791,
+            "macro_recall": 0.3168,
+            "macro_f1": 0.3326,
             "confusion_matrix": [
               [
-                4.053,
-                3.0011,
-                0.7244,
-                0.6645
+                0.6646,
+                1.2333,
+                1.5605,
+                1.2581
               ],
               [
-                6.1751,
-                19.2196,
-                15.3071,
-                3.7101
+                0.2988,
+                2.6873,
+                3.3484,
+                15.257
               ],
               [
-                3.9256,
-                11.0987,
-                29.8811,
-                15.4746
+                0.2676,
+                2.3093,
+                6.1804,
+                22.4913
               ],
               [
-                8.633,
-                34.5936,
-                56.8073,
-                210.6865
+                0.661,
+                5.6763,
+                25.8397,
+                132.0621
               ]
             ],
             "labels": [
@@ -2950,5 +2948,5 @@
     "delay": false,
     "risk": false
   },
-  "created_at": "2026-08-23T22:15:57.650757+00:00"
+  "created_at": "2026-08-24T16:16:31.432770+00:00"
 }

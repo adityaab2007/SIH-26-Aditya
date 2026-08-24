@@ -1,0 +1,449 @@
+{
+  "cost": {
+    "method": "mean_absolute_shap",
+    "features": [
+      {
+        "feature": "expenditure_ratio",
+        "importance": 0.404725
+      },
+      {
+        "feature": "cost_escalation_percentage",
+        "importance": 0.140707
+      },
+      {
+        "feature": "planned_duration_days",
+        "importance": 0.082112
+      },
+      {
+        "feature": "revised_cost_cr",
+        "importance": 0.066809
+      },
+      {
+        "feature": "approved_cost_cr",
+        "importance": 0.056331
+      },
+      {
+        "feature": "agency_delay_rate",
+        "importance": 0.052537
+      },
+      {
+        "feature": "cumulative_expenditure_cr",
+        "importance": 0.041715
+      },
+      {
+        "feature": "duration_ratio",
+        "importance": 0.027861
+      },
+      {
+        "feature": "schedule_slippage_days",
+        "importance": 0.022703
+      },
+      {
+        "feature": "agency_average_delay",
+        "importance": 0.019644
+      },
+      {
+        "feature": "elapsed_duration_days",
+        "importance": 0.019128
+      },
+      {
+        "feature": "sector_average_delay",
+        "importance": 0.015734
+      },
+      {
+        "feature": "implementing_agency",
+        "importance": 0.010734
+      },
+      {
+        "feature": "sector",
+        "importance": 0.010535
+      },
+      {
+        "feature": "expected_progress_percentage",
+        "importance": 0.009208
+      },
+      {
+        "feature": "schedule_slippage_ratio",
+        "importance": 0.008373
+      },
+      {
+        "feature": "project_size_category",
+        "importance": 0.006926
+      },
+      {
+        "feature": "sector_average_cost_overrun",
+        "importance": 0.001268
+      },
+      {
+        "feature": "agency_average_cost_overrun",
+        "importance": 0.001064
+      },
+      {
+        "feature": "agency_cost_overrun_rate",
+        "importance": 0.00087
+      },
+      {
+        "feature": "missingindicator_schedule_slippage_ratio",
+        "importance": 0.000463
+      },
+      {
+        "feature": "missingindicator_cost_growth_velocity_3m",
+        "importance": 0.000282
+      },
+      {
+        "feature": "cost_growth_velocity_6m",
+        "importance": 9.4e-05
+      },
+      {
+        "feature": "missingindicator_planned_duration_days",
+        "importance": 9.2e-05
+      },
+      {
+        "feature": "missingindicator_schedule_slippage_days",
+        "importance": 8.6e-05
+      },
+      {
+        "feature": "cost_growth_velocity_3m",
+        "importance": 0.0
+      },
+      {
+        "feature": "cost_acceleration",
+        "importance": 0.0
+      },
+      {
+        "feature": "sector_delay_rate",
+        "importance": 0.0
+      },
+      {
+        "feature": "sector_cost_overrun_rate",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_expenditure_ratio",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_duration_ratio",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_expected_progress_percentage",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_revised_cost_cr",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_cost_escalation_percentage",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_cost_growth_velocity_6m",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_cost_acceleration",
+        "importance": 0.0
+      }
+    ]
+  },
+  "delay": {
+    "method": "tree_feature_importance",
+    "features": [
+      {
+        "feature": "schedule_slippage_days",
+        "importance": 0.362449
+      },
+      {
+        "feature": "elapsed_duration_days",
+        "importance": 0.25129
+      },
+      {
+        "feature": "duration_ratio",
+        "importance": 0.123146
+      },
+      {
+        "feature": "implementing_agency",
+        "importance": 0.041752
+      },
+      {
+        "feature": "sector",
+        "importance": 0.039762
+      },
+      {
+        "feature": "schedule_slippage_ratio",
+        "importance": 0.039402
+      },
+      {
+        "feature": "planned_duration_days",
+        "importance": 0.031438
+      },
+      {
+        "feature": "cost_escalation_percentage",
+        "importance": 0.015311
+      },
+      {
+        "feature": "expenditure_ratio",
+        "importance": 0.014124
+      },
+      {
+        "feature": "project_size_category",
+        "importance": 0.012141
+      },
+      {
+        "feature": "expected_progress_percentage",
+        "importance": 0.011086
+      },
+      {
+        "feature": "revised_cost_cr",
+        "importance": 0.009446
+      },
+      {
+        "feature": "approved_cost_cr",
+        "importance": 0.009217
+      },
+      {
+        "feature": "cumulative_expenditure_cr",
+        "importance": 0.005431
+      },
+      {
+        "feature": "missingindicator_duration_ratio",
+        "importance": 0.004293
+      },
+      {
+        "feature": "missingindicator_schedule_slippage_ratio",
+        "importance": 0.004178
+      },
+      {
+        "feature": "missingindicator_planned_duration_days",
+        "importance": 0.003596
+      },
+      {
+        "feature": "missingindicator_expected_progress_percentage",
+        "importance": 0.003556
+      },
+      {
+        "feature": "agency_average_delay",
+        "importance": 0.002439
+      },
+      {
+        "feature": "missingindicator_cost_growth_velocity_6m",
+        "importance": 0.002309
+      },
+      {
+        "feature": "missingindicator_schedule_slippage_days",
+        "importance": 0.00227
+      },
+      {
+        "feature": "agency_delay_rate",
+        "importance": 0.002187
+      },
+      {
+        "feature": "sector_average_cost_overrun",
+        "importance": 0.002069
+      },
+      {
+        "feature": "sector_average_delay",
+        "importance": 0.001837
+      },
+      {
+        "feature": "agency_average_cost_overrun",
+        "importance": 0.001789
+      },
+      {
+        "feature": "agency_cost_overrun_rate",
+        "importance": 0.001396
+      },
+      {
+        "feature": "missingindicator_cost_growth_velocity_3m",
+        "importance": 0.000902
+      },
+      {
+        "feature": "missingindicator_cost_acceleration",
+        "importance": 0.000888
+      },
+      {
+        "feature": "cost_growth_velocity_6m",
+        "importance": 0.000216
+      },
+      {
+        "feature": "cost_acceleration",
+        "importance": 6.3e-05
+      },
+      {
+        "feature": "cost_growth_velocity_3m",
+        "importance": 1.6e-05
+      },
+      {
+        "feature": "sector_delay_rate",
+        "importance": 0.0
+      },
+      {
+        "feature": "sector_cost_overrun_rate",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_expenditure_ratio",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_revised_cost_cr",
+        "importance": 0.0
+      },
+      {
+        "feature": "missingindicator_cost_escalation_percentage",
+        "importance": 0.0
+      }
+    ]
+  },
+  "risk": {
+    "method": "tree_feature_importance",
+    "features": [
+      {
+        "feature": "duration_ratio",
+        "importance": 0.131807
+      },
+      {
+        "feature": "schedule_slippage_days",
+        "importance": 0.122157
+      },
+      {
+        "feature": "sector",
+        "importance": 0.111654
+      },
+      {
+        "feature": "schedule_slippage_ratio",
+        "importance": 0.093053
+      },
+      {
+        "feature": "elapsed_duration_days",
+        "importance": 0.081535
+      },
+      {
+        "feature": "expected_progress_percentage",
+        "importance": 0.068933
+      },
+      {
+        "feature": "implementing_agency",
+        "importance": 0.048387
+      },
+      {
+        "feature": "expenditure_ratio",
+        "importance": 0.044593
+      },
+      {
+        "feature": "planned_duration_days",
+        "importance": 0.041919
+      },
+      {
+        "feature": "cumulative_expenditure_cr",
+        "importance": 0.034792
+      },
+      {
+        "feature": "approved_cost_cr",
+        "importance": 0.033368
+      },
+      {
+        "feature": "revised_cost_cr",
+        "importance": 0.032889
+      },
+      {
+        "feature": "cost_escalation_percentage",
+        "importance": 0.021236
+      },
+      {
+        "feature": "project_size_category",
+        "importance": 0.015981
+      },
+      {
+        "feature": "agency_average_cost_overrun",
+        "importance": 0.015673
+      },
+      {
+        "feature": "agency_delay_rate",
+        "importance": 0.015147
+      },
+      {
+        "feature": "agency_average_delay",
+        "importance": 0.014581
+      },
+      {
+        "feature": "sector_average_cost_overrun",
+        "importance": 0.01321
+      },
+      {
+        "feature": "agency_cost_overrun_rate",
+        "importance": 0.012075
+      },
+      {
+        "feature": "sector_average_delay",
+        "importance": 0.011315
+      },
+      {
+        "feature": "missingindicator_cost_growth_velocity_6m",
+        "importance": 0.005274
+      },
+      {
+        "feature": "missingindicator_cost_growth_velocity_3m",
+        "importance": 0.004291
+      },
+      {
+        "feature": "cost_growth_velocity_6m",
+        "importance": 0.00405
+      },
+      {
+        "feature": "missingindicator_cost_acceleration",
+        "importance": 0.003771
+      },
+      {
+        "feature": "missingindicator_expected_progress_percentage",
+        "importance": 0.003257
+      },
+      {
+        "feature": "missingindicator_schedule_slippage_ratio",
+        "importance": 0.002856
+      },
+      {
+        "feature": "missingindicator_schedule_slippage_days",
+        "importance": 0.00264
+      },
+      {
+        "feature": "missingindicator_planned_duration_days",
+        "importance": 0.002361
+      },
+      {
+        "feature": "cost_acceleration",
+        "importance": 0.002354
+      },
+      {
+        "feature": "missingindicator_duration_ratio",
+        "importance": 0.002337
+      },
+      {
+        "feature": "cost_growth_velocity_3m",
+        "importance": 0.002051
+      },
+      {
+        "feature": "missingindicator_expenditure_ratio",
+        "importance": 0.000261
+      },
+      {
+        "feature": "missingindicator_cost_escalation_percentage",
+        "importance": 0.000181
+      },
+      {
+        "feature": "missingindicator_revised_cost_cr",
+        "importance": 1e-05
+      },
+      {
+        "feature": "sector_delay_rate",
+        "importance": 0.0
+      },
+      {
+        "feature": "sector_cost_overrun_rate",
+        "importance": 0.0
+      }
+    ]
+  }
+}

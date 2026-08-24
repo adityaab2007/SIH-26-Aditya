@@ -1,0 +1,5731 @@
+{
+  "window": "2018_2021",
+  "metadata": {
+    "model_version": "monthly-2018-2021",
+    "training_period": [
+      2018,
+      2021
+    ],
+    "testing_period": [
+      2022,
+      2025
+    ],
+    "unique_training_projects": 506,
+    "training_snapshots": 7981,
+    "unique_test_projects": 728,
+    "test_snapshots": 11546,
+    "features_used": [
+      "approved_cost_cr",
+      "sector_average_delay",
+      "sector_average_cost_overrun",
+      "sector",
+      "project_size_category",
+      "cumulative_expenditure_cr",
+      "expenditure_ratio",
+      "schedule_slippage_days",
+      "schedule_slippage_ratio",
+      "elapsed_duration_days",
+      "planned_duration_days",
+      "duration_ratio",
+      "expected_progress_percentage",
+      "revised_cost_cr",
+      "cost_escalation_percentage",
+      "implementing_agency",
+      "cost_growth_velocity_3m",
+      "cost_growth_velocity_6m",
+      "cost_acceleration",
+      "sector_delay_rate",
+      "sector_cost_overrun_rate",
+      "agency_average_delay",
+      "agency_average_cost_overrun",
+      "agency_delay_rate",
+      "agency_cost_overrun_rate"
+    ],
+    "feature_availability": {
+      "training_rows": 7981,
+      "feature_count_audited": 32,
+      "features_used": [
+        "approved_cost_cr",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "revised_cost_cr",
+        "cost_escalation_percentage",
+        "sector",
+        "project_size_category",
+        "implementing_agency",
+        "cost_growth_velocity_3m",
+        "cost_growth_velocity_6m",
+        "cost_acceleration",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate",
+        "agency_average_delay",
+        "agency_average_cost_overrun",
+        "agency_delay_rate",
+        "agency_cost_overrun_rate"
+      ],
+      "removed_features": [
+        "physical_progress",
+        "progress_deviation",
+        "current_schedule_status",
+        "ministry",
+        "progress_velocity_3m",
+        "progress_velocity_6m",
+        "progress_acceleration"
+      ],
+      "removed_invalid_feature_count": 7,
+      "data_quality_score": 97.88,
+      "features": [
+        {
+          "feature": "approved_cost_cr",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 538,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "cumulative_expenditure_cr",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.64,
+          "unique_value_count": 5643,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "expenditure_ratio",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.64,
+          "unique_value_count": 5889,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "physical_progress",
+          "datatype": "float64",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "schedule_slippage_days",
+          "datatype": "float64",
+          "missing_percentage": 4.92,
+          "zero_percentage": 46.06,
+          "unique_value_count": 447,
+          "constant": false,
+          "availability": 95.08,
+          "availability_percentage": 95.08,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 80.95,
+            "2010": 81.45,
+            "2011": 84.69,
+            "2012": 96.25,
+            "2013": 93.46,
+            "2014": 91.71,
+            "2015": 92.23,
+            "2016": 94.04,
+            "2017": 94.16,
+            "2018": 98.47,
+            "2019": 99.7,
+            "2020": 99.72,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 94.88,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "schedule_slippage_ratio",
+          "datatype": "float64",
+          "missing_percentage": 5.78,
+          "zero_percentage": 45.58,
+          "unique_value_count": 1539,
+          "constant": false,
+          "availability": 94.22,
+          "availability_percentage": 94.22,
+          "temporal_year_coverage": 14,
+          "project_coverage": 500,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 80.95,
+            "2010": 81.45,
+            "2011": 84.69,
+            "2012": 96.25,
+            "2013": 92.52,
+            "2014": 89.6,
+            "2015": 90.82,
+            "2016": 93.26,
+            "2017": 93.84,
+            "2018": 97.94,
+            "2019": 98.62,
+            "2020": 98.18,
+            "2021": 98.54
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 94.08,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 97.96
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "elapsed_duration_days",
+          "datatype": "int64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 886,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "planned_duration_days",
+          "datatype": "float64",
+          "missing_percentage": 4.92,
+          "zero_percentage": 0.28,
+          "unique_value_count": 249,
+          "constant": false,
+          "availability": 95.08,
+          "availability_percentage": 95.08,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 80.95,
+            "2010": 81.45,
+            "2011": 84.69,
+            "2012": 96.25,
+            "2013": 93.46,
+            "2014": 91.71,
+            "2015": 92.23,
+            "2016": 94.04,
+            "2017": 94.16,
+            "2018": 98.47,
+            "2019": 99.7,
+            "2020": 99.72,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 94.88,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "duration_ratio",
+          "datatype": "float64",
+          "missing_percentage": 5.78,
+          "zero_percentage": 0.0,
+          "unique_value_count": 6192,
+          "constant": false,
+          "availability": 94.22,
+          "availability_percentage": 94.22,
+          "temporal_year_coverage": 14,
+          "project_coverage": 500,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 80.95,
+            "2010": 81.45,
+            "2011": 84.69,
+            "2012": 96.25,
+            "2013": 92.52,
+            "2014": 89.6,
+            "2015": 90.82,
+            "2016": 93.26,
+            "2017": 93.84,
+            "2018": 97.94,
+            "2019": 98.62,
+            "2020": 98.18,
+            "2021": 98.54
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 94.08,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 97.96
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "datatype": "float64",
+          "missing_percentage": 5.78,
+          "zero_percentage": 0.0,
+          "unique_value_count": 1800,
+          "constant": false,
+          "availability": 94.22,
+          "availability_percentage": 94.22,
+          "temporal_year_coverage": 14,
+          "project_coverage": 500,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 80.95,
+            "2010": 81.45,
+            "2011": 84.69,
+            "2012": 96.25,
+            "2013": 92.52,
+            "2014": 89.6,
+            "2015": 90.82,
+            "2016": 93.26,
+            "2017": 93.84,
+            "2018": 97.94,
+            "2019": 98.62,
+            "2020": 98.18,
+            "2021": 98.54
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 94.08,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 97.96
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "progress_deviation",
+          "datatype": "float64",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "revised_cost_cr",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 2.89,
+          "unique_value_count": 986,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "cost_escalation_percentage",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 58.1,
+          "unique_value_count": 631,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "current_schedule_status",
+          "datatype": "object",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "sector",
+          "datatype": "object",
+          "missing_percentage": 0.91,
+          "zero_percentage": 0.0,
+          "unique_value_count": 1667,
+          "constant": false,
+          "availability": 99.09,
+          "availability_percentage": 99.09,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 94.22,
+            "2012": 100.0,
+            "2013": 86.92,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 99.05,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "project_size_category",
+          "datatype": "string",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 4,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "implementing_agency",
+          "datatype": "object",
+          "missing_percentage": 2.29,
+          "zero_percentage": 0.0,
+          "unique_value_count": 116,
+          "constant": false,
+          "availability": 97.71,
+          "availability_percentage": 97.71,
+          "temporal_year_coverage": 13,
+          "project_coverage": 505,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 30.95,
+            "2010": 70.14,
+            "2011": 100.0,
+            "2012": 95.39,
+            "2013": 98.83,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 99.76,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 99.86,
+            "2021": 99.64
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 97.7,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "ministry",
+          "datatype": "float64",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "cost_growth_velocity_3m",
+          "datatype": "float64",
+          "missing_percentage": 7.77,
+          "zero_percentage": 83.34,
+          "unique_value_count": 702,
+          "constant": false,
+          "availability": 92.23,
+          "availability_percentage": 92.23,
+          "temporal_year_coverage": 14,
+          "project_coverage": 495,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 38.89,
+            "2010": 98.19,
+            "2011": 97.96,
+            "2012": 99.71,
+            "2013": 97.9,
+            "2014": 97.3,
+            "2015": 93.22,
+            "2016": 98.06,
+            "2017": 73.58,
+            "2018": 94.96,
+            "2019": 97.24,
+            "2020": 99.3,
+            "2021": 93.8
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 92.83,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 76.53
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "cost_growth_velocity_6m",
+          "datatype": "float64",
+          "missing_percentage": 6.97,
+          "zero_percentage": 80.33,
+          "unique_value_count": 990,
+          "constant": false,
+          "availability": 93.03,
+          "availability_percentage": 93.03,
+          "temporal_year_coverage": 14,
+          "project_coverage": 496,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 66.67,
+            "2010": 98.64,
+            "2011": 98.3,
+            "2012": 99.71,
+            "2013": 98.13,
+            "2014": 97.5,
+            "2015": 93.36,
+            "2016": 98.19,
+            "2017": 73.98,
+            "2018": 95.42,
+            "2019": 97.24,
+            "2020": 99.3,
+            "2021": 98.18
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 93.49,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 80.95
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "cost_acceleration",
+          "datatype": "float64",
+          "missing_percentage": 7.77,
+          "zero_percentage": 79.24,
+          "unique_value_count": 1027,
+          "constant": false,
+          "availability": 92.23,
+          "availability_percentage": 92.23,
+          "temporal_year_coverage": 14,
+          "project_coverage": 495,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 38.89,
+            "2010": 98.19,
+            "2011": 97.96,
+            "2012": 99.71,
+            "2013": 97.9,
+            "2014": 97.3,
+            "2015": 93.22,
+            "2016": 98.06,
+            "2017": 73.58,
+            "2018": 94.96,
+            "2019": 97.24,
+            "2020": 99.3,
+            "2021": 93.8
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 92.83,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 76.53
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "progress_velocity_3m",
+          "datatype": "float64",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "progress_velocity_6m",
+          "datatype": "float64",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "progress_acceleration",
+          "datatype": "float64",
+          "missing_percentage": 100.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 0,
+          "constant": true,
+          "availability": 0.0,
+          "availability_percentage": 0.0,
+          "temporal_year_coverage": 0,
+          "project_coverage": 0,
+          "availability_by_year": {
+            "2008": 0.0,
+            "2009": 0.0,
+            "2010": 0.0,
+            "2011": 0.0,
+            "2012": 0.0,
+            "2013": 0.0,
+            "2014": 0.0,
+            "2015": 0.0,
+            "2016": 0.0,
+            "2017": 0.0,
+            "2018": 0.0,
+            "2019": 0.0,
+            "2020": 0.0,
+            "2021": 0.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 0.0,
+            "legacy-sector-v1": 0.0,
+            "redesigned-code-v1": 0.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "remove",
+          "reason": "availability below 10.0%"
+        },
+        {
+          "feature": "sector_average_delay",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 153,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 153,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "sector_delay_rate",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 127,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "sector_cost_overrun_rate",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 2.99,
+          "unique_value_count": 124,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "agency_average_delay",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 1.69,
+          "unique_value_count": 304,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "agency_average_cost_overrun",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.0,
+          "unique_value_count": 308,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "agency_delay_rate",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 5.54,
+          "unique_value_count": 183,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "datatype": "float64",
+          "missing_percentage": 0.0,
+          "zero_percentage": 14.56,
+          "unique_value_count": 168,
+          "constant": false,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 14,
+          "project_coverage": 506,
+          "availability_by_year": {
+            "2008": 100.0,
+            "2009": 100.0,
+            "2010": 100.0,
+            "2011": 100.0,
+            "2012": 100.0,
+            "2013": 100.0,
+            "2014": 100.0,
+            "2015": 100.0,
+            "2016": 100.0,
+            "2017": 100.0,
+            "2018": 100.0,
+            "2019": 100.0,
+            "2020": 100.0,
+            "2021": 100.0
+          },
+          "availability_by_parser": {
+            "classic-code-v3": 100.0,
+            "legacy-sector-v1": 100.0,
+            "redesigned-code-v1": 100.0
+          },
+          "safely_as_of_available": true,
+          "leakage_risk": "none identified; computed from snapshot or earlier records only",
+          "decision": "keep",
+          "reason": "observed and variable in the training window"
+        }
+      ],
+      "policy": "Eligibility is evaluated inside the selected training window using availability, variability, temporal/project coverage, parser coverage, as-of safety, and leakage risk."
+    },
+    "data_source": "Official PAIMANA/MoSPI monthly Flash Reports only",
+    "raw_archive_coverage": {
+      "reports_discovered": 291,
+      "financial_years": [
+        "2001-02",
+        "2002-03",
+        "2003-04",
+        "2004-05",
+        "2005-06",
+        "2006-07",
+        "2007-08",
+        "2008-09",
+        "2009-10",
+        "2010-11",
+        "2011-12",
+        "2012-13",
+        "2013-14",
+        "2014-15",
+        "2015-16",
+        "2016-17",
+        "2017-18",
+        "2018-19",
+        "2019-20",
+        "2020-21",
+        "2021-22",
+        "2022-23",
+        "2023-24",
+        "2024-25"
+      ],
+      "missing_months": [
+        {
+          "financial_year": "2005-06",
+          "month": "April",
+          "known_archive_gap": true
+        },
+        {
+          "financial_year": "2008-09",
+          "month": "January",
+          "known_archive_gap": true
+        }
+      ],
+      "reports_parsed": 274,
+      "monthly_observations": 195934
+    },
+    "parser_versions": {
+      "legacy-sector-v1": 98,
+      "classic-code-v3": 143,
+      "unrecognized": 16,
+      "redesigned-code-v1": 24,
+      "recent-project-list-v3": 9
+    },
+    "identity_verified_training_only": true,
+    "leakage_policy": "Features and priors use only observations/outcomes known at or before snapshot T; final holdout is excluded from selection.",
+    "snapshot_weighting_policy": "Quarterly last-observation sampling plus per-project weights summing to approximately one.",
+    "selected_algorithms": {
+      "cost": "xgboost",
+      "delay": "extra_trees"
+    },
+    "hyperparameters": {
+      "cost": {
+        "objective": "reg:squarederror",
+        "base_score": null,
+        "booster": null,
+        "callbacks": null,
+        "colsample_bylevel": null,
+        "colsample_bynode": null,
+        "colsample_bytree": 0.85,
+        "device": null,
+        "early_stopping_rounds": null,
+        "enable_categorical": false,
+        "eval_metric": null,
+        "feature_types": null,
+        "feature_weights": null,
+        "gamma": null,
+        "grow_policy": null,
+        "importance_type": null,
+        "interaction_constraints": null,
+        "learning_rate": 0.035,
+        "max_bin": null,
+        "max_cat_threshold": null,
+        "max_cat_to_onehot": null,
+        "max_delta_step": null,
+        "max_depth": 4,
+        "max_leaves": null,
+        "min_child_weight": null,
+        "missing": null,
+        "monotone_constraints": null,
+        "multi_strategy": null,
+        "n_estimators": 240,
+        "n_jobs": 2,
+        "num_parallel_tree": null,
+        "random_state": 26203,
+        "reg_alpha": null,
+        "reg_lambda": null,
+        "sampling_method": null,
+        "scale_pos_weight": null,
+        "subsample": 0.85,
+        "tree_method": null,
+        "validate_parameters": null,
+        "verbosity": null
+      },
+      "delay": {
+        "bootstrap": false,
+        "ccp_alpha": 0.0,
+        "criterion": "squared_error",
+        "max_depth": null,
+        "max_features": 0.8,
+        "max_leaf_nodes": null,
+        "max_samples": null,
+        "min_impurity_decrease": 0.0,
+        "min_samples_leaf": 3,
+        "min_samples_split": 2,
+        "min_weight_fraction_leaf": 0.0,
+        "monotonic_cst": null,
+        "n_estimators": 260,
+        "n_jobs": 2,
+        "oob_score": false,
+        "random_state": 26204,
+        "verbose": 0,
+        "warm_start": false
+      },
+      "risk": {
+        "bootstrap": true,
+        "ccp_alpha": 0.0,
+        "class_weight": "balanced_subsample",
+        "criterion": "gini",
+        "max_depth": null,
+        "max_features": "sqrt",
+        "max_leaf_nodes": null,
+        "max_samples": null,
+        "min_impurity_decrease": 0.0,
+        "min_samples_leaf": 2,
+        "min_samples_split": 2,
+        "min_weight_fraction_leaf": 0.0,
+        "monotonic_cst": null,
+        "n_estimators": 320,
+        "n_jobs": 2,
+        "oob_score": false,
+        "random_state": 26205,
+        "verbose": 0,
+        "warm_start": false
+      }
+    },
+    "internal_algorithm_comparisons": {
+      "cost": [
+        {
+          "algorithm": "lightgbm",
+          "MAE": 30.39,
+          "RMSE": 62.008,
+          "R2": 0.5858,
+          "MAPE": 157.067,
+          "rows": 2613,
+          "unique_projects": 154
+        },
+        {
+          "algorithm": "xgboost",
+          "MAE": 29.495,
+          "RMSE": 60.105,
+          "R2": 0.6108,
+          "MAPE": 157.669,
+          "rows": 2613,
+          "unique_projects": 154
+        },
+        {
+          "algorithm": "extra_trees",
+          "MAE": 31.172,
+          "RMSE": 62.302,
+          "R2": 0.5819,
+          "MAPE": 146.715,
+          "rows": 2613,
+          "unique_projects": 154
+        }
+      ],
+      "delay": [
+        {
+          "algorithm": "lightgbm",
+          "MAE": 453.436,
+          "RMSE": 619.83,
+          "R2": 0.7124,
+          "MAPE": 55.252,
+          "rows": 2613,
+          "unique_projects": 154
+        },
+        {
+          "algorithm": "xgboost",
+          "MAE": 463.436,
+          "RMSE": 630.976,
+          "R2": 0.702,
+          "MAPE": 51.241,
+          "rows": 2613,
+          "unique_projects": 154
+        },
+        {
+          "algorithm": "extra_trees",
+          "MAE": 446.264,
+          "RMSE": 621.565,
+          "R2": 0.7108,
+          "MAPE": 56.126,
+          "rows": 2613,
+          "unique_projects": 154
+        }
+      ]
+    },
+    "baseline_metrics": {
+      "cost": {
+        "MAE": 37.762,
+        "RMSE": 73.975,
+        "R2": -0.0123,
+        "MAPE": 182.66,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "delay": {
+        "MAE": 763.083,
+        "RMSE": 1013.605,
+        "R2": 0.0345,
+        "MAPE": 127.258,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "risk": {
+        "accuracy": 0.4164,
+        "macro_precision": 0.2786,
+        "macro_recall": 0.2834,
+        "macro_f1": 0.2657,
+        "confusion_matrix": [
+          [
+            1.4138,
+            2.8577,
+            4.3546,
+            13.0241
+          ],
+          [
+            0.4801,
+            5.7405,
+            11.9129,
+            13.7488
+          ],
+          [
+            2.1983,
+            8.4461,
+            17.8069,
+            17.1129
+          ],
+          [
+            8.6655,
+            42.5045,
+            49.8384,
+            100.0081
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "lifecycle_metrics": {
+      "cost": {
+        "MAE": 27.096,
+        "RMSE": 53.332,
+        "R2": 0.4738,
+        "MAPE": 134.539,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "delay": {
+        "MAE": 568.238,
+        "RMSE": 705.19,
+        "R2": 0.5326,
+        "MAPE": 85.054,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "risk": {
+        "accuracy": 0.5606,
+        "macro_precision": 0.3746,
+        "macro_recall": 0.3575,
+        "macro_f1": 0.3641,
+        "confusion_matrix": [
+          [
+            7.301,
+            1.825,
+            8.2682,
+            4.2561
+          ],
+          [
+            2.1714,
+            5.7459,
+            7.0086,
+            16.9564
+          ],
+          [
+            3.3818,
+            10.1445,
+            8.2752,
+            23.7627
+          ],
+          [
+            4.3109,
+            20.2144,
+            29.5718,
+            146.9193
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "lifecycle_stage_metrics": {
+      "early": {
+        "available": true,
+        "cost": {
+          "MAE": 38.542,
+          "RMSE": 48.373,
+          "R2": -0.1631,
+          "MAPE": 204.426,
+          "rows": 197,
+          "unique_projects": 102
+        },
+        "delay": {
+          "MAE": 485.741,
+          "RMSE": 622.288,
+          "R2": 0.4102,
+          "MAPE": 79.991,
+          "rows": 197,
+          "unique_projects": 102
+        },
+        "risk": {
+          "accuracy": 0.2251,
+          "macro_precision": 0.2618,
+          "macro_recall": 0.2446,
+          "macro_f1": 0.1999,
+          "confusion_matrix": [
+            [
+              0.3682,
+              0.7037,
+              0.0172,
+              0.1818
+            ],
+            [
+              0.2051,
+              0.3185,
+              0.1293,
+              0.0
+            ],
+            [
+              0.3873,
+              0.5655,
+              0.0,
+              0.0
+            ],
+            [
+              0.3936,
+              0.7424,
+              0.1428,
+              0.3212
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "mid": {
+        "available": true,
+        "cost": {
+          "MAE": 35.077,
+          "RMSE": 49.822,
+          "R2": -0.2136,
+          "MAPE": 201.51,
+          "rows": 726,
+          "unique_projects": 260
+        },
+        "delay": {
+          "MAE": 576.464,
+          "RMSE": 676.163,
+          "R2": 0.2247,
+          "MAPE": 145.546,
+          "rows": 726,
+          "unique_projects": 260
+        },
+        "risk": {
+          "accuracy": 0.3399,
+          "macro_precision": 0.396,
+          "macro_recall": 0.2665,
+          "macro_f1": 0.2625,
+          "confusion_matrix": [
+            [
+              5.195,
+              0.5047,
+              3.5996,
+              0.0714
+            ],
+            [
+              0.5988,
+              0.3909,
+              0.4711,
+              0.1181
+            ],
+            [
+              1.3199,
+              1.683,
+              0.2774,
+              0.0
+            ],
+            [
+              1.5376,
+              2.9088,
+              0.8102,
+              1.1505
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "late": {
+        "available": true,
+        "cost": {
+          "MAE": 31.802,
+          "RMSE": 75.498,
+          "R2": 0.2864,
+          "MAPE": 191.585,
+          "rows": 1204,
+          "unique_projects": 389
+        },
+        "delay": {
+          "MAE": 536.906,
+          "RMSE": 674.756,
+          "R2": 0.2345,
+          "MAPE": 142.885,
+          "rows": 1204,
+          "unique_projects": 389
+        },
+        "risk": {
+          "accuracy": 0.2468,
+          "macro_precision": 0.2858,
+          "macro_recall": 0.2388,
+          "macro_f1": 0.2299,
+          "confusion_matrix": [
+            [
+              1.1321,
+              0.3833,
+              3.1989,
+              1.397
+            ],
+            [
+              1.112,
+              0.8082,
+              2.5314,
+              0.2967
+            ],
+            [
+              1.2902,
+              2.1413,
+              1.8533,
+              0.2237
+            ],
+            [
+              1.6806,
+              5.6559,
+              3.4466,
+              3.8582
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "very_late": {
+        "available": true,
+        "cost": {
+          "MAE": 24.084,
+          "RMSE": 48.745,
+          "R2": 0.4763,
+          "MAPE": 120.692,
+          "rows": 8547,
+          "unique_projects": 685
+        },
+        "delay": {
+          "MAE": 571.846,
+          "RMSE": 701.574,
+          "R2": 0.551,
+          "MAPE": 73.83,
+          "rows": 8547,
+          "unique_projects": 685
+        },
+        "risk": {
+          "accuracy": 0.6375,
+          "macro_precision": 0.3585,
+          "macro_recall": 0.2992,
+          "macro_f1": 0.3111,
+          "confusion_matrix": [
+            [
+              0.6057,
+              0.2333,
+              1.4525,
+              2.425
+            ],
+            [
+              0.2554,
+              1.406,
+              3.8769,
+              16.0533
+            ],
+            [
+              0.2479,
+              2.6759,
+              5.9627,
+              22.3621
+            ],
+            [
+              0.5792,
+              5.4384,
+              24.7916,
+              133.43
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      }
+    },
+    "ablation_results": {
+      "without_revised_cost": {
+        "features": [
+          "approved_cost_cr",
+          "sector_average_delay",
+          "sector_average_cost_overrun",
+          "sector",
+          "project_size_category",
+          "cumulative_expenditure_cr",
+          "expenditure_ratio",
+          "schedule_slippage_days",
+          "schedule_slippage_ratio",
+          "elapsed_duration_days",
+          "planned_duration_days",
+          "duration_ratio",
+          "expected_progress_percentage",
+          "implementing_agency",
+          "cost_growth_velocity_3m",
+          "cost_growth_velocity_6m",
+          "cost_acceleration",
+          "sector_delay_rate",
+          "sector_cost_overrun_rate",
+          "agency_average_delay",
+          "agency_average_cost_overrun",
+          "agency_delay_rate",
+          "agency_cost_overrun_rate"
+        ],
+        "selected_algorithms": {
+          "cost": "lightgbm",
+          "delay": "extra_trees"
+        },
+        "internal_algorithm_comparisons": {
+          "cost": [
+            {
+              "algorithm": "lightgbm",
+              "MAE": 31.17,
+              "RMSE": 65.886,
+              "R2": 0.5324,
+              "MAPE": 180.285,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "xgboost",
+              "MAE": 31.893,
+              "RMSE": 66.776,
+              "R2": 0.5197,
+              "MAPE": 173.04,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "extra_trees",
+              "MAE": 32.711,
+              "RMSE": 67.547,
+              "R2": 0.5085,
+              "MAPE": 153.848,
+              "rows": 2613,
+              "unique_projects": 154
+            }
+          ],
+          "delay": [
+            {
+              "algorithm": "lightgbm",
+              "MAE": 455.952,
+              "RMSE": 619.203,
+              "R2": 0.713,
+              "MAPE": 55.136,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "xgboost",
+              "MAE": 456.918,
+              "RMSE": 623.836,
+              "R2": 0.7087,
+              "MAPE": 52.03,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "extra_trees",
+              "MAE": 444.862,
+              "RMSE": 624.7,
+              "R2": 0.7079,
+              "MAPE": 55.694,
+              "rows": 2613,
+              "unique_projects": 154
+            }
+          ]
+        },
+        "metrics": {
+          "cost": {
+            "MAE": 28.86,
+            "RMSE": 56.383,
+            "R2": 0.4119,
+            "MAPE": 160.522,
+            "rows": 11546,
+            "unique_projects": 728
+          },
+          "delay": {
+            "MAE": 578.477,
+            "RMSE": 714.453,
+            "R2": 0.5203,
+            "MAPE": 87.499,
+            "rows": 11546,
+            "unique_projects": 728
+          },
+          "risk": {
+            "accuracy": 0.5442,
+            "macro_precision": 0.3668,
+            "macro_recall": 0.3494,
+            "macro_f1": 0.3559,
+            "confusion_matrix": [
+              [
+                7.2114,
+                1.7062,
+                9.1468,
+                3.5858
+              ],
+              [
+                1.9053,
+                5.6151,
+                6.3468,
+                18.0151
+              ],
+              [
+                3.3274,
+                10.7908,
+                8.235,
+                23.2109
+              ],
+              [
+                4.9764,
+                18.4772,
+                35.3026,
+                142.2602
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "lifecycle_stages": {
+          "early": {
+            "available": true,
+            "cost": {
+              "MAE": 40.955,
+              "RMSE": 55.337,
+              "R2": -0.5221,
+              "MAPE": 199.536,
+              "rows": 197,
+              "unique_projects": 102
+            },
+            "delay": {
+              "MAE": 488.03,
+              "RMSE": 627.843,
+              "R2": 0.3996,
+              "MAPE": 73.66,
+              "rows": 197,
+              "unique_projects": 102
+            },
+            "risk": {
+              "accuracy": 0.215,
+              "macro_precision": 0.2543,
+              "macro_recall": 0.2255,
+              "macro_f1": 0.1939,
+              "confusion_matrix": [
+                [
+                  0.3682,
+                  0.586,
+                  0.1349,
+                  0.1818
+                ],
+                [
+                  0.2051,
+                  0.2658,
+                  0.1819,
+                  0.0
+                ],
+                [
+                  0.4841,
+                  0.4687,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4855,
+                  0.6505,
+                  0.1356,
+                  0.3284
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "mid": {
+            "available": true,
+            "cost": {
+              "MAE": 36.985,
+              "RMSE": 49.777,
+              "R2": -0.2114,
+              "MAPE": 250.874,
+              "rows": 726,
+              "unique_projects": 260
+            },
+            "delay": {
+              "MAE": 589.126,
+              "RMSE": 689.695,
+              "R2": 0.1934,
+              "MAPE": 141.711,
+              "rows": 726,
+              "unique_projects": 260
+            },
+            "risk": {
+              "accuracy": 0.3464,
+              "macro_precision": 0.3895,
+              "macro_recall": 0.2902,
+              "macro_f1": 0.2717,
+              "confusion_matrix": [
+                [
+                  5.1777,
+                  0.5391,
+                  3.6538,
+                  0.0
+                ],
+                [
+                  0.4445,
+                  0.5312,
+                  0.3393,
+                  0.2639
+                ],
+                [
+                  1.4459,
+                  1.5181,
+                  0.3163,
+                  0.0
+                ],
+                [
+                  1.7616,
+                  2.7042,
+                  0.8181,
+                  1.1231
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "late": {
+            "available": true,
+            "cost": {
+              "MAE": 32.236,
+              "RMSE": 78.029,
+              "R2": 0.2377,
+              "MAPE": 194.685,
+              "rows": 1204,
+              "unique_projects": 389
+            },
+            "delay": {
+              "MAE": 544.444,
+              "RMSE": 678.679,
+              "R2": 0.2256,
+              "MAPE": 144.613,
+              "rows": 1204,
+              "unique_projects": 389
+            },
+            "risk": {
+              "accuracy": 0.1927,
+              "macro_precision": 0.2645,
+              "macro_recall": 0.2026,
+              "macro_f1": 0.1873,
+              "confusion_matrix": [
+                [
+                  1.001,
+                  0.3477,
+                  3.9765,
+                  0.7862
+                ],
+                [
+                  1.0594,
+                  0.8608,
+                  2.3291,
+                  0.499
+                ],
+                [
+                  1.0249,
+                  2.7033,
+                  1.6291,
+                  0.1513
+                ],
+                [
+                  1.7848,
+                  5.1813,
+                  5.1895,
+                  2.4858
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "very_late": {
+            "available": true,
+            "cost": {
+              "MAE": 25.791,
+              "RMSE": 51.519,
+              "R2": 0.415,
+              "MAPE": 147.545,
+              "rows": 8547,
+              "unique_projects": 685
+            },
+            "delay": {
+              "MAE": 583.647,
+              "RMSE": 712.014,
+              "R2": 0.5376,
+              "MAPE": 76.807,
+              "rows": 8547,
+              "unique_projects": 685
+            },
+            "risk": {
+              "accuracy": 0.6222,
+              "macro_precision": 0.3569,
+              "macro_recall": 0.2946,
+              "macro_f1": 0.3065,
+              "confusion_matrix": [
+                [
+                  0.6646,
+                  0.2333,
+                  1.3817,
+                  2.4369
+                ],
+                [
+                  0.1962,
+                  1.1349,
+                  3.4965,
+                  16.7639
+                ],
+                [
+                  0.1913,
+                  2.7143,
+                  6.0066,
+                  22.3364
+                ],
+                [
+                  0.6611,
+                  4.6486,
+                  28.7304,
+                  130.1991
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          }
+        }
+      },
+      "snapshot_only": {
+        "features": [
+          "approved_cost_cr",
+          "sector_average_delay",
+          "sector_average_cost_overrun",
+          "sector",
+          "project_size_category",
+          "cumulative_expenditure_cr",
+          "expenditure_ratio",
+          "schedule_slippage_days",
+          "schedule_slippage_ratio",
+          "elapsed_duration_days",
+          "planned_duration_days",
+          "duration_ratio",
+          "expected_progress_percentage",
+          "revised_cost_cr",
+          "cost_escalation_percentage",
+          "implementing_agency",
+          "sector_delay_rate",
+          "sector_cost_overrun_rate",
+          "agency_average_delay",
+          "agency_average_cost_overrun",
+          "agency_delay_rate",
+          "agency_cost_overrun_rate"
+        ],
+        "selected_algorithms": {
+          "cost": "xgboost",
+          "delay": "extra_trees"
+        },
+        "internal_algorithm_comparisons": {
+          "cost": [
+            {
+              "algorithm": "lightgbm",
+              "MAE": 30.405,
+              "RMSE": 62.041,
+              "R2": 0.5854,
+              "MAPE": 152.737,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "xgboost",
+              "MAE": 29.23,
+              "RMSE": 59.935,
+              "R2": 0.613,
+              "MAPE": 156.507,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "extra_trees",
+              "MAE": 31.8,
+              "RMSE": 62.667,
+              "R2": 0.577,
+              "MAPE": 151.164,
+              "rows": 2613,
+              "unique_projects": 154
+            }
+          ],
+          "delay": [
+            {
+              "algorithm": "lightgbm",
+              "MAE": 452.321,
+              "RMSE": 616.771,
+              "R2": 0.7153,
+              "MAPE": 54.428,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "xgboost",
+              "MAE": 457.577,
+              "RMSE": 628.596,
+              "R2": 0.7042,
+              "MAPE": 52.63,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "extra_trees",
+              "MAE": 446.394,
+              "RMSE": 620.596,
+              "R2": 0.7117,
+              "MAPE": 54.688,
+              "rows": 2613,
+              "unique_projects": 154
+            }
+          ]
+        },
+        "metrics": {
+          "cost": {
+            "MAE": 27.001,
+            "RMSE": 53.423,
+            "R2": 0.472,
+            "MAPE": 133.374,
+            "rows": 11546,
+            "unique_projects": 728
+          },
+          "delay": {
+            "MAE": 560.093,
+            "RMSE": 698.684,
+            "R2": 0.5412,
+            "MAPE": 82.616,
+            "rows": 11546,
+            "unique_projects": 728
+          },
+          "risk": {
+            "accuracy": 0.5587,
+            "macro_precision": 0.3813,
+            "macro_recall": 0.3622,
+            "macro_f1": 0.3693,
+            "confusion_matrix": [
+              [
+                7.6682,
+                1.882,
+                8.9041,
+                3.1959
+              ],
+              [
+                2.1104,
+                5.796,
+                8.0776,
+                15.8984
+              ],
+              [
+                3.2843,
+                10.8098,
+                8.5928,
+                22.8772
+              ],
+              [
+                4.0682,
+                20.3028,
+                31.0416,
+                145.6037
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "lifecycle_stages": {
+          "early": {
+            "available": true,
+            "cost": {
+              "MAE": 39.466,
+              "RMSE": 50.348,
+              "R2": -0.26,
+              "MAPE": 200.134,
+              "rows": 197,
+              "unique_projects": 102
+            },
+            "delay": {
+              "MAE": 490.516,
+              "RMSE": 623.372,
+              "R2": 0.4081,
+              "MAPE": 77.9,
+              "rows": 197,
+              "unique_projects": 102
+            },
+            "risk": {
+              "accuracy": 0.1994,
+              "macro_precision": 0.2502,
+              "macro_recall": 0.1956,
+              "macro_f1": 0.1821,
+              "confusion_matrix": [
+                [
+                  0.3854,
+                  0.6864,
+                  0.0172,
+                  0.1818
+                ],
+                [
+                  0.2051,
+                  0.1787,
+                  0.269,
+                  0.0
+                ],
+                [
+                  0.4267,
+                  0.5261,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4037,
+                  0.6931,
+                  0.1748,
+                  0.3284
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "mid": {
+            "available": true,
+            "cost": {
+              "MAE": 36.077,
+              "RMSE": 50.729,
+              "R2": -0.2582,
+              "MAPE": 217.874,
+              "rows": 726,
+              "unique_projects": 260
+            },
+            "delay": {
+              "MAE": 575.346,
+              "RMSE": 676.916,
+              "R2": 0.223,
+              "MAPE": 139.405,
+              "rows": 726,
+              "unique_projects": 260
+            },
+            "risk": {
+              "accuracy": 0.3437,
+              "macro_precision": 0.4011,
+              "macro_recall": 0.2764,
+              "macro_f1": 0.2666,
+              "confusion_matrix": [
+                [
+                  5.2444,
+                  0.5391,
+                  3.5871,
+                  0.0
+                ],
+                [
+                  0.4825,
+                  0.4406,
+                  0.4753,
+                  0.1806
+                ],
+                [
+                  1.3915,
+                  1.573,
+                  0.3158,
+                  0.0
+                ],
+                [
+                  1.5492,
+                  2.8021,
+                  0.9637,
+                  1.092
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "late": {
+            "available": true,
+            "cost": {
+              "MAE": 31.75,
+              "RMSE": 75.898,
+              "R2": 0.2788,
+              "MAPE": 194.721,
+              "rows": 1204,
+              "unique_projects": 389
+            },
+            "delay": {
+              "MAE": 539.431,
+              "RMSE": 672.825,
+              "R2": 0.2389,
+              "MAPE": 141.25,
+              "rows": 1204,
+              "unique_projects": 389
+            },
+            "risk": {
+              "accuracy": 0.2399,
+              "macro_precision": 0.3073,
+              "macro_recall": 0.2343,
+              "macro_f1": 0.2283,
+              "confusion_matrix": [
+                [
+                  1.231,
+                  0.4231,
+                  3.8367,
+                  0.6205
+                ],
+                [
+                  1.1072,
+                  0.8129,
+                  2.4133,
+                  0.4148
+                ],
+                [
+                  1.0619,
+                  2.4987,
+                  1.7332,
+                  0.2148
+                ],
+                [
+                  1.5327,
+                  5.7887,
+                  3.6594,
+                  3.6606
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "very_late": {
+            "available": true,
+            "cost": {
+              "MAE": 23.883,
+              "RMSE": 48.773,
+              "R2": 0.4757,
+              "MAPE": 117.258,
+              "rows": 8547,
+              "unique_projects": 685
+            },
+            "delay": {
+              "MAE": 560.414,
+              "RMSE": 692.763,
+              "R2": 0.5622,
+              "MAPE": 71.312,
+              "rows": 8547,
+              "unique_projects": 685
+            },
+            "risk": {
+              "accuracy": 0.6331,
+              "macro_precision": 0.3709,
+              "macro_recall": 0.309,
+              "macro_f1": 0.323,
+              "confusion_matrix": [
+                [
+                  0.8074,
+                  0.2333,
+                  1.4631,
+                  2.2127
+                ],
+                [
+                  0.3155,
+                  1.2944,
+                  4.92,
+                  15.0617
+                ],
+                [
+                  0.2784,
+                  2.8255,
+                  6.271,
+                  21.8736
+                ],
+                [
+                  0.5139,
+                  5.7362,
+                  25.9321,
+                  132.0569
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          }
+        }
+      },
+      "without_agency_priors": {
+        "features": [
+          "approved_cost_cr",
+          "sector_average_delay",
+          "sector_average_cost_overrun",
+          "sector",
+          "project_size_category",
+          "cumulative_expenditure_cr",
+          "expenditure_ratio",
+          "schedule_slippage_days",
+          "schedule_slippage_ratio",
+          "elapsed_duration_days",
+          "planned_duration_days",
+          "duration_ratio",
+          "expected_progress_percentage",
+          "revised_cost_cr",
+          "cost_escalation_percentage",
+          "implementing_agency",
+          "cost_growth_velocity_3m",
+          "cost_growth_velocity_6m",
+          "cost_acceleration",
+          "sector_delay_rate",
+          "sector_cost_overrun_rate"
+        ],
+        "selected_algorithms": {
+          "cost": "xgboost",
+          "delay": "extra_trees"
+        },
+        "internal_algorithm_comparisons": {
+          "cost": [
+            {
+              "algorithm": "lightgbm",
+              "MAE": 29.965,
+              "RMSE": 61.728,
+              "R2": 0.5895,
+              "MAPE": 158.739,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "xgboost",
+              "MAE": 29.454,
+              "RMSE": 60.331,
+              "R2": 0.6079,
+              "MAPE": 156.728,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "extra_trees",
+              "MAE": 30.983,
+              "RMSE": 62.07,
+              "R2": 0.585,
+              "MAPE": 148.573,
+              "rows": 2613,
+              "unique_projects": 154
+            }
+          ],
+          "delay": [
+            {
+              "algorithm": "lightgbm",
+              "MAE": 468.896,
+              "RMSE": 627.481,
+              "R2": 0.7053,
+              "MAPE": 48.935,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "xgboost",
+              "MAE": 479.173,
+              "RMSE": 645.033,
+              "R2": 0.6886,
+              "MAPE": 53.014,
+              "rows": 2613,
+              "unique_projects": 154
+            },
+            {
+              "algorithm": "extra_trees",
+              "MAE": 445.57,
+              "RMSE": 626.062,
+              "R2": 0.7066,
+              "MAPE": 52.069,
+              "rows": 2613,
+              "unique_projects": 154
+            }
+          ]
+        },
+        "metrics": {
+          "cost": {
+            "MAE": 27.263,
+            "RMSE": 53.507,
+            "R2": 0.4704,
+            "MAPE": 139.766,
+            "rows": 11546,
+            "unique_projects": 728
+          },
+          "delay": {
+            "MAE": 543.678,
+            "RMSE": 689.872,
+            "R2": 0.5527,
+            "MAPE": 77.499,
+            "rows": 11546,
+            "unique_projects": 728
+          },
+          "risk": {
+            "accuracy": 0.557,
+            "macro_precision": 0.3743,
+            "macro_recall": 0.3741,
+            "macro_f1": 0.3725,
+            "confusion_matrix": [
+              [
+                7.9143,
+                3.1074,
+                8.3687,
+                2.2598
+              ],
+              [
+                2.4505,
+                8.0192,
+                5.0047,
+                16.4078
+              ],
+              [
+                4.0419,
+                10.4272,
+                7.4797,
+                23.6154
+              ],
+              [
+                5.8545,
+                21.2451,
+                30.1701,
+                143.7467
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "lifecycle_stages": {
+          "early": {
+            "available": true,
+            "cost": {
+              "MAE": 40.794,
+              "RMSE": 51.672,
+              "R2": -0.3271,
+              "MAPE": 210.557,
+              "rows": 197,
+              "unique_projects": 102
+            },
+            "delay": {
+              "MAE": 468.223,
+              "RMSE": 613.574,
+              "R2": 0.4266,
+              "MAPE": 70.386,
+              "rows": 197,
+              "unique_projects": 102
+            },
+            "risk": {
+              "accuracy": 0.1954,
+              "macro_precision": 0.2156,
+              "macro_recall": 0.2265,
+              "macro_f1": 0.1657,
+              "confusion_matrix": [
+                [
+                  0.3854,
+                  0.5688,
+                  0.1349,
+                  0.1818
+                ],
+                [
+                  0.2696,
+                  0.3277,
+                  0.0556,
+                  0.0
+                ],
+                [
+                  0.3897,
+                  0.5632,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.5112,
+                  0.8153,
+                  0.1118,
+                  0.1616
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "mid": {
+            "available": true,
+            "cost": {
+              "MAE": 35.737,
+              "RMSE": 50.128,
+              "R2": -0.2286,
+              "MAPE": 222.336,
+              "rows": 726,
+              "unique_projects": 260
+            },
+            "delay": {
+              "MAE": 549.429,
+              "RMSE": 654.512,
+              "R2": 0.2736,
+              "MAPE": 126.1,
+              "rows": 726,
+              "unique_projects": 260
+            },
+            "risk": {
+              "accuracy": 0.3217,
+              "macro_precision": 0.3452,
+              "macro_recall": 0.2599,
+              "macro_f1": 0.234,
+              "confusion_matrix": [
+                [
+                  5.2558,
+                  0.4305,
+                  3.6317,
+                  0.0526
+                ],
+                [
+                  0.6549,
+                  0.5185,
+                  0.1416,
+                  0.2639
+                ],
+                [
+                  1.6121,
+                  1.5656,
+                  0.1027,
+                  0.0
+                ],
+                [
+                  1.9079,
+                  2.9316,
+                  0.8058,
+                  0.7617
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "late": {
+            "available": true,
+            "cost": {
+              "MAE": 31.955,
+              "RMSE": 75.687,
+              "R2": 0.2828,
+              "MAPE": 199.004,
+              "rows": 1204,
+              "unique_projects": 389
+            },
+            "delay": {
+              "MAE": 535.643,
+              "RMSE": 676.719,
+              "R2": 0.2301,
+              "MAPE": 133.13,
+              "rows": 1204,
+              "unique_projects": 389
+            },
+            "risk": {
+              "accuracy": 0.226,
+              "macro_precision": 0.2875,
+              "macro_recall": 0.2381,
+              "macro_f1": 0.2201,
+              "confusion_matrix": [
+                [
+                  1.6085,
+                  0.7577,
+                  3.0416,
+                  0.7035
+                ],
+                [
+                  1.2271,
+                  1.4444,
+                  1.4592,
+                  0.6175
+                ],
+                [
+                  1.6361,
+                  2.7566,
+                  1.0148,
+                  0.1011
+                ],
+                [
+                  2.6751,
+                  6.0732,
+                  2.9519,
+                  2.9413
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          "very_late": {
+            "available": true,
+            "cost": {
+              "MAE": 24.257,
+              "RMSE": 49.004,
+              "R2": 0.4707,
+              "MAPE": 124.057,
+              "rows": 8547,
+              "unique_projects": 685
+            },
+            "delay": {
+              "MAE": 541.345,
+              "RMSE": 681.562,
+              "R2": 0.5763,
+              "MAPE": 66.704,
+              "rows": 8547,
+              "unique_projects": 685
+            },
+            "risk": {
+              "accuracy": 0.6384,
+              "macro_precision": 0.3791,
+              "macro_recall": 0.3168,
+              "macro_f1": 0.3326,
+              "confusion_matrix": [
+                [
+                  0.6646,
+                  1.2333,
+                  1.5605,
+                  1.2581
+                ],
+                [
+                  0.2988,
+                  2.6873,
+                  3.3484,
+                  15.257
+                ],
+                [
+                  0.2676,
+                  2.3093,
+                  6.1804,
+                  22.4913
+                ],
+                [
+                  0.661,
+                  5.6763,
+                  25.8397,
+                  132.0621
+                ]
+              ],
+              "labels": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "shap_available": {
+      "cost": true,
+      "delay": false,
+      "risk": false
+    },
+    "created_at": "2026-08-24T16:16:31.432770+00:00"
+  },
+  "identity_resolution": {
+    "rows": 195934,
+    "verified_rows": 95738,
+    "ambiguous_rows": 140
+  },
+  "baseline": {
+    "features": [
+      "approved_cost_cr",
+      "sector_average_delay",
+      "sector_average_cost_overrun",
+      "sector",
+      "project_size_category"
+    ],
+    "metrics": {
+      "cost": {
+        "MAE": 37.762,
+        "RMSE": 73.975,
+        "R2": -0.0123,
+        "MAPE": 182.66,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "delay": {
+        "MAE": 763.083,
+        "RMSE": 1013.605,
+        "R2": 0.0345,
+        "MAPE": 127.258,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "risk": {
+        "accuracy": 0.4164,
+        "macro_precision": 0.2786,
+        "macro_recall": 0.2834,
+        "macro_f1": 0.2657,
+        "confusion_matrix": [
+          [
+            1.4138,
+            2.8577,
+            4.3546,
+            13.0241
+          ],
+          [
+            0.4801,
+            5.7405,
+            11.9129,
+            13.7488
+          ],
+          [
+            2.1983,
+            8.4461,
+            17.8069,
+            17.1129
+          ],
+          [
+            8.6655,
+            42.5045,
+            49.8384,
+            100.0081
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "lifecycle_stages": {
+      "early": {
+        "available": true,
+        "cost": {
+          "MAE": 38.77,
+          "RMSE": 54.396,
+          "R2": -0.4707,
+          "MAPE": 140.969,
+          "rows": 197,
+          "unique_projects": 102
+        },
+        "delay": {
+          "MAE": 689.438,
+          "RMSE": 790.433,
+          "R2": 0.0484,
+          "MAPE": 207.235,
+          "rows": 197,
+          "unique_projects": 102
+        },
+        "risk": {
+          "accuracy": 0.224,
+          "macro_precision": 0.1991,
+          "macro_recall": 0.2028,
+          "macro_f1": 0.1915,
+          "confusion_matrix": [
+            [
+              0.1144,
+              0.1154,
+              0.3529,
+              0.6882
+            ],
+            [
+              0.0943,
+              0.1284,
+              0.2111,
+              0.219
+            ],
+            [
+              0.1563,
+              0.3981,
+              0.1171,
+              0.2812
+            ],
+            [
+              0.2243,
+              0.639,
+              0.0941,
+              0.6426
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "mid": {
+        "available": true,
+        "cost": {
+          "MAE": 36.131,
+          "RMSE": 52.675,
+          "R2": -0.3566,
+          "MAPE": 184.77,
+          "rows": 726,
+          "unique_projects": 260
+        },
+        "delay": {
+          "MAE": 804.782,
+          "RMSE": 915.283,
+          "R2": -0.4206,
+          "MAPE": 296.469,
+          "rows": 726,
+          "unique_projects": 260
+        },
+        "risk": {
+          "accuracy": 0.2096,
+          "macro_precision": 0.2182,
+          "macro_recall": 0.214,
+          "macro_f1": 0.1873,
+          "confusion_matrix": [
+            [
+              0.9748,
+              0.9624,
+              2.1909,
+              5.2425
+            ],
+            [
+              0.0441,
+              0.2294,
+              0.5888,
+              0.7165
+            ],
+            [
+              0.6535,
+              1.0344,
+              0.8038,
+              0.7887
+            ],
+            [
+              0.9023,
+              2.5443,
+              0.6421,
+              2.3182
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "late": {
+        "available": true,
+        "cost": {
+          "MAE": 36.289,
+          "RMSE": 90.122,
+          "R2": -0.0168,
+          "MAPE": 198.526,
+          "rows": 1204,
+          "unique_projects": 389
+        },
+        "delay": {
+          "MAE": 665.562,
+          "RMSE": 805.021,
+          "R2": -0.0896,
+          "MAPE": 276.738,
+          "rows": 1204,
+          "unique_projects": 389
+        },
+        "risk": {
+          "accuracy": 0.2652,
+          "macro_precision": 0.1896,
+          "macro_recall": 0.2166,
+          "macro_f1": 0.2004,
+          "confusion_matrix": [
+            [
+              0.0,
+              0.6933,
+              1.2453,
+              4.1727
+            ],
+            [
+              0.0,
+              0.3228,
+              1.5459,
+              2.8796
+            ],
+            [
+              0.2667,
+              1.5907,
+              2.2843,
+              1.3668
+            ],
+            [
+              1.0104,
+              5.9611,
+              2.0538,
+              5.6161
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "very_late": {
+        "available": true,
+        "cost": {
+          "MAE": 36.736,
+          "RMSE": 72.496,
+          "R2": -0.1585,
+          "MAPE": 182.634,
+          "rows": 8547,
+          "unique_projects": 685
+        },
+        "delay": {
+          "MAE": 785.665,
+          "RMSE": 1064.555,
+          "R2": -0.0337,
+          "MAPE": 98.665,
+          "rows": 8547,
+          "unique_projects": 685
+        },
+        "risk": {
+          "accuracy": 0.4692,
+          "macro_precision": 0.2745,
+          "macro_recall": 0.2915,
+          "macro_f1": 0.2651,
+          "confusion_matrix": [
+            [
+              0.3247,
+              1.044,
+              0.5655,
+              2.7824
+            ],
+            [
+              0.2917,
+              2.7609,
+              8.791,
+              9.7481
+            ],
+            [
+              0.9811,
+              2.5417,
+              13.6795,
+              14.0462
+            ],
+            [
+              5.5404,
+              27.1775,
+              44.2221,
+              87.2991
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      }
+    }
+  },
+  "lifecycle": {
+    "features": [
+      "approved_cost_cr",
+      "sector_average_delay",
+      "sector_average_cost_overrun",
+      "sector",
+      "project_size_category",
+      "cumulative_expenditure_cr",
+      "expenditure_ratio",
+      "schedule_slippage_days",
+      "schedule_slippage_ratio",
+      "elapsed_duration_days",
+      "planned_duration_days",
+      "duration_ratio",
+      "expected_progress_percentage",
+      "revised_cost_cr",
+      "cost_escalation_percentage",
+      "implementing_agency",
+      "cost_growth_velocity_3m",
+      "cost_growth_velocity_6m",
+      "cost_acceleration",
+      "sector_delay_rate",
+      "sector_cost_overrun_rate",
+      "agency_average_delay",
+      "agency_average_cost_overrun",
+      "agency_delay_rate",
+      "agency_cost_overrun_rate"
+    ],
+    "metrics": {
+      "cost": {
+        "MAE": 27.096,
+        "RMSE": 53.332,
+        "R2": 0.4738,
+        "MAPE": 134.539,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "delay": {
+        "MAE": 568.238,
+        "RMSE": 705.19,
+        "R2": 0.5326,
+        "MAPE": 85.054,
+        "rows": 11546,
+        "unique_projects": 728
+      },
+      "risk": {
+        "accuracy": 0.5606,
+        "macro_precision": 0.3746,
+        "macro_recall": 0.3575,
+        "macro_f1": 0.3641,
+        "confusion_matrix": [
+          [
+            7.301,
+            1.825,
+            8.2682,
+            4.2561
+          ],
+          [
+            2.1714,
+            5.7459,
+            7.0086,
+            16.9564
+          ],
+          [
+            3.3818,
+            10.1445,
+            8.2752,
+            23.7627
+          ],
+          [
+            4.3109,
+            20.2144,
+            29.5718,
+            146.9193
+          ]
+        ],
+        "labels": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ]
+      }
+    },
+    "lifecycle_stages": {
+      "early": {
+        "available": true,
+        "cost": {
+          "MAE": 38.542,
+          "RMSE": 48.373,
+          "R2": -0.1631,
+          "MAPE": 204.426,
+          "rows": 197,
+          "unique_projects": 102
+        },
+        "delay": {
+          "MAE": 485.741,
+          "RMSE": 622.288,
+          "R2": 0.4102,
+          "MAPE": 79.991,
+          "rows": 197,
+          "unique_projects": 102
+        },
+        "risk": {
+          "accuracy": 0.2251,
+          "macro_precision": 0.2618,
+          "macro_recall": 0.2446,
+          "macro_f1": 0.1999,
+          "confusion_matrix": [
+            [
+              0.3682,
+              0.7037,
+              0.0172,
+              0.1818
+            ],
+            [
+              0.2051,
+              0.3185,
+              0.1293,
+              0.0
+            ],
+            [
+              0.3873,
+              0.5655,
+              0.0,
+              0.0
+            ],
+            [
+              0.3936,
+              0.7424,
+              0.1428,
+              0.3212
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "mid": {
+        "available": true,
+        "cost": {
+          "MAE": 35.077,
+          "RMSE": 49.822,
+          "R2": -0.2136,
+          "MAPE": 201.51,
+          "rows": 726,
+          "unique_projects": 260
+        },
+        "delay": {
+          "MAE": 576.464,
+          "RMSE": 676.163,
+          "R2": 0.2247,
+          "MAPE": 145.546,
+          "rows": 726,
+          "unique_projects": 260
+        },
+        "risk": {
+          "accuracy": 0.3399,
+          "macro_precision": 0.396,
+          "macro_recall": 0.2665,
+          "macro_f1": 0.2625,
+          "confusion_matrix": [
+            [
+              5.195,
+              0.5047,
+              3.5996,
+              0.0714
+            ],
+            [
+              0.5988,
+              0.3909,
+              0.4711,
+              0.1181
+            ],
+            [
+              1.3199,
+              1.683,
+              0.2774,
+              0.0
+            ],
+            [
+              1.5376,
+              2.9088,
+              0.8102,
+              1.1505
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "late": {
+        "available": true,
+        "cost": {
+          "MAE": 31.802,
+          "RMSE": 75.498,
+          "R2": 0.2864,
+          "MAPE": 191.585,
+          "rows": 1204,
+          "unique_projects": 389
+        },
+        "delay": {
+          "MAE": 536.906,
+          "RMSE": 674.756,
+          "R2": 0.2345,
+          "MAPE": 142.885,
+          "rows": 1204,
+          "unique_projects": 389
+        },
+        "risk": {
+          "accuracy": 0.2468,
+          "macro_precision": 0.2858,
+          "macro_recall": 0.2388,
+          "macro_f1": 0.2299,
+          "confusion_matrix": [
+            [
+              1.1321,
+              0.3833,
+              3.1989,
+              1.397
+            ],
+            [
+              1.112,
+              0.8082,
+              2.5314,
+              0.2967
+            ],
+            [
+              1.2902,
+              2.1413,
+              1.8533,
+              0.2237
+            ],
+            [
+              1.6806,
+              5.6559,
+              3.4466,
+              3.8582
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "very_late": {
+        "available": true,
+        "cost": {
+          "MAE": 24.084,
+          "RMSE": 48.745,
+          "R2": 0.4763,
+          "MAPE": 120.692,
+          "rows": 8547,
+          "unique_projects": 685
+        },
+        "delay": {
+          "MAE": 571.846,
+          "RMSE": 701.574,
+          "R2": 0.551,
+          "MAPE": 73.83,
+          "rows": 8547,
+          "unique_projects": 685
+        },
+        "risk": {
+          "accuracy": 0.6375,
+          "macro_precision": 0.3585,
+          "macro_recall": 0.2992,
+          "macro_f1": 0.3111,
+          "confusion_matrix": [
+            [
+              0.6057,
+              0.2333,
+              1.4525,
+              2.425
+            ],
+            [
+              0.2554,
+              1.406,
+              3.8769,
+              16.0533
+            ],
+            [
+              0.2479,
+              2.6759,
+              5.9627,
+              22.3621
+            ],
+            [
+              0.5792,
+              5.4384,
+              24.7916,
+              133.43
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      }
+    }
+  },
+  "ablations": {
+    "without_revised_cost": {
+      "features": [
+        "approved_cost_cr",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector",
+        "project_size_category",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "implementing_agency",
+        "cost_growth_velocity_3m",
+        "cost_growth_velocity_6m",
+        "cost_acceleration",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate",
+        "agency_average_delay",
+        "agency_average_cost_overrun",
+        "agency_delay_rate",
+        "agency_cost_overrun_rate"
+      ],
+      "selected_algorithms": {
+        "cost": "lightgbm",
+        "delay": "extra_trees"
+      },
+      "internal_algorithm_comparisons": {
+        "cost": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 31.17,
+            "RMSE": 65.886,
+            "R2": 0.5324,
+            "MAPE": 180.285,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 31.893,
+            "RMSE": 66.776,
+            "R2": 0.5197,
+            "MAPE": 173.04,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 32.711,
+            "RMSE": 67.547,
+            "R2": 0.5085,
+            "MAPE": 153.848,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ],
+        "delay": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 455.952,
+            "RMSE": 619.203,
+            "R2": 0.713,
+            "MAPE": 55.136,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 456.918,
+            "RMSE": 623.836,
+            "R2": 0.7087,
+            "MAPE": 52.03,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 444.862,
+            "RMSE": 624.7,
+            "R2": 0.7079,
+            "MAPE": 55.694,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ]
+      },
+      "metrics": {
+        "cost": {
+          "MAE": 28.86,
+          "RMSE": 56.383,
+          "R2": 0.4119,
+          "MAPE": 160.522,
+          "rows": 11546,
+          "unique_projects": 728
+        },
+        "delay": {
+          "MAE": 578.477,
+          "RMSE": 714.453,
+          "R2": 0.5203,
+          "MAPE": 87.499,
+          "rows": 11546,
+          "unique_projects": 728
+        },
+        "risk": {
+          "accuracy": 0.5442,
+          "macro_precision": 0.3668,
+          "macro_recall": 0.3494,
+          "macro_f1": 0.3559,
+          "confusion_matrix": [
+            [
+              7.2114,
+              1.7062,
+              9.1468,
+              3.5858
+            ],
+            [
+              1.9053,
+              5.6151,
+              6.3468,
+              18.0151
+            ],
+            [
+              3.3274,
+              10.7908,
+              8.235,
+              23.2109
+            ],
+            [
+              4.9764,
+              18.4772,
+              35.3026,
+              142.2602
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "lifecycle_stages": {
+        "early": {
+          "available": true,
+          "cost": {
+            "MAE": 40.955,
+            "RMSE": 55.337,
+            "R2": -0.5221,
+            "MAPE": 199.536,
+            "rows": 197,
+            "unique_projects": 102
+          },
+          "delay": {
+            "MAE": 488.03,
+            "RMSE": 627.843,
+            "R2": 0.3996,
+            "MAPE": 73.66,
+            "rows": 197,
+            "unique_projects": 102
+          },
+          "risk": {
+            "accuracy": 0.215,
+            "macro_precision": 0.2543,
+            "macro_recall": 0.2255,
+            "macro_f1": 0.1939,
+            "confusion_matrix": [
+              [
+                0.3682,
+                0.586,
+                0.1349,
+                0.1818
+              ],
+              [
+                0.2051,
+                0.2658,
+                0.1819,
+                0.0
+              ],
+              [
+                0.4841,
+                0.4687,
+                0.0,
+                0.0
+              ],
+              [
+                0.4855,
+                0.6505,
+                0.1356,
+                0.3284
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "mid": {
+          "available": true,
+          "cost": {
+            "MAE": 36.985,
+            "RMSE": 49.777,
+            "R2": -0.2114,
+            "MAPE": 250.874,
+            "rows": 726,
+            "unique_projects": 260
+          },
+          "delay": {
+            "MAE": 589.126,
+            "RMSE": 689.695,
+            "R2": 0.1934,
+            "MAPE": 141.711,
+            "rows": 726,
+            "unique_projects": 260
+          },
+          "risk": {
+            "accuracy": 0.3464,
+            "macro_precision": 0.3895,
+            "macro_recall": 0.2902,
+            "macro_f1": 0.2717,
+            "confusion_matrix": [
+              [
+                5.1777,
+                0.5391,
+                3.6538,
+                0.0
+              ],
+              [
+                0.4445,
+                0.5312,
+                0.3393,
+                0.2639
+              ],
+              [
+                1.4459,
+                1.5181,
+                0.3163,
+                0.0
+              ],
+              [
+                1.7616,
+                2.7042,
+                0.8181,
+                1.1231
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "late": {
+          "available": true,
+          "cost": {
+            "MAE": 32.236,
+            "RMSE": 78.029,
+            "R2": 0.2377,
+            "MAPE": 194.685,
+            "rows": 1204,
+            "unique_projects": 389
+          },
+          "delay": {
+            "MAE": 544.444,
+            "RMSE": 678.679,
+            "R2": 0.2256,
+            "MAPE": 144.613,
+            "rows": 1204,
+            "unique_projects": 389
+          },
+          "risk": {
+            "accuracy": 0.1927,
+            "macro_precision": 0.2645,
+            "macro_recall": 0.2026,
+            "macro_f1": 0.1873,
+            "confusion_matrix": [
+              [
+                1.001,
+                0.3477,
+                3.9765,
+                0.7862
+              ],
+              [
+                1.0594,
+                0.8608,
+                2.3291,
+                0.499
+              ],
+              [
+                1.0249,
+                2.7033,
+                1.6291,
+                0.1513
+              ],
+              [
+                1.7848,
+                5.1813,
+                5.1895,
+                2.4858
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "very_late": {
+          "available": true,
+          "cost": {
+            "MAE": 25.791,
+            "RMSE": 51.519,
+            "R2": 0.415,
+            "MAPE": 147.545,
+            "rows": 8547,
+            "unique_projects": 685
+          },
+          "delay": {
+            "MAE": 583.647,
+            "RMSE": 712.014,
+            "R2": 0.5376,
+            "MAPE": 76.807,
+            "rows": 8547,
+            "unique_projects": 685
+          },
+          "risk": {
+            "accuracy": 0.6222,
+            "macro_precision": 0.3569,
+            "macro_recall": 0.2946,
+            "macro_f1": 0.3065,
+            "confusion_matrix": [
+              [
+                0.6646,
+                0.2333,
+                1.3817,
+                2.4369
+              ],
+              [
+                0.1962,
+                1.1349,
+                3.4965,
+                16.7639
+              ],
+              [
+                0.1913,
+                2.7143,
+                6.0066,
+                22.3364
+              ],
+              [
+                0.6611,
+                4.6486,
+                28.7304,
+                130.1991
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    },
+    "snapshot_only": {
+      "features": [
+        "approved_cost_cr",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector",
+        "project_size_category",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "revised_cost_cr",
+        "cost_escalation_percentage",
+        "implementing_agency",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate",
+        "agency_average_delay",
+        "agency_average_cost_overrun",
+        "agency_delay_rate",
+        "agency_cost_overrun_rate"
+      ],
+      "selected_algorithms": {
+        "cost": "xgboost",
+        "delay": "extra_trees"
+      },
+      "internal_algorithm_comparisons": {
+        "cost": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 30.405,
+            "RMSE": 62.041,
+            "R2": 0.5854,
+            "MAPE": 152.737,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 29.23,
+            "RMSE": 59.935,
+            "R2": 0.613,
+            "MAPE": 156.507,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 31.8,
+            "RMSE": 62.667,
+            "R2": 0.577,
+            "MAPE": 151.164,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ],
+        "delay": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 452.321,
+            "RMSE": 616.771,
+            "R2": 0.7153,
+            "MAPE": 54.428,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 457.577,
+            "RMSE": 628.596,
+            "R2": 0.7042,
+            "MAPE": 52.63,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 446.394,
+            "RMSE": 620.596,
+            "R2": 0.7117,
+            "MAPE": 54.688,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ]
+      },
+      "metrics": {
+        "cost": {
+          "MAE": 27.001,
+          "RMSE": 53.423,
+          "R2": 0.472,
+          "MAPE": 133.374,
+          "rows": 11546,
+          "unique_projects": 728
+        },
+        "delay": {
+          "MAE": 560.093,
+          "RMSE": 698.684,
+          "R2": 0.5412,
+          "MAPE": 82.616,
+          "rows": 11546,
+          "unique_projects": 728
+        },
+        "risk": {
+          "accuracy": 0.5587,
+          "macro_precision": 0.3813,
+          "macro_recall": 0.3622,
+          "macro_f1": 0.3693,
+          "confusion_matrix": [
+            [
+              7.6682,
+              1.882,
+              8.9041,
+              3.1959
+            ],
+            [
+              2.1104,
+              5.796,
+              8.0776,
+              15.8984
+            ],
+            [
+              3.2843,
+              10.8098,
+              8.5928,
+              22.8772
+            ],
+            [
+              4.0682,
+              20.3028,
+              31.0416,
+              145.6037
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "lifecycle_stages": {
+        "early": {
+          "available": true,
+          "cost": {
+            "MAE": 39.466,
+            "RMSE": 50.348,
+            "R2": -0.26,
+            "MAPE": 200.134,
+            "rows": 197,
+            "unique_projects": 102
+          },
+          "delay": {
+            "MAE": 490.516,
+            "RMSE": 623.372,
+            "R2": 0.4081,
+            "MAPE": 77.9,
+            "rows": 197,
+            "unique_projects": 102
+          },
+          "risk": {
+            "accuracy": 0.1994,
+            "macro_precision": 0.2502,
+            "macro_recall": 0.1956,
+            "macro_f1": 0.1821,
+            "confusion_matrix": [
+              [
+                0.3854,
+                0.6864,
+                0.0172,
+                0.1818
+              ],
+              [
+                0.2051,
+                0.1787,
+                0.269,
+                0.0
+              ],
+              [
+                0.4267,
+                0.5261,
+                0.0,
+                0.0
+              ],
+              [
+                0.4037,
+                0.6931,
+                0.1748,
+                0.3284
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "mid": {
+          "available": true,
+          "cost": {
+            "MAE": 36.077,
+            "RMSE": 50.729,
+            "R2": -0.2582,
+            "MAPE": 217.874,
+            "rows": 726,
+            "unique_projects": 260
+          },
+          "delay": {
+            "MAE": 575.346,
+            "RMSE": 676.916,
+            "R2": 0.223,
+            "MAPE": 139.405,
+            "rows": 726,
+            "unique_projects": 260
+          },
+          "risk": {
+            "accuracy": 0.3437,
+            "macro_precision": 0.4011,
+            "macro_recall": 0.2764,
+            "macro_f1": 0.2666,
+            "confusion_matrix": [
+              [
+                5.2444,
+                0.5391,
+                3.5871,
+                0.0
+              ],
+              [
+                0.4825,
+                0.4406,
+                0.4753,
+                0.1806
+              ],
+              [
+                1.3915,
+                1.573,
+                0.3158,
+                0.0
+              ],
+              [
+                1.5492,
+                2.8021,
+                0.9637,
+                1.092
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "late": {
+          "available": true,
+          "cost": {
+            "MAE": 31.75,
+            "RMSE": 75.898,
+            "R2": 0.2788,
+            "MAPE": 194.721,
+            "rows": 1204,
+            "unique_projects": 389
+          },
+          "delay": {
+            "MAE": 539.431,
+            "RMSE": 672.825,
+            "R2": 0.2389,
+            "MAPE": 141.25,
+            "rows": 1204,
+            "unique_projects": 389
+          },
+          "risk": {
+            "accuracy": 0.2399,
+            "macro_precision": 0.3073,
+            "macro_recall": 0.2343,
+            "macro_f1": 0.2283,
+            "confusion_matrix": [
+              [
+                1.231,
+                0.4231,
+                3.8367,
+                0.6205
+              ],
+              [
+                1.1072,
+                0.8129,
+                2.4133,
+                0.4148
+              ],
+              [
+                1.0619,
+                2.4987,
+                1.7332,
+                0.2148
+              ],
+              [
+                1.5327,
+                5.7887,
+                3.6594,
+                3.6606
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "very_late": {
+          "available": true,
+          "cost": {
+            "MAE": 23.883,
+            "RMSE": 48.773,
+            "R2": 0.4757,
+            "MAPE": 117.258,
+            "rows": 8547,
+            "unique_projects": 685
+          },
+          "delay": {
+            "MAE": 560.414,
+            "RMSE": 692.763,
+            "R2": 0.5622,
+            "MAPE": 71.312,
+            "rows": 8547,
+            "unique_projects": 685
+          },
+          "risk": {
+            "accuracy": 0.6331,
+            "macro_precision": 0.3709,
+            "macro_recall": 0.309,
+            "macro_f1": 0.323,
+            "confusion_matrix": [
+              [
+                0.8074,
+                0.2333,
+                1.4631,
+                2.2127
+              ],
+              [
+                0.3155,
+                1.2944,
+                4.92,
+                15.0617
+              ],
+              [
+                0.2784,
+                2.8255,
+                6.271,
+                21.8736
+              ],
+              [
+                0.5139,
+                5.7362,
+                25.9321,
+                132.0569
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    },
+    "without_agency_priors": {
+      "features": [
+        "approved_cost_cr",
+        "sector_average_delay",
+        "sector_average_cost_overrun",
+        "sector",
+        "project_size_category",
+        "cumulative_expenditure_cr",
+        "expenditure_ratio",
+        "schedule_slippage_days",
+        "schedule_slippage_ratio",
+        "elapsed_duration_days",
+        "planned_duration_days",
+        "duration_ratio",
+        "expected_progress_percentage",
+        "revised_cost_cr",
+        "cost_escalation_percentage",
+        "implementing_agency",
+        "cost_growth_velocity_3m",
+        "cost_growth_velocity_6m",
+        "cost_acceleration",
+        "sector_delay_rate",
+        "sector_cost_overrun_rate"
+      ],
+      "selected_algorithms": {
+        "cost": "xgboost",
+        "delay": "extra_trees"
+      },
+      "internal_algorithm_comparisons": {
+        "cost": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 29.965,
+            "RMSE": 61.728,
+            "R2": 0.5895,
+            "MAPE": 158.739,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 29.454,
+            "RMSE": 60.331,
+            "R2": 0.6079,
+            "MAPE": 156.728,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 30.983,
+            "RMSE": 62.07,
+            "R2": 0.585,
+            "MAPE": 148.573,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ],
+        "delay": [
+          {
+            "algorithm": "lightgbm",
+            "MAE": 468.896,
+            "RMSE": 627.481,
+            "R2": 0.7053,
+            "MAPE": 48.935,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "xgboost",
+            "MAE": 479.173,
+            "RMSE": 645.033,
+            "R2": 0.6886,
+            "MAPE": 53.014,
+            "rows": 2613,
+            "unique_projects": 154
+          },
+          {
+            "algorithm": "extra_trees",
+            "MAE": 445.57,
+            "RMSE": 626.062,
+            "R2": 0.7066,
+            "MAPE": 52.069,
+            "rows": 2613,
+            "unique_projects": 154
+          }
+        ]
+      },
+      "metrics": {
+        "cost": {
+          "MAE": 27.263,
+          "RMSE": 53.507,
+          "R2": 0.4704,
+          "MAPE": 139.766,
+          "rows": 11546,
+          "unique_projects": 728
+        },
+        "delay": {
+          "MAE": 543.678,
+          "RMSE": 689.872,
+          "R2": 0.5527,
+          "MAPE": 77.499,
+          "rows": 11546,
+          "unique_projects": 728
+        },
+        "risk": {
+          "accuracy": 0.557,
+          "macro_precision": 0.3743,
+          "macro_recall": 0.3741,
+          "macro_f1": 0.3725,
+          "confusion_matrix": [
+            [
+              7.9143,
+              3.1074,
+              8.3687,
+              2.2598
+            ],
+            [
+              2.4505,
+              8.0192,
+              5.0047,
+              16.4078
+            ],
+            [
+              4.0419,
+              10.4272,
+              7.4797,
+              23.6154
+            ],
+            [
+              5.8545,
+              21.2451,
+              30.1701,
+              143.7467
+            ]
+          ],
+          "labels": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ]
+        }
+      },
+      "lifecycle_stages": {
+        "early": {
+          "available": true,
+          "cost": {
+            "MAE": 40.794,
+            "RMSE": 51.672,
+            "R2": -0.3271,
+            "MAPE": 210.557,
+            "rows": 197,
+            "unique_projects": 102
+          },
+          "delay": {
+            "MAE": 468.223,
+            "RMSE": 613.574,
+            "R2": 0.4266,
+            "MAPE": 70.386,
+            "rows": 197,
+            "unique_projects": 102
+          },
+          "risk": {
+            "accuracy": 0.1954,
+            "macro_precision": 0.2156,
+            "macro_recall": 0.2265,
+            "macro_f1": 0.1657,
+            "confusion_matrix": [
+              [
+                0.3854,
+                0.5688,
+                0.1349,
+                0.1818
+              ],
+              [
+                0.2696,
+                0.3277,
+                0.0556,
+                0.0
+              ],
+              [
+                0.3897,
+                0.5632,
+                0.0,
+                0.0
+              ],
+              [
+                0.5112,
+                0.8153,
+                0.1118,
+                0.1616
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "mid": {
+          "available": true,
+          "cost": {
+            "MAE": 35.737,
+            "RMSE": 50.128,
+            "R2": -0.2286,
+            "MAPE": 222.336,
+            "rows": 726,
+            "unique_projects": 260
+          },
+          "delay": {
+            "MAE": 549.429,
+            "RMSE": 654.512,
+            "R2": 0.2736,
+            "MAPE": 126.1,
+            "rows": 726,
+            "unique_projects": 260
+          },
+          "risk": {
+            "accuracy": 0.3217,
+            "macro_precision": 0.3452,
+            "macro_recall": 0.2599,
+            "macro_f1": 0.234,
+            "confusion_matrix": [
+              [
+                5.2558,
+                0.4305,
+                3.6317,
+                0.0526
+              ],
+              [
+                0.6549,
+                0.5185,
+                0.1416,
+                0.2639
+              ],
+              [
+                1.6121,
+                1.5656,
+                0.1027,
+                0.0
+              ],
+              [
+                1.9079,
+                2.9316,
+                0.8058,
+                0.7617
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "late": {
+          "available": true,
+          "cost": {
+            "MAE": 31.955,
+            "RMSE": 75.687,
+            "R2": 0.2828,
+            "MAPE": 199.004,
+            "rows": 1204,
+            "unique_projects": 389
+          },
+          "delay": {
+            "MAE": 535.643,
+            "RMSE": 676.719,
+            "R2": 0.2301,
+            "MAPE": 133.13,
+            "rows": 1204,
+            "unique_projects": 389
+          },
+          "risk": {
+            "accuracy": 0.226,
+            "macro_precision": 0.2875,
+            "macro_recall": 0.2381,
+            "macro_f1": 0.2201,
+            "confusion_matrix": [
+              [
+                1.6085,
+                0.7577,
+                3.0416,
+                0.7035
+              ],
+              [
+                1.2271,
+                1.4444,
+                1.4592,
+                0.6175
+              ],
+              [
+                1.6361,
+                2.7566,
+                1.0148,
+                0.1011
+              ],
+              [
+                2.6751,
+                6.0732,
+                2.9519,
+                2.9413
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        },
+        "very_late": {
+          "available": true,
+          "cost": {
+            "MAE": 24.257,
+            "RMSE": 49.004,
+            "R2": 0.4707,
+            "MAPE": 124.057,
+            "rows": 8547,
+            "unique_projects": 685
+          },
+          "delay": {
+            "MAE": 541.345,
+            "RMSE": 681.562,
+            "R2": 0.5763,
+            "MAPE": 66.704,
+            "rows": 8547,
+            "unique_projects": 685
+          },
+          "risk": {
+            "accuracy": 0.6384,
+            "macro_precision": 0.3791,
+            "macro_recall": 0.3168,
+            "macro_f1": 0.3326,
+            "confusion_matrix": [
+              [
+                0.6646,
+                1.2333,
+                1.5605,
+                1.2581
+              ],
+              [
+                0.2988,
+                2.6873,
+                3.3484,
+                15.257
+              ],
+              [
+                0.2676,
+                2.3093,
+                6.1804,
+                22.4913
+              ],
+              [
+                0.661,
+                5.6763,
+                25.8397,
+                132.0621
+              ]
+            ],
+            "labels": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "shap": {
+    "cost": {
+      "method": "mean_absolute_shap",
+      "features": [
+        {
+          "feature": "cost_escalation_percentage",
+          "importance": 0.260747
+        },
+        {
+          "feature": "expenditure_ratio",
+          "importance": 0.214277
+        },
+        {
+          "feature": "sector_average_delay",
+          "importance": 0.087593
+        },
+        {
+          "feature": "planned_duration_days",
+          "importance": 0.074654
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.062189
+        },
+        {
+          "feature": "cumulative_expenditure_cr",
+          "importance": 0.053977
+        },
+        {
+          "feature": "elapsed_duration_days",
+          "importance": 0.046826
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.041976
+        },
+        {
+          "feature": "implementing_agency",
+          "importance": 0.030063
+        },
+        {
+          "feature": "duration_ratio",
+          "importance": 0.024131
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "importance": 0.022791
+        },
+        {
+          "feature": "sector",
+          "importance": 0.020046
+        },
+        {
+          "feature": "agency_average_cost_overrun",
+          "importance": 0.01725
+        },
+        {
+          "feature": "missingindicator_schedule_slippage_days",
+          "importance": 0.011499
+        },
+        {
+          "feature": "revised_cost_cr",
+          "importance": 0.008981
+        },
+        {
+          "feature": "schedule_slippage_days",
+          "importance": 0.006312
+        },
+        {
+          "feature": "schedule_slippage_ratio",
+          "importance": 0.005431
+        },
+        {
+          "feature": "agency_average_delay",
+          "importance": 0.005229
+        },
+        {
+          "feature": "agency_delay_rate",
+          "importance": 0.001967
+        },
+        {
+          "feature": "project_size_category",
+          "importance": 0.001706
+        },
+        {
+          "feature": "missingindicator_planned_duration_days",
+          "importance": 0.001593
+        },
+        {
+          "feature": "missingindicator_schedule_slippage_ratio",
+          "importance": 0.000644
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_6m",
+          "importance": 0.000118
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "importance": 0.0
+        },
+        {
+          "feature": "cost_growth_velocity_3m",
+          "importance": 0.0
+        },
+        {
+          "feature": "cost_growth_velocity_6m",
+          "importance": 0.0
+        },
+        {
+          "feature": "cost_acceleration",
+          "importance": 0.0
+        },
+        {
+          "feature": "sector_delay_rate",
+          "importance": 0.0
+        },
+        {
+          "feature": "sector_cost_overrun_rate",
+          "importance": 0.0
+        },
+        {
+          "feature": "missingindicator_duration_ratio",
+          "importance": 0.0
+        },
+        {
+          "feature": "missingindicator_expected_progress_percentage",
+          "importance": 0.0
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_3m",
+          "importance": 0.0
+        },
+        {
+          "feature": "missingindicator_cost_acceleration",
+          "importance": 0.0
+        }
+      ]
+    },
+    "delay": {
+      "method": "tree_feature_importance",
+      "features": [
+        {
+          "feature": "elapsed_duration_days",
+          "importance": 0.260219
+        },
+        {
+          "feature": "schedule_slippage_days",
+          "importance": 0.167957
+        },
+        {
+          "feature": "implementing_agency",
+          "importance": 0.136432
+        },
+        {
+          "feature": "duration_ratio",
+          "importance": 0.078703
+        },
+        {
+          "feature": "planned_duration_days",
+          "importance": 0.076635
+        },
+        {
+          "feature": "sector",
+          "importance": 0.058701
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "importance": 0.026712
+        },
+        {
+          "feature": "cost_escalation_percentage",
+          "importance": 0.023295
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.022815
+        },
+        {
+          "feature": "expenditure_ratio",
+          "importance": 0.02234
+        },
+        {
+          "feature": "sector_average_delay",
+          "importance": 0.020267
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "importance": 0.016411
+        },
+        {
+          "feature": "schedule_slippage_ratio",
+          "importance": 0.010363
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.010363
+        },
+        {
+          "feature": "agency_average_delay",
+          "importance": 0.009663
+        },
+        {
+          "feature": "project_size_category",
+          "importance": 0.009618
+        },
+        {
+          "feature": "agency_average_cost_overrun",
+          "importance": 0.008297
+        },
+        {
+          "feature": "agency_delay_rate",
+          "importance": 0.007065
+        },
+        {
+          "feature": "revised_cost_cr",
+          "importance": 0.005987
+        },
+        {
+          "feature": "missingindicator_schedule_slippage_days",
+          "importance": 0.004884
+        },
+        {
+          "feature": "missingindicator_planned_duration_days",
+          "importance": 0.004428
+        },
+        {
+          "feature": "missingindicator_schedule_slippage_ratio",
+          "importance": 0.004289
+        },
+        {
+          "feature": "cumulative_expenditure_cr",
+          "importance": 0.003959
+        },
+        {
+          "feature": "missingindicator_duration_ratio",
+          "importance": 0.003591
+        },
+        {
+          "feature": "missingindicator_expected_progress_percentage",
+          "importance": 0.003481
+        },
+        {
+          "feature": "missingindicator_cost_acceleration",
+          "importance": 0.001132
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_6m",
+          "importance": 0.001041
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_3m",
+          "importance": 0.000993
+        },
+        {
+          "feature": "cost_growth_velocity_6m",
+          "importance": 0.000169
+        },
+        {
+          "feature": "cost_growth_velocity_3m",
+          "importance": 0.00012
+        },
+        {
+          "feature": "cost_acceleration",
+          "importance": 6.9e-05
+        },
+        {
+          "feature": "sector_delay_rate",
+          "importance": 0.0
+        },
+        {
+          "feature": "sector_cost_overrun_rate",
+          "importance": 0.0
+        }
+      ]
+    },
+    "risk": {
+      "method": "tree_feature_importance",
+      "features": [
+        {
+          "feature": "sector",
+          "importance": 0.131451
+        },
+        {
+          "feature": "implementing_agency",
+          "importance": 0.125391
+        },
+        {
+          "feature": "duration_ratio",
+          "importance": 0.086858
+        },
+        {
+          "feature": "elapsed_duration_days",
+          "importance": 0.06131
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "importance": 0.057288
+        },
+        {
+          "feature": "planned_duration_days",
+          "importance": 0.048791
+        },
+        {
+          "feature": "agency_average_delay",
+          "importance": 0.046246
+        },
+        {
+          "feature": "schedule_slippage_days",
+          "importance": 0.041571
+        },
+        {
+          "feature": "schedule_slippage_ratio",
+          "importance": 0.038274
+        },
+        {
+          "feature": "expenditure_ratio",
+          "importance": 0.036225
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.035742
+        },
+        {
+          "feature": "agency_delay_rate",
+          "importance": 0.034682
+        },
+        {
+          "feature": "revised_cost_cr",
+          "importance": 0.033158
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.031612
+        },
+        {
+          "feature": "agency_average_cost_overrun",
+          "importance": 0.02794
+        },
+        {
+          "feature": "cumulative_expenditure_cr",
+          "importance": 0.027468
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "importance": 0.026989
+        },
+        {
+          "feature": "sector_average_delay",
+          "importance": 0.026352
+        },
+        {
+          "feature": "project_size_category",
+          "importance": 0.023426
+        },
+        {
+          "feature": "cost_escalation_percentage",
+          "importance": 0.021064
+        },
+        {
+          "feature": "cost_growth_velocity_6m",
+          "importance": 0.005483
+        },
+        {
+          "feature": "missingindicator_cost_acceleration",
+          "importance": 0.004643
+        },
+        {
+          "feature": "cost_growth_velocity_3m",
+          "importance": 0.004418
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_6m",
+          "importance": 0.004211
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_3m",
+          "importance": 0.004047
+        },
+        {
+          "feature": "cost_acceleration",
+          "importance": 0.003346
+        },
+        {
+          "feature": "missingindicator_schedule_slippage_days",
+          "importance": 0.00281
+        },
+        {
+          "feature": "missingindicator_schedule_slippage_ratio",
+          "importance": 0.002389
+        },
+        {
+          "feature": "missingindicator_planned_duration_days",
+          "importance": 0.002371
+        },
+        {
+          "feature": "missingindicator_expected_progress_percentage",
+          "importance": 0.002367
+        },
+        {
+          "feature": "missingindicator_duration_ratio",
+          "importance": 0.002077
+        },
+        {
+          "feature": "sector_delay_rate",
+          "importance": 0.0
+        },
+        {
+          "feature": "sector_cost_overrun_rate",
+          "importance": 0.0
+        }
+      ]
+    }
+  },
+  "forecast_evolution_example": [
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)- - - PH-I",
+      "snapshot_date": "2009-03-31",
+      "predicted_cost_overrun": 97.451,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4322.835,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)- - - PH-I",
+      "snapshot_date": "2009-09-30",
+      "predicted_cost_overrun": 94.667,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4399.803,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)- - - PH-I",
+      "snapshot_date": "2009-12-31",
+      "predicted_cost_overrun": 94.667,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4367.174,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)- - - PH-I",
+      "snapshot_date": "2010-03-31",
+      "predicted_cost_overrun": 110.442,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4398.257,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)- - - PH-I",
+      "snapshot_date": "2010-06-30",
+      "predicted_cost_overrun": 16.124,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 3913.651,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)",
+      "snapshot_date": "2010-09-30",
+      "predicted_cost_overrun": 15.784,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 3954.769,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP)",
+      "snapshot_date": "2010-12-31",
+      "predicted_cost_overrun": 55.145,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4116.798,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP) - 495.44",
+      "snapshot_date": "2011-03-31",
+      "predicted_cost_overrun": 70.41,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 3965.867,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP) - 495.44",
+      "snapshot_date": "2011-06-30",
+      "predicted_cost_overrun": 70.41,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 3953.839,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP) - 495.44",
+      "snapshot_date": "2011-09-30",
+      "predicted_cost_overrun": 70.41,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 3951.679,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP) - 495.44 12/2010 [220100164]MRTP,Maharashtra 367 LALITPUR-SATNA-REWA-SINGRULI 09/1998 925.00 925.00 504.78 05/2008 - - 0/0 NL, (NCR)",
+      "snapshot_date": "2011-12-31",
+      "predicted_cost_overrun": 278.549,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 3925.975,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIF-IED DOUBLE LINE(MTP) - 495.44 12/2010 0(R) [220100164]MRTP,Maharashtra 258 BHAIRABI SAIRONG, NL, NEFR - 04/2008 619.34 2,393.49 4.41 04/2014 03/2014 -1(O) 0/0 [N22000100]NEFR,Mizoram",
+      "snapshot_date": "2012-03-31",
+      "predicted_cost_overrun": 292.858,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4054.85,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD- URAN ELECTRIF-IED 495.44 12/2010 DOUBLE LINE(MTP)",
+      "snapshot_date": "2012-06-30",
+      "predicted_cost_overrun": 262.53,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4420.328,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD- URAN ELECTRIF-IED 495.44 12/2010 DOUBLE LINE(MTP)",
+      "snapshot_date": "2012-09-30",
+      "predicted_cost_overrun": 70.35,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4466.991,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD- URAN ELECTRIFIED 495.44 12/2010 DOUBLE LINE(MTP)",
+      "snapshot_date": "2012-12-31",
+      "predicted_cost_overrun": 256.24,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4369.283,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD- URAN ELECTRIFIED 495.44 12/2010 DOUBLE LINE(MTP)",
+      "snapshot_date": "2013-03-31",
+      "predicted_cost_overrun": 250.715,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4377.893,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2013-06-30",
+      "predicted_cost_overrun": 335.517,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4918.854,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2013-09-30",
+      "predicted_cost_overrun": 335.784,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4551.683,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2013-12-31",
+      "predicted_cost_overrun": 246.429,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4576.028,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2014-03-31",
+      "predicted_cost_overrun": 333.131,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4530.936,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2014-06-30",
+      "predicted_cost_overrun": 331.983,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4893.774,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2014-09-30",
+      "predicted_cost_overrun": 333.131,
+      "actual_cost_overrun": 377.98,
+      "predicted_delay_days": 4902.56,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2014-12-31",
+      "predicted_cost_overrun": 249.167,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4864.19,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2015-03-31",
+      "predicted_cost_overrun": 204.237,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4883.706,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2015-06-30",
+      "predicted_cost_overrun": 203.935,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4892.109,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2015-09-30",
+      "predicted_cost_overrun": 200.951,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4903.712,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2015-12-31",
+      "predicted_cost_overrun": 193.791,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4795.867,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2016-03-31",
+      "predicted_cost_overrun": 193.791,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4818.357,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2016-06-30",
+      "predicted_cost_overrun": 173.622,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4280.14,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2016-08-31",
+      "predicted_cost_overrun": 167.756,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4348.204,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2017-03-31",
+      "predicted_cost_overrun": 172.548,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6046.52,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2017-06-30",
+      "predicted_cost_overrun": 172.548,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 5997.023,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2017-09-30",
+      "predicted_cost_overrun": 176.635,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6080.69,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2017-12-31",
+      "predicted_cost_overrun": 178.312,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6091.001,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2018-03-31",
+      "predicted_cost_overrun": 191.855,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6157.609,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2018-06-30",
+      "predicted_cost_overrun": 201.208,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6230.999,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2018-09-30",
+      "predicted_cost_overrun": 209.989,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6332.802,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2018-12-31",
+      "predicted_cost_overrun": 212.223,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6364.473,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2019-03-31",
+      "predicted_cost_overrun": 212.223,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6440.968,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2019-06-30",
+      "predicted_cost_overrun": 387.498,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6945.367,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2019-09-30",
+      "predicted_cost_overrun": 385.114,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6926.489,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2019-12-31",
+      "predicted_cost_overrun": 385.114,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6973.754,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2020-03-31",
+      "predicted_cost_overrun": 387.206,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7433.844,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2020-06-30",
+      "predicted_cost_overrun": 387.206,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7417.563,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2020-09-30",
+      "predicted_cost_overrun": 384.945,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7430.163,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2020-12-31",
+      "predicted_cost_overrun": 419.508,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7420.92,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2021-03-31",
+      "predicted_cost_overrun": 419.136,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7458.077,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP) (-) (-) (2,484.97)",
+      "snapshot_date": "2021-06-30",
+      "predicted_cost_overrun": 110.965,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 6636.94,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2021-09-30",
+      "predicted_cost_overrun": 419.136,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7487.637,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2021-12-31",
+      "predicted_cost_overrun": 419.136,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7547.198,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2022-03-31",
+      "predicted_cost_overrun": 419.346,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7520.372,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP)",
+      "snapshot_date": "2022-05-31",
+      "predicted_cost_overrun": 419.346,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7538.266,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP) (-) (-) (2,484.97)",
+      "snapshot_date": "2022-09-30",
+      "predicted_cost_overrun": 108.293,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 7047.683,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP) (-) (-) (2,484.97)",
+      "snapshot_date": "2022-12-31",
+      "predicted_cost_overrun": 108.266,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4980.679,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP) (-) (-) (2,484.97)",
+      "snapshot_date": "2023-03-31",
+      "predicted_cost_overrun": 108.266,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4987.03,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    },
+    {
+      "project_id": "220100164",
+      "project_name": "BELAPUR-SEAWOOD-URAN ELECTRIFIED DOUBLE LINE(MTP) (-) (-) (2,484.97)",
+      "snapshot_date": "2023-05-31",
+      "predicted_cost_overrun": 108.577,
+      "actual_cost_overrun": 287.649,
+      "predicted_delay_days": 4993.049,
+      "actual_delay_days": 7060.0,
+      "predicted_risk": "CRITICAL",
+      "actual_risk": "CRITICAL"
+    }
+  ]
+}

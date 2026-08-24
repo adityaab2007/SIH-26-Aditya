@@ -1,0 +1,31 @@
+{
+  "status": "complete",
+  "model_family": "monthly_lifecycle",
+  "model_version": "monthly-2008-2014",
+  "window": "2008_2014",
+  "training_period": [
+    2008,
+    2014
+  ],
+  "testing_period": [
+    2015,
+    2025
+  ],
+  "feature_count": 25,
+  "metrics": {
+    "cost_mae": 42.106,
+    "delay_mae": 527.8,
+    "risk_macro_f1": 0.4261
+  },
+  "artifacts": {
+    "cost_model.pkl": true,
+    "delay_model.pkl": true,
+    "risk_model.pkl": true,
+    "metadata.json": true,
+    "evaluation_results.json": true,
+    "feature_quality_report.json": true,
+    "shap_importance.json": true,
+    "prediction_validation.csv": true
+  },
+  "created_at": "2026-08-24T16:12:59.203533+00:00"
+}

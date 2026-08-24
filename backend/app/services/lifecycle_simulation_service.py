@@ -10,7 +10,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from backend.app.ml.monthly_lifecycle import build_training_dataset
+from backend.app.ml.monthly_lifecycle import TRAJECTORIES, build_training_dataset
 from backend.app.ml.monthly_training import MODEL_ROOT
 from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
 from backend.app.services.simulation_service import _shap_factors_for_model
@@ -50,6 +50,22 @@ def _dataset() -> pd.DataFrame:
 
 
 def available_data_years() -> list[dict]:
+    # The catalog is needed before the user starts a retrain.  Reading the
+    # identity-resolved trajectory index avoids rebuilding all lifecycle
+    # features just to populate the year selectors on page load.
+    if TRAJECTORIES.exists():
+        indexed = pd.read_csv(
+            TRAJECTORIES,
+            usecols=["completion_year", "canonical_project_id", "identity_verified"],
+            low_memory=False,
+        )
+        indexed["completion_year"] = pd.to_numeric(indexed["completion_year"], errors="coerce")
+        verified = indexed[indexed["identity_verified"].fillna(False)].dropna(
+            subset=["completion_year", "canonical_project_id"]
+        ).drop_duplicates("canonical_project_id")
+        counts = verified.groupby("completion_year").size().sort_index()
+        return [{"year": int(year), "completed_projects": int(count)} for year, count in counts.items()]
+
     data = _dataset()
     unique_projects = data.dropna(subset=["completion_year", "canonical_project_id"]).drop_duplicates("canonical_project_id")
     counts = unique_projects.groupby("completion_year").size().sort_index()

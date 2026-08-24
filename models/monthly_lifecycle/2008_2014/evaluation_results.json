@@ -1,19 +1,19 @@
 {
-  "window": "2001_2015",
+  "window": "2008_2014",
   "metadata": {
-    "model_version": "monthly-2001-2015",
+    "model_version": "monthly-2008-2014",
     "training_period": [
-      2001,
-      2015
+      2008,
+      2014
     ],
     "testing_period": [
-      2016,
+      2015,
       2025
     ],
-    "unique_training_projects": 757,
-    "training_snapshots": 7306,
-    "unique_test_projects": 1549,
-    "test_snapshots": 24186,
+    "unique_training_projects": 525,
+    "training_snapshots": 4835,
+    "unique_test_projects": 1620,
+    "test_snapshots": 25282,
     "features_used": [
       "approved_cost_cr",
       "sector_average_delay",
@@ -42,7 +42,7 @@
       "agency_cost_overrun_rate"
     ],
     "feature_availability": {
-      "training_rows": 7306,
+      "training_rows": 4835,
       "feature_count_audited": 32,
       "features_used": [
         "approved_cost_cr",
@@ -81,24 +81,20 @@
         "progress_acceleration"
       ],
       "removed_invalid_feature_count": 7,
-      "data_quality_score": 96.56,
+      "data_quality_score": 95.84,
       "features": [
         {
           "feature": "approved_cost_cr",
           "datatype": "float64",
           "missing_percentage": 0.0,
-          "zero_percentage": 0.03,
-          "unique_value_count": 739,
+          "zero_percentage": 0.04,
+          "unique_value_count": 512,
           "constant": false,
           "availability": 100.0,
           "availability_percentage": 100.0,
-          "temporal_year_coverage": 15,
-          "project_coverage": 757,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -108,8 +104,7 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
@@ -124,18 +119,14 @@
           "feature": "cumulative_expenditure_cr",
           "datatype": "float64",
           "missing_percentage": 0.0,
-          "zero_percentage": 0.01,
-          "unique_value_count": 5819,
+          "zero_percentage": 0.02,
+          "unique_value_count": 3813,
           "constant": false,
           "availability": 100.0,
           "availability_percentage": 100.0,
-          "temporal_year_coverage": 15,
-          "project_coverage": 757,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -145,8 +136,7 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
@@ -160,33 +150,28 @@
         {
           "feature": "expenditure_ratio",
           "datatype": "float64",
-          "missing_percentage": 0.03,
-          "zero_percentage": 0.01,
-          "unique_value_count": 6108,
+          "missing_percentage": 0.04,
+          "zero_percentage": 0.02,
+          "unique_value_count": 3947,
           "constant": false,
-          "availability": 99.97,
-          "availability_percentage": 99.97,
-          "temporal_year_coverage": 15,
-          "project_coverage": 757,
+          "availability": 99.96,
+          "availability_percentage": 99.96,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
             "2009": 100.0,
-            "2010": 99.86,
+            "2010": 99.85,
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 99.97,
+            "classic-code-v3": 99.96,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -206,10 +191,6 @@
           "temporal_year_coverage": 0,
           "project_coverage": 0,
           "availability_by_year": {
-            "2001": 0.0,
-            "2002": 0.0,
-            "2003": 0.0,
-            "2004": 0.0,
             "2005": 0.0,
             "2006": 0.0,
             "2007": 0.0,
@@ -219,8 +200,7 @@
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
@@ -234,33 +214,28 @@
         {
           "feature": "schedule_slippage_days",
           "datatype": "float64",
-          "missing_percentage": 4.09,
-          "zero_percentage": 28.61,
-          "unique_value_count": 397,
+          "missing_percentage": 4.98,
+          "zero_percentage": 23.58,
+          "unique_value_count": 360,
           "constant": false,
-          "availability": 95.91,
-          "availability_percentage": 95.91,
-          "temporal_year_coverage": 15,
-          "project_coverage": 751,
+          "availability": 95.02,
+          "availability_percentage": 95.02,
+          "temporal_year_coverage": 10,
+          "project_coverage": 520,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
-            "2009": 96.54,
-            "2010": 93.25,
-            "2011": 90.65,
-            "2012": 96.38,
-            "2013": 98.09,
-            "2014": 97.47,
-            "2015": 98.21
+            "2009": 96.65,
+            "2010": 93.4,
+            "2011": 91.71,
+            "2012": 96.39,
+            "2013": 98.48,
+            "2014": 99.45
           },
           "availability_by_parser": {
-            "classic-code-v3": 94.85,
+            "classic-code-v3": 94.92,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -271,33 +246,28 @@
         {
           "feature": "schedule_slippage_ratio",
           "datatype": "float64",
-          "missing_percentage": 4.49,
-          "zero_percentage": 28.37,
-          "unique_value_count": 2044,
+          "missing_percentage": 5.56,
+          "zero_percentage": 23.23,
+          "unique_value_count": 1478,
           "constant": false,
-          "availability": 95.51,
-          "availability_percentage": 95.51,
-          "temporal_year_coverage": 15,
-          "project_coverage": 747,
+          "availability": 94.44,
+          "availability_percentage": 94.44,
+          "temporal_year_coverage": 10,
+          "project_coverage": 516,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
-            "2009": 95.48,
-            "2010": 92.76,
-            "2011": 90.2,
-            "2012": 96.15,
-            "2013": 97.79,
-            "2014": 97.24,
-            "2015": 98.21
+            "2009": 95.53,
+            "2010": 92.88,
+            "2011": 91.21,
+            "2012": 96.1,
+            "2013": 98.04,
+            "2014": 99.45
           },
           "availability_by_parser": {
-            "classic-code-v3": 94.35,
+            "classic-code-v3": 94.33,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -310,17 +280,13 @@
           "datatype": "int64",
           "missing_percentage": 0.0,
           "zero_percentage": 0.0,
-          "unique_value_count": 715,
+          "unique_value_count": 592,
           "constant": false,
           "availability": 100.0,
           "availability_percentage": 100.0,
-          "temporal_year_coverage": 15,
-          "project_coverage": 757,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -330,8 +296,7 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
@@ -345,33 +310,28 @@
         {
           "feature": "planned_duration_days",
           "datatype": "float64",
-          "missing_percentage": 4.09,
-          "zero_percentage": 0.3,
-          "unique_value_count": 255,
+          "missing_percentage": 4.98,
+          "zero_percentage": 0.46,
+          "unique_value_count": 201,
           "constant": false,
-          "availability": 95.91,
-          "availability_percentage": 95.91,
-          "temporal_year_coverage": 15,
-          "project_coverage": 751,
+          "availability": 95.02,
+          "availability_percentage": 95.02,
+          "temporal_year_coverage": 10,
+          "project_coverage": 520,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
-            "2009": 96.54,
-            "2010": 93.25,
-            "2011": 90.65,
-            "2012": 96.38,
-            "2013": 98.09,
-            "2014": 97.47,
-            "2015": 98.21
+            "2009": 96.65,
+            "2010": 93.4,
+            "2011": 91.71,
+            "2012": 96.39,
+            "2013": 98.48,
+            "2014": 99.45
           },
           "availability_by_parser": {
-            "classic-code-v3": 94.85,
+            "classic-code-v3": 94.92,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -382,33 +342,28 @@
         {
           "feature": "duration_ratio",
           "datatype": "float64",
-          "missing_percentage": 4.49,
+          "missing_percentage": 5.56,
           "zero_percentage": 0.0,
-          "unique_value_count": 5162,
+          "unique_value_count": 3417,
           "constant": false,
-          "availability": 95.51,
-          "availability_percentage": 95.51,
-          "temporal_year_coverage": 15,
-          "project_coverage": 747,
+          "availability": 94.44,
+          "availability_percentage": 94.44,
+          "temporal_year_coverage": 10,
+          "project_coverage": 516,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
-            "2009": 95.48,
-            "2010": 92.76,
-            "2011": 90.2,
-            "2012": 96.15,
-            "2013": 97.79,
-            "2014": 97.24,
-            "2015": 98.21
+            "2009": 95.53,
+            "2010": 92.88,
+            "2011": 91.21,
+            "2012": 96.1,
+            "2013": 98.04,
+            "2014": 99.45
           },
           "availability_by_parser": {
-            "classic-code-v3": 94.35,
+            "classic-code-v3": 94.33,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -419,33 +374,28 @@
         {
           "feature": "expected_progress_percentage",
           "datatype": "float64",
-          "missing_percentage": 4.49,
+          "missing_percentage": 5.56,
           "zero_percentage": 0.0,
-          "unique_value_count": 1759,
+          "unique_value_count": 951,
           "constant": false,
-          "availability": 95.51,
-          "availability_percentage": 95.51,
-          "temporal_year_coverage": 15,
-          "project_coverage": 747,
+          "availability": 94.44,
+          "availability_percentage": 94.44,
+          "temporal_year_coverage": 10,
+          "project_coverage": 516,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
-            "2009": 95.48,
-            "2010": 92.76,
-            "2011": 90.2,
-            "2012": 96.15,
-            "2013": 97.79,
-            "2014": 97.24,
-            "2015": 98.21
+            "2009": 95.53,
+            "2010": 92.88,
+            "2011": 91.21,
+            "2012": 96.1,
+            "2013": 98.04,
+            "2014": 99.45
           },
           "availability_by_parser": {
-            "classic-code-v3": 94.35,
+            "classic-code-v3": 94.33,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -465,10 +415,6 @@
           "temporal_year_coverage": 0,
           "project_coverage": 0,
           "availability_by_year": {
-            "2001": 0.0,
-            "2002": 0.0,
-            "2003": 0.0,
-            "2004": 0.0,
             "2005": 0.0,
             "2006": 0.0,
             "2007": 0.0,
@@ -478,8 +424,7 @@
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
@@ -493,34 +438,29 @@
         {
           "feature": "revised_cost_cr",
           "datatype": "float64",
-          "missing_percentage": 0.56,
+          "missing_percentage": 0.04,
           "zero_percentage": 0.0,
-          "unique_value_count": 1134,
+          "unique_value_count": 749,
           "constant": false,
-          "availability": 99.44,
-          "availability_percentage": 99.44,
-          "temporal_year_coverage": 15,
-          "project_coverage": 747,
+          "availability": 99.96,
+          "availability_percentage": 99.96,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 96.85,
-            "2002": 98.37,
-            "2003": 95.32,
-            "2004": 99.16,
-            "2005": 96.09,
-            "2006": 96.85,
-            "2007": 97.2,
+            "2005": 100.0,
+            "2006": 94.44,
+            "2007": 97.3,
             "2008": 100.0,
             "2009": 100.0,
             "2010": 100.0,
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 97.26
+            "legacy-sector-v1": 97.78
           },
           "safely_as_of_available": true,
           "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
@@ -530,34 +470,29 @@
         {
           "feature": "cost_escalation_percentage",
           "datatype": "float64",
-          "missing_percentage": 0.59,
-          "zero_percentage": 58.53,
-          "unique_value_count": 693,
+          "missing_percentage": 0.08,
+          "zero_percentage": 60.77,
+          "unique_value_count": 422,
           "constant": false,
-          "availability": 99.41,
-          "availability_percentage": 99.41,
-          "temporal_year_coverage": 15,
-          "project_coverage": 747,
+          "availability": 99.92,
+          "availability_percentage": 99.92,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 96.85,
-            "2002": 98.37,
-            "2003": 95.32,
-            "2004": 99.16,
-            "2005": 96.09,
-            "2006": 96.85,
-            "2007": 97.2,
+            "2005": 100.0,
+            "2006": 94.44,
+            "2007": 97.3,
             "2008": 100.0,
             "2009": 100.0,
-            "2010": 99.86,
+            "2010": 99.85,
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 99.97,
-            "legacy-sector-v1": 97.26
+            "classic-code-v3": 99.96,
+            "legacy-sector-v1": 97.78
           },
           "safely_as_of_available": true,
           "leakage_risk": "potential late-stage target proxy; evaluated by ablation",
@@ -567,34 +502,29 @@
         {
           "feature": "current_schedule_status",
           "datatype": "object",
-          "missing_percentage": 90.79,
+          "missing_percentage": 99.28,
           "zero_percentage": 0.0,
           "unique_value_count": 1,
           "constant": true,
-          "availability": 9.21,
-          "availability_percentage": 9.21,
-          "temporal_year_coverage": 9,
-          "project_coverage": 113,
+          "availability": 0.72,
+          "availability_percentage": 0.72,
+          "temporal_year_coverage": 4,
+          "project_coverage": 12,
           "availability_by_year": {
-            "2001": 33.33,
-            "2002": 33.88,
-            "2003": 45.68,
-            "2004": 56.12,
-            "2005": 50.28,
-            "2006": 59.06,
-            "2007": 44.86,
-            "2008": 52.17,
-            "2009": 0.89,
+            "2005": 0.0,
+            "2006": 22.22,
+            "2007": 40.54,
+            "2008": 47.06,
+            "2009": 0.74,
             "2010": 0.0,
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
-            "legacy-sector-v1": 44.99
+            "legacy-sector-v1": 38.89
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -604,33 +534,28 @@
         {
           "feature": "sector",
           "datatype": "object",
-          "missing_percentage": 2.56,
+          "missing_percentage": 2.36,
           "zero_percentage": 0.0,
-          "unique_value_count": 1705,
+          "unique_value_count": 923,
           "constant": false,
-          "availability": 97.44,
-          "availability_percentage": 97.44,
-          "temporal_year_coverage": 15,
-          "project_coverage": 755,
+          "availability": 97.64,
+          "availability_percentage": 97.64,
+          "temporal_year_coverage": 10,
+          "project_coverage": 523,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
             "2008": 100.0,
-            "2009": 99.02,
-            "2010": 99.37,
-            "2011": 98.13,
+            "2009": 99.16,
+            "2010": 99.33,
+            "2011": 99.0,
             "2012": 100.0,
-            "2013": 78.53,
-            "2014": 100.0,
-            "2015": 100.0
+            "2013": 81.3,
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 96.78,
+            "classic-code-v3": 97.6,
             "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
@@ -647,13 +572,9 @@
           "constant": false,
           "availability": 100.0,
           "availability_percentage": 100.0,
-          "temporal_year_coverage": 15,
-          "project_coverage": 757,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 100.0,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -663,8 +584,7 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
@@ -678,34 +598,29 @@
         {
           "feature": "implementing_agency",
           "datatype": "object",
-          "missing_percentage": 26.49,
+          "missing_percentage": 33.77,
           "zero_percentage": 0.0,
-          "unique_value_count": 214,
+          "unique_value_count": 167,
           "constant": false,
-          "availability": 73.51,
-          "availability_percentage": 73.51,
-          "temporal_year_coverage": 15,
-          "project_coverage": 621,
+          "availability": 66.23,
+          "availability_percentage": 66.23,
+          "temporal_year_coverage": 10,
+          "project_coverage": 410,
           "availability_by_year": {
-            "2001": 82.88,
-            "2002": 89.9,
-            "2003": 88.13,
-            "2004": 86.92,
-            "2005": 81.01,
-            "2006": 70.08,
-            "2007": 58.88,
-            "2008": 13.04,
-            "2009": 11.26,
-            "2010": 55.15,
+            "2005": 80.0,
+            "2006": 38.89,
+            "2007": 40.54,
+            "2008": 17.65,
+            "2009": 10.34,
+            "2010": 54.23,
             "2011": 100.0,
-            "2012": 98.48,
-            "2013": 98.82,
-            "2014": 100.0,
-            "2015": 100.0
+            "2012": 99.28,
+            "2013": 100.0,
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 71.57,
-            "legacy-sector-v1": 81.08
+            "classic-code-v3": 66.83,
+            "legacy-sector-v1": 34.44
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -724,10 +639,6 @@
           "temporal_year_coverage": 0,
           "project_coverage": 0,
           "availability_by_year": {
-            "2001": 0.0,
-            "2002": 0.0,
-            "2003": 0.0,
-            "2004": 0.0,
             "2005": 0.0,
             "2006": 0.0,
             "2007": 0.0,
@@ -737,8 +648,7 @@
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
@@ -752,34 +662,29 @@
         {
           "feature": "cost_growth_velocity_3m",
           "datatype": "float64",
-          "missing_percentage": 12.47,
-          "zero_percentage": 80.33,
-          "unique_value_count": 498,
+          "missing_percentage": 15.8,
+          "zero_percentage": 78.12,
+          "unique_value_count": 286,
           "constant": false,
-          "availability": 87.53,
-          "availability_percentage": 87.53,
-          "temporal_year_coverage": 15,
-          "project_coverage": 690,
+          "availability": 84.2,
+          "availability_percentage": 84.2,
+          "temporal_year_coverage": 10,
+          "project_coverage": 473,
           "availability_by_year": {
-            "2001": 90.09,
-            "2002": 89.58,
-            "2003": 93.88,
-            "2004": 97.05,
-            "2005": 89.94,
-            "2006": 95.28,
-            "2007": 94.39,
-            "2008": 95.65,
-            "2009": 36.35,
-            "2010": 97.21,
-            "2011": 98.13,
-            "2012": 98.83,
-            "2013": 98.97,
-            "2014": 98.85,
-            "2015": 99.4
+            "2005": 60.0,
+            "2006": 94.44,
+            "2007": 89.19,
+            "2008": 94.12,
+            "2009": 35.66,
+            "2010": 97.26,
+            "2011": 98.4,
+            "2012": 98.85,
+            "2013": 99.13,
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 86.25,
-            "legacy-sector-v1": 92.51
+            "classic-code-v3": 84.13,
+            "legacy-sector-v1": 87.78
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -789,34 +694,29 @@
         {
           "feature": "cost_growth_velocity_6m",
           "datatype": "float64",
-          "missing_percentage": 7.99,
-          "zero_percentage": 79.76,
-          "unique_value_count": 850,
+          "missing_percentage": 9.47,
+          "zero_percentage": 79.67,
+          "unique_value_count": 510,
           "constant": false,
-          "availability": 92.01,
-          "availability_percentage": 92.01,
-          "temporal_year_coverage": 15,
-          "project_coverage": 692,
+          "availability": 90.53,
+          "availability_percentage": 90.53,
+          "temporal_year_coverage": 10,
+          "project_coverage": 475,
           "availability_by_year": {
-            "2001": 90.99,
-            "2002": 90.23,
-            "2003": 94.24,
-            "2004": 97.05,
-            "2005": 90.5,
-            "2006": 95.28,
-            "2007": 94.39,
-            "2008": 95.65,
-            "2009": 63.92,
-            "2010": 97.35,
-            "2011": 98.84,
-            "2012": 98.83,
-            "2013": 98.97,
-            "2014": 98.85,
-            "2015": 99.4
+            "2005": 60.0,
+            "2006": 94.44,
+            "2007": 89.19,
+            "2008": 94.12,
+            "2009": 63.41,
+            "2010": 97.4,
+            "2011": 99.0,
+            "2012": 98.85,
+            "2013": 99.13,
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 91.77,
-            "legacy-sector-v1": 92.91
+            "classic-code-v3": 90.58,
+            "legacy-sector-v1": 87.78
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -826,34 +726,29 @@
         {
           "feature": "cost_acceleration",
           "datatype": "float64",
-          "missing_percentage": 12.47,
-          "zero_percentage": 76.05,
-          "unique_value_count": 812,
+          "missing_percentage": 15.8,
+          "zero_percentage": 74.46,
+          "unique_value_count": 457,
           "constant": false,
-          "availability": 87.53,
-          "availability_percentage": 87.53,
-          "temporal_year_coverage": 15,
-          "project_coverage": 690,
+          "availability": 84.2,
+          "availability_percentage": 84.2,
+          "temporal_year_coverage": 10,
+          "project_coverage": 473,
           "availability_by_year": {
-            "2001": 90.09,
-            "2002": 89.58,
-            "2003": 93.88,
-            "2004": 97.05,
-            "2005": 89.94,
-            "2006": 95.28,
-            "2007": 94.39,
-            "2008": 95.65,
-            "2009": 36.35,
-            "2010": 97.21,
-            "2011": 98.13,
-            "2012": 98.83,
-            "2013": 98.97,
-            "2014": 98.85,
-            "2015": 99.4
+            "2005": 60.0,
+            "2006": 94.44,
+            "2007": 89.19,
+            "2008": 94.12,
+            "2009": 35.66,
+            "2010": 97.26,
+            "2011": 98.4,
+            "2012": 98.85,
+            "2013": 99.13,
+            "2014": 100.0
           },
           "availability_by_parser": {
-            "classic-code-v3": 86.25,
-            "legacy-sector-v1": 92.51
+            "classic-code-v3": 84.13,
+            "legacy-sector-v1": 87.78
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -872,10 +767,6 @@
           "temporal_year_coverage": 0,
           "project_coverage": 0,
           "availability_by_year": {
-            "2001": 0.0,
-            "2002": 0.0,
-            "2003": 0.0,
-            "2004": 0.0,
             "2005": 0.0,
             "2006": 0.0,
             "2007": 0.0,
@@ -885,8 +776,7 @@
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
@@ -909,10 +799,6 @@
           "temporal_year_coverage": 0,
           "project_coverage": 0,
           "availability_by_year": {
-            "2001": 0.0,
-            "2002": 0.0,
-            "2003": 0.0,
-            "2004": 0.0,
             "2005": 0.0,
             "2006": 0.0,
             "2007": 0.0,
@@ -922,8 +808,7 @@
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
@@ -946,10 +831,6 @@
           "temporal_year_coverage": 0,
           "project_coverage": 0,
           "availability_by_year": {
-            "2001": 0.0,
-            "2002": 0.0,
-            "2003": 0.0,
-            "2004": 0.0,
             "2005": 0.0,
             "2006": 0.0,
             "2007": 0.0,
@@ -959,8 +840,7 @@
             "2011": 0.0,
             "2012": 0.0,
             "2013": 0.0,
-            "2014": 0.0,
-            "2015": 0.0
+            "2014": 0.0
           },
           "availability_by_parser": {
             "classic-code-v3": 0.0,
@@ -974,19 +854,15 @@
         {
           "feature": "sector_average_delay",
           "datatype": "float64",
-          "missing_percentage": 0.14,
+          "missing_percentage": 0.0,
           "zero_percentage": 0.0,
-          "unique_value_count": 145,
+          "unique_value_count": 84,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -996,12 +872,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1011,19 +886,15 @@
         {
           "feature": "sector_average_cost_overrun",
           "datatype": "float64",
-          "missing_percentage": 0.14,
+          "missing_percentage": 0.0,
           "zero_percentage": 0.0,
-          "unique_value_count": 145,
+          "unique_value_count": 84,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1033,12 +904,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1048,19 +918,15 @@
         {
           "feature": "sector_delay_rate",
           "datatype": "float64",
-          "missing_percentage": 0.14,
+          "missing_percentage": 0.0,
           "zero_percentage": 0.0,
-          "unique_value_count": 125,
+          "unique_value_count": 80,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1070,12 +936,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1085,19 +950,15 @@
         {
           "feature": "sector_cost_overrun_rate",
           "datatype": "float64",
-          "missing_percentage": 0.14,
-          "zero_percentage": 2.15,
-          "unique_value_count": 128,
+          "missing_percentage": 0.0,
+          "zero_percentage": 0.23,
+          "unique_value_count": 82,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1107,12 +968,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1122,19 +982,15 @@
         {
           "feature": "agency_average_delay",
           "datatype": "float64",
-          "missing_percentage": 0.14,
+          "missing_percentage": 0.0,
           "zero_percentage": 0.0,
-          "unique_value_count": 222,
+          "unique_value_count": 119,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1144,12 +1000,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1159,19 +1014,15 @@
         {
           "feature": "agency_average_cost_overrun",
           "datatype": "float64",
-          "missing_percentage": 0.14,
+          "missing_percentage": 0.0,
           "zero_percentage": 0.0,
-          "unique_value_count": 222,
+          "unique_value_count": 119,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1181,12 +1032,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1196,19 +1046,15 @@
         {
           "feature": "agency_delay_rate",
           "datatype": "float64",
-          "missing_percentage": 0.14,
-          "zero_percentage": 3.65,
-          "unique_value_count": 137,
+          "missing_percentage": 0.0,
+          "zero_percentage": 3.78,
+          "unique_value_count": 89,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1218,12 +1064,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1233,19 +1078,15 @@
         {
           "feature": "agency_cost_overrun_rate",
           "datatype": "float64",
-          "missing_percentage": 0.14,
-          "zero_percentage": 13.15,
-          "unique_value_count": 138,
+          "missing_percentage": 0.0,
+          "zero_percentage": 10.8,
+          "unique_value_count": 91,
           "constant": false,
-          "availability": 99.86,
-          "availability_percentage": 99.86,
-          "temporal_year_coverage": 15,
-          "project_coverage": 752,
+          "availability": 100.0,
+          "availability_percentage": 100.0,
+          "temporal_year_coverage": 10,
+          "project_coverage": 525,
           "availability_by_year": {
-            "2001": 95.5,
-            "2002": 100.0,
-            "2003": 100.0,
-            "2004": 100.0,
             "2005": 100.0,
             "2006": 100.0,
             "2007": 100.0,
@@ -1255,12 +1096,11 @@
             "2011": 100.0,
             "2012": 100.0,
             "2013": 100.0,
-            "2014": 100.0,
-            "2015": 100.0
+            "2014": 100.0
           },
           "availability_by_parser": {
             "classic-code-v3": 100.0,
-            "legacy-sector-v1": 99.33
+            "legacy-sector-v1": 100.0
           },
           "safely_as_of_available": true,
           "leakage_risk": "none identified; computed from snapshot or earlier records only",
@@ -1326,7 +1166,7 @@
     "snapshot_weighting_policy": "Quarterly last-observation sampling plus per-project weights summing to approximately one.",
     "selected_algorithms": {
       "cost": "xgboost",
-      "delay": "lightgbm"
+      "delay": "extra_trees"
     },
     "hyperparameters": {
       "cost": {
@@ -1372,26 +1212,24 @@
         "verbosity": null
       },
       "delay": {
-        "boosting_type": "gbdt",
-        "class_weight": null,
-        "colsample_bytree": 1.0,
-        "importance_type": "split",
-        "learning_rate": 0.035,
-        "max_depth": 5,
-        "min_child_samples": 20,
-        "min_child_weight": 0.001,
-        "min_split_gain": 0.0,
-        "n_estimators": 240,
-        "n_jobs": null,
-        "num_leaves": 24,
-        "objective": null,
+        "bootstrap": false,
+        "ccp_alpha": 0.0,
+        "criterion": "squared_error",
+        "max_depth": null,
+        "max_features": 0.8,
+        "max_leaf_nodes": null,
+        "max_samples": null,
+        "min_impurity_decrease": 0.0,
+        "min_samples_leaf": 3,
+        "min_samples_split": 2,
+        "min_weight_fraction_leaf": 0.0,
+        "monotonic_cst": null,
+        "n_estimators": 260,
+        "n_jobs": 2,
+        "oob_score": false,
         "random_state": 26204,
-        "reg_alpha": 0.0,
-        "reg_lambda": 0.0,
-        "subsample": 1.0,
-        "subsample_for_bin": 200000,
-        "subsample_freq": 0,
-        "verbosity": -1
+        "verbose": 0,
+        "warm_start": false
       },
       "risk": {
         "bootstrap": true,
@@ -1419,108 +1257,108 @@
       "cost": [
         {
           "algorithm": "lightgbm",
-          "MAE": 41.234,
-          "RMSE": 89.397,
-          "R2": 0.2021,
-          "MAPE": 175.728,
-          "rows": 1096,
-          "unique_projects": 71
+          "MAE": 38.279,
+          "RMSE": 55.464,
+          "R2": 0.5169,
+          "MAPE": 123.366,
+          "rows": 1630,
+          "unique_projects": 95
         },
         {
           "algorithm": "xgboost",
-          "MAE": 38.891,
-          "RMSE": 84.162,
-          "R2": 0.2928,
-          "MAPE": 167.626,
-          "rows": 1096,
-          "unique_projects": 71
+          "MAE": 37.563,
+          "RMSE": 55.269,
+          "R2": 0.5203,
+          "MAPE": 120.524,
+          "rows": 1630,
+          "unique_projects": 95
         },
         {
           "algorithm": "extra_trees",
-          "MAE": 41.605,
-          "RMSE": 81.144,
-          "R2": 0.3426,
-          "MAPE": 170.177,
-          "rows": 1096,
-          "unique_projects": 71
+          "MAE": 38.866,
+          "RMSE": 58.886,
+          "R2": 0.4555,
+          "MAPE": 115.126,
+          "rows": 1630,
+          "unique_projects": 95
         }
       ],
       "delay": [
         {
           "algorithm": "lightgbm",
-          "MAE": 346.871,
-          "RMSE": 557.681,
-          "R2": 0.5768,
-          "MAPE": 59.508,
-          "rows": 1096,
-          "unique_projects": 71
+          "MAE": 474.048,
+          "RMSE": 650.475,
+          "R2": 0.6159,
+          "MAPE": 39.448,
+          "rows": 1630,
+          "unique_projects": 95
         },
         {
           "algorithm": "xgboost",
-          "MAE": 368.534,
-          "RMSE": 564.141,
-          "R2": 0.567,
-          "MAPE": 64.323,
-          "rows": 1096,
-          "unique_projects": 71
+          "MAE": 492.992,
+          "RMSE": 674.516,
+          "R2": 0.587,
+          "MAPE": 41.209,
+          "rows": 1630,
+          "unique_projects": 95
         },
         {
           "algorithm": "extra_trees",
-          "MAE": 363.767,
-          "RMSE": 539.726,
-          "R2": 0.6036,
-          "MAPE": 75.641,
-          "rows": 1096,
-          "unique_projects": 71
+          "MAE": 458.046,
+          "RMSE": 632.509,
+          "R2": 0.6369,
+          "MAPE": 38.882,
+          "rows": 1630,
+          "unique_projects": 95
         }
       ]
     },
     "baseline_metrics": {
       "cost": {
-        "MAE": 43.782,
-        "RMSE": 78.457,
-        "R2": 0.0059,
-        "MAPE": 124.993,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 44.32,
+        "RMSE": 78.541,
+        "R2": 0.0276,
+        "MAPE": 128.479,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "delay": {
-        "MAE": 844.423,
-        "RMSE": 1215.08,
-        "R2": -0.1879,
-        "MAPE": 133.994,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 804.356,
+        "RMSE": 1160.824,
+        "R2": -0.099,
+        "MAPE": 156.858,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "risk": {
-        "accuracy": 0.1687,
-        "macro_precision": 0.2672,
-        "macro_recall": 0.2709,
-        "macro_f1": 0.1365,
+        "accuracy": 0.5636,
+        "macro_precision": 0.2324,
+        "macro_recall": 0.2442,
+        "macro_f1": 0.2135,
         "confusion_matrix": [
           [
-            39.2157,
-            2.0754,
-            3.9093,
-            2.3045
+            3.1181,
+            0.6644,
+            2.0371,
+            43.7818
           ],
           [
-            61.4698,
-            1.1979,
-            6.6966,
-            6.346
+            4.4013,
+            0.6554,
+            0.951,
+            73.3663
           ],
           [
-            72.0226,
-            2.2816,
-            10.5431,
-            9.8002
+            5.8146,
+            1.0089,
+            2.5373,
+            91.4622
           ],
           [
-            279.5674,
-            15.4109,
-            32.3124,
-            49.3402
+            29.0781,
+            4.4597,
+            12.8535,
+            342.239
           ]
         ],
         "labels": [
@@ -1533,50 +1371,50 @@
     },
     "lifecycle_metrics": {
       "cost": {
-        "MAE": 40.265,
-        "RMSE": 72.035,
-        "R2": 0.162,
-        "MAPE": 222.842,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 42.106,
+        "RMSE": 74.042,
+        "R2": 0.1358,
+        "MAPE": 233.947,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "delay": {
-        "MAE": 535.48,
-        "RMSE": 812.6,
-        "R2": 0.4687,
-        "MAPE": 54.885,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 527.8,
+        "RMSE": 795.241,
+        "R2": 0.4842,
+        "MAPE": 68.701,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "risk": {
-        "accuracy": 0.5617,
-        "macro_precision": 0.4348,
-        "macro_recall": 0.523,
-        "macro_f1": 0.4408,
+        "accuracy": 0.5515,
+        "macro_precision": 0.4305,
+        "macro_recall": 0.4807,
+        "macro_f1": 0.4261,
         "confusion_matrix": [
           [
-            39.721,
-            4.2589,
-            2.0592,
-            1.4657
+            27.3087,
+            19.627,
+            1.0715,
+            1.5943
           ],
           [
-            28.4619,
-            23.7225,
-            16.5302,
-            6.9956
+            21.9688,
+            38.5025,
+            13.0003,
+            5.9023
           ],
           [
-            26.2106,
-            17.864,
-            28.3666,
-            22.2064
+            20.9004,
+            32.0897,
+            24.3483,
+            23.4847
           ],
           [
-            41.142,
-            44.1432,
-            49.2165,
-            242.1291
+            35.7375,
+            66.1337,
+            35.8722,
+            250.8868
           ]
         ],
         "labels": [
@@ -1591,50 +1429,50 @@
       "early": {
         "available": true,
         "cost": {
-          "MAE": 42.488,
-          "RMSE": 63.956,
-          "R2": -0.1964,
-          "MAPE": 202.352,
-          "rows": 671,
-          "unique_projects": 302
+          "MAE": 44.797,
+          "RMSE": 64.587,
+          "R2": -0.2778,
+          "MAPE": 252.536,
+          "rows": 711,
+          "unique_projects": 326
         },
         "delay": {
-          "MAE": 482.857,
-          "RMSE": 729.254,
-          "R2": -0.137,
-          "MAPE": 86.607,
-          "rows": 671,
-          "unique_projects": 302
+          "MAE": 502.955,
+          "RMSE": 719.256,
+          "R2": -0.1626,
+          "MAPE": 110.257,
+          "rows": 711,
+          "unique_projects": 326
         },
         "risk": {
-          "accuracy": 0.3481,
-          "macro_precision": 0.2799,
-          "macro_recall": 0.2605,
-          "macro_f1": 0.1805,
+          "accuracy": 0.3131,
+          "macro_precision": 0.1664,
+          "macro_recall": 0.2658,
+          "macro_f1": 0.1901,
           "confusion_matrix": [
             [
-              4.1764,
-              0.1765,
-              0.0237,
-              0.1818
+              3.4624,
+              1.1623,
+              0.0,
+              0.1939
             ],
             [
-              2.0679,
-              0.1713,
-              0.0934,
+              1.5513,
+              0.8364,
+              0.0815,
               0.0
             ],
             [
-              2.2136,
-              0.1361,
-              0.0972,
+              1.8332,
+              1.0038,
+              0.0069,
               0.0
             ],
             [
-              3.1972,
-              0.2329,
-              0.0864,
-              0.0451
+              2.0303,
+              1.3981,
+              0.2216,
+              0.013
             ]
           ],
           "labels": [
@@ -1648,50 +1486,50 @@
       "mid": {
         "available": true,
         "cost": {
-          "MAE": 39.486,
-          "RMSE": 58.617,
-          "R2": -0.2902,
-          "MAPE": 235.43,
-          "rows": 1934,
-          "unique_projects": 649
+          "MAE": 39.511,
+          "RMSE": 58.964,
+          "R2": -0.3399,
+          "MAPE": 281.866,
+          "rows": 2072,
+          "unique_projects": 688
         },
         "delay": {
-          "MAE": 471.106,
-          "RMSE": 704.625,
-          "R2": -0.1148,
-          "MAPE": 94.737,
-          "rows": 1934,
-          "unique_projects": 649
+          "MAE": 477.456,
+          "RMSE": 689.271,
+          "R2": -0.0924,
+          "MAPE": 137.369,
+          "rows": 2072,
+          "unique_projects": 688
         },
         "risk": {
-          "accuracy": 0.3814,
-          "macro_precision": 0.3145,
-          "macro_recall": 0.2708,
-          "macro_f1": 0.1932,
+          "accuracy": 0.2736,
+          "macro_precision": 0.2703,
+          "macro_recall": 0.236,
+          "macro_f1": 0.1778,
           "confusion_matrix": [
             [
-              17.1793,
-              0.5068,
-              0.3652,
-              0.0078
+              10.7995,
+              7.9491,
+              0.0147,
+              0.0986
             ],
             [
-              6.4959,
-              0.5113,
-              0.2344,
+              5.1293,
+              2.7456,
+              0.0861,
               0.2639
             ],
             [
-              7.7582,
-              0.747,
-              0.4279,
-              0.0
+              5.8164,
+              3.7896,
+              0.2221,
+              0.0451
             ],
             [
-              10.9503,
-              1.8267,
-              0.5896,
-              0.2185
+              7.7493,
+              5.542,
+              0.6254,
+              0.2135
             ]
           ],
           "labels": [
@@ -1705,50 +1543,50 @@
       "late": {
         "available": true,
         "cost": {
-          "MAE": 37.976,
-          "RMSE": 68.888,
-          "R2": 0.061,
-          "MAPE": 235.993,
-          "rows": 2945,
-          "unique_projects": 901
+          "MAE": 40.375,
+          "RMSE": 70.278,
+          "R2": -0.0125,
+          "MAPE": 260.665,
+          "rows": 3119,
+          "unique_projects": 953
         },
         "delay": {
-          "MAE": 526.774,
-          "RMSE": 787.218,
-          "R2": -0.2343,
-          "MAPE": 97.42,
-          "rows": 2945,
-          "unique_projects": 901
+          "MAE": 504.168,
+          "RMSE": 746.629,
+          "R2": -0.1277,
+          "MAPE": 131.974,
+          "rows": 3119,
+          "unique_projects": 953
         },
         "risk": {
-          "accuracy": 0.2434,
-          "macro_precision": 0.2767,
-          "macro_recall": 0.2876,
-          "macro_f1": 0.1848,
+          "accuracy": 0.2219,
+          "macro_precision": 0.2637,
+          "macro_recall": 0.2562,
+          "macro_f1": 0.1804,
           "confusion_matrix": [
             [
-              13.8894,
-              0.497,
-              0.671,
-              0.5046
+              9.5026,
+              6.1043,
+              0.3423,
+              0.4661
             ],
             [
-              13.1919,
-              2.3587,
-              0.67,
-              0.4041
+              10.3621,
+              6.4946,
+              0.1304,
+              0.6375
             ],
             [
-              12.0764,
-              1.9578,
-              1.1636,
-              0.6128
+              7.6588,
+              8.066,
+              0.5847,
+              0.6166
             ],
             [
-              18.3115,
-              5.5299,
-              3.4414,
-              1.2031
+              13.5642,
+              12.834,
+              1.7787,
+              1.2631
             ]
           ],
           "labels": [
@@ -1762,50 +1600,50 @@
       "very_late": {
         "available": true,
         "cost": {
-          "MAE": 37.643,
-          "RMSE": 67.72,
-          "R2": 0.2169,
-          "MAPE": 218.386,
-          "rows": 17162,
-          "unique_projects": 1421
+          "MAE": 40.097,
+          "RMSE": 71.321,
+          "R2": 0.1752,
+          "MAPE": 223.57,
+          "rows": 17847,
+          "unique_projects": 1489
         },
         "delay": {
-          "MAE": 529.61,
-          "RMSE": 790.837,
-          "R2": 0.5126,
-          "MAPE": 42.641,
-          "rows": 17162,
-          "unique_projects": 1421
+          "MAE": 520.208,
+          "RMSE": 770.469,
+          "R2": 0.5316,
+          "MAPE": 51.381,
+          "rows": 17847,
+          "unique_projects": 1489
         },
         "risk": {
-          "accuracy": 0.6623,
-          "macro_precision": 0.4237,
-          "macro_recall": 0.521,
-          "macro_f1": 0.4472,
+          "accuracy": 0.6683,
+          "macro_precision": 0.4399,
+          "macro_recall": 0.5128,
+          "macro_f1": 0.459,
           "confusion_matrix": [
             [
-              4.4688,
-              2.4772,
-              0.9022,
-              0.5948
+              3.1669,
+              4.2395,
+              0.5359,
+              0.681
             ],
             [
-              6.7063,
-              16.2765,
-              15.2128,
-              6.2162
+              2.7365,
+              26.2522,
+              12.5338,
+              4.3211
             ],
             [
-              4.1623,
-              8.8754,
-              26.3389,
-              21.0035
+              2.2336,
+              16.9557,
+              23.0287,
+              21.8089
             ],
             [
-              8.3258,
-              26.3497,
-              42.3472,
-              233.6977
+              5.9035,
+              42.5878,
+              31.0932,
+              240.9689
             ]
           ],
           "labels": [
@@ -1845,115 +1683,115 @@
           "agency_cost_overrun_rate"
         ],
         "selected_algorithms": {
-          "cost": "xgboost",
-          "delay": "lightgbm"
+          "cost": "extra_trees",
+          "delay": "extra_trees"
         },
         "internal_algorithm_comparisons": {
           "cost": [
             {
               "algorithm": "lightgbm",
-              "MAE": 41.195,
-              "RMSE": 89.365,
-              "R2": 0.2027,
-              "MAPE": 181.532,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 44.963,
+              "RMSE": 77.143,
+              "R2": 0.0655,
+              "MAPE": 149.047,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "xgboost",
-              "MAE": 40.354,
-              "RMSE": 90.614,
-              "R2": 0.1802,
-              "MAPE": 170.254,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 41.935,
+              "RMSE": 66.218,
+              "R2": 0.3115,
+              "MAPE": 124.212,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "extra_trees",
-              "MAE": 42.653,
-              "RMSE": 85.409,
-              "R2": 0.2717,
-              "MAPE": 173.96,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 41.401,
+              "RMSE": 66.272,
+              "R2": 0.3103,
+              "MAPE": 115.206,
+              "rows": 1630,
+              "unique_projects": 95
             }
           ],
           "delay": [
             {
               "algorithm": "lightgbm",
-              "MAE": 352.052,
-              "RMSE": 564.184,
-              "R2": 0.5669,
-              "MAPE": 60.473,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 474.558,
+              "RMSE": 651.95,
+              "R2": 0.6142,
+              "MAPE": 38.293,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "xgboost",
-              "MAE": 376.8,
-              "RMSE": 577.149,
-              "R2": 0.5468,
-              "MAPE": 65.493,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 497.535,
+              "RMSE": 680.161,
+              "R2": 0.5801,
+              "MAPE": 41.728,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "extra_trees",
-              "MAE": 368.479,
-              "RMSE": 551.81,
-              "R2": 0.5857,
-              "MAPE": 75.95,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 459.262,
+              "RMSE": 631.614,
+              "R2": 0.6379,
+              "MAPE": 39.24,
+              "rows": 1630,
+              "unique_projects": 95
             }
           ]
         },
         "metrics": {
           "cost": {
-            "MAE": 38.675,
-            "RMSE": 71.072,
-            "R2": 0.1842,
-            "MAPE": 199.088,
-            "rows": 24186,
-            "unique_projects": 1549
+            "MAE": 38.457,
+            "RMSE": 72.47,
+            "R2": 0.1721,
+            "MAPE": 189.18,
+            "rows": 25282,
+            "unique_projects": 1620
           },
           "delay": {
-            "MAE": 534.668,
-            "RMSE": 808.341,
-            "R2": 0.4743,
-            "MAPE": 57.311,
-            "rows": 24186,
-            "unique_projects": 1549
+            "MAE": 529.127,
+            "RMSE": 794.377,
+            "R2": 0.4854,
+            "MAPE": 69.27,
+            "rows": 25282,
+            "unique_projects": 1620
           },
           "risk": {
-            "accuracy": 0.5607,
-            "macro_precision": 0.4318,
-            "macro_recall": 0.5217,
-            "macro_f1": 0.4348,
+            "accuracy": 0.5614,
+            "macro_precision": 0.4299,
+            "macro_recall": 0.4819,
+            "macro_f1": 0.4282,
             "confusion_matrix": [
               [
-                41.3656,
-                2.935,
-                2.0622,
-                1.1422
+                27.6621,
+                19.441,
+                1.1514,
+                1.3469
               ],
               [
-                31.0193,
-                19.8178,
-                19.0069,
-                5.8663
+                20.5516,
+                38.4317,
+                11.8929,
+                8.4976
               ],
               [
-                27.4691,
-                16.3724,
-                29.3195,
-                21.4867
+                21.2623,
+                31.6637,
+                22.1315,
+                25.7655
               ],
               [
-                44.3486,
-                36.8257,
-                52.6443,
-                242.8123
+                34.1902,
+                61.2518,
+                34.255,
+                258.9333
               ]
             ],
             "labels": [
@@ -1968,50 +1806,50 @@
           "early": {
             "available": true,
             "cost": {
-              "MAE": 41.569,
-              "RMSE": 62.123,
-              "R2": -0.1288,
-              "MAPE": 197.552,
-              "rows": 671,
-              "unique_projects": 302
+              "MAE": 41.91,
+              "RMSE": 60.884,
+              "R2": -0.1355,
+              "MAPE": 236.137,
+              "rows": 711,
+              "unique_projects": 326
             },
             "delay": {
-              "MAE": 491.191,
-              "RMSE": 740.177,
-              "R2": -0.1714,
-              "MAPE": 83.942,
-              "rows": 671,
-              "unique_projects": 302
+              "MAE": 506.959,
+              "RMSE": 724.334,
+              "R2": -0.1791,
+              "MAPE": 110.728,
+              "rows": 711,
+              "unique_projects": 326
             },
             "risk": {
-              "accuracy": 0.3568,
-              "macro_precision": 0.4226,
-              "macro_recall": 0.2633,
-              "macro_f1": 0.1742,
+              "accuracy": 0.2902,
+              "macro_precision": 0.224,
+              "macro_recall": 0.2397,
+              "macro_f1": 0.1776,
               "confusion_matrix": [
                 [
-                  4.3532,
-                  0.1873,
-                  0.0058,
-                  0.012
+                  3.3131,
+                  1.245,
+                  0.0667,
+                  0.1939
                 ],
                 [
-                  2.1437,
-                  0.118,
-                  0.0709,
+                  1.8142,
+                  0.5927,
+                  0.0623,
                   0.0
                 ],
                 [
-                  2.0925,
-                  0.2684,
-                  0.086,
-                  0.0
+                  1.9343,
+                  0.8212,
+                  0.0591,
+                  0.0294
                 ],
                 [
-                  3.1912,
-                  0.2682,
-                  0.0571,
-                  0.0451
+                  2.2839,
+                  1.2886,
+                  0.0526,
+                  0.038
                 ]
               ],
               "labels": [
@@ -2025,50 +1863,50 @@
           "mid": {
             "available": true,
             "cost": {
-              "MAE": 39.582,
-              "RMSE": 56.704,
-              "R2": -0.2073,
-              "MAPE": 229.496,
-              "rows": 1934,
-              "unique_projects": 649
+              "MAE": 40.35,
+              "RMSE": 55.354,
+              "R2": -0.1809,
+              "MAPE": 271.22,
+              "rows": 2072,
+              "unique_projects": 688
             },
             "delay": {
-              "MAE": 478.838,
-              "RMSE": 708.628,
-              "R2": -0.1275,
-              "MAPE": 98.148,
-              "rows": 1934,
-              "unique_projects": 649
+              "MAE": 489.356,
+              "RMSE": 695.317,
+              "R2": -0.1116,
+              "MAPE": 138.703,
+              "rows": 2072,
+              "unique_projects": 688
             },
             "risk": {
-              "accuracy": 0.3808,
-              "macro_precision": 0.3191,
-              "macro_recall": 0.268,
-              "macro_f1": 0.1877,
+              "accuracy": 0.2811,
+              "macro_precision": 0.3135,
+              "macro_recall": 0.2443,
+              "macro_f1": 0.1886,
               "confusion_matrix": [
                 [
-                  17.2794,
-                  0.5177,
-                  0.2302,
-                  0.0319
+                  10.8982,
+                  7.7502,
+                  0.1707,
+                  0.0428
                 ],
                 [
-                  6.6882,
-                  0.4188,
-                  0.1346,
-                  0.2639
+                  5.0202,
+                  2.8223,
+                  0.1053,
+                  0.277
                 ],
                 [
-                  7.7479,
-                  0.8173,
-                  0.3678,
-                  0.0
+                  6.1696,
+                  3.2917,
+                  0.3526,
+                  0.0592
                 ],
                 [
-                  11.1457,
-                  1.6956,
-                  0.4987,
-                  0.2451
+                  7.9996,
+                  5.3418,
+                  0.4999,
+                  0.2889
                 ]
               ],
               "labels": [
@@ -2082,50 +1920,50 @@
           "late": {
             "available": true,
             "cost": {
-              "MAE": 36.955,
-              "RMSE": 69.191,
-              "R2": 0.0527,
-              "MAPE": 225.345,
-              "rows": 2945,
-              "unique_projects": 901
+              "MAE": 38.158,
+              "RMSE": 69.024,
+              "R2": 0.0234,
+              "MAPE": 250.762,
+              "rows": 3119,
+              "unique_projects": 953
             },
             "delay": {
-              "MAE": 524.113,
-              "RMSE": 783.634,
-              "R2": -0.2231,
-              "MAPE": 102.647,
-              "rows": 2945,
-              "unique_projects": 901
+              "MAE": 511.206,
+              "RMSE": 749.624,
+              "R2": -0.1367,
+              "MAPE": 136.533,
+              "rows": 3119,
+              "unique_projects": 953
             },
             "risk": {
-              "accuracy": 0.2244,
-              "macro_precision": 0.2524,
-              "macro_recall": 0.2666,
-              "macro_f1": 0.1523,
+              "accuracy": 0.2277,
+              "macro_precision": 0.267,
+              "macro_recall": 0.2623,
+              "macro_f1": 0.1871,
               "confusion_matrix": [
                 [
-                  14.1791,
-                  0.25,
-                  0.7544,
-                  0.3784
+                  9.5241,
+                  6.0557,
+                  0.4398,
+                  0.3957
                 ],
                 [
-                  14.7722,
-                  0.8424,
-                  0.606,
-                  0.4041
+                  9.9364,
+                  6.7569,
+                  0.2342,
+                  0.6971
                 ],
                 [
-                  12.6893,
-                  1.5826,
-                  1.0429,
-                  0.4958
+                  7.9603,
+                  7.5821,
+                  0.664,
+                  0.7196
                 ],
                 [
-                  19.7018,
-                  5.048,
-                  2.6367,
-                  1.0994
+                  12.867,
+                  13.262,
+                  1.9503,
+                  1.3606
                 ]
               ],
               "labels": [
@@ -2139,50 +1977,50 @@
           "very_late": {
             "available": true,
             "cost": {
-              "MAE": 35.906,
-              "RMSE": 67.105,
-              "R2": 0.2311,
-              "MAPE": 189.662,
-              "rows": 17162,
-              "unique_projects": 1421
+              "MAE": 35.765,
+              "RMSE": 69.869,
+              "R2": 0.2085,
+              "MAPE": 167.676,
+              "rows": 17847,
+              "unique_projects": 1489
             },
             "delay": {
-              "MAE": 529.798,
-              "RMSE": 785.685,
-              "R2": 0.519,
-              "MAPE": 44.98,
-              "rows": 17162,
-              "unique_projects": 1421
+              "MAE": 520.366,
+              "RMSE": 769.257,
+              "R2": 0.5331,
+              "MAPE": 51.354,
+              "rows": 17847,
+              "unique_projects": 1489
             },
             "risk": {
-              "accuracy": 0.6672,
-              "macro_precision": 0.4333,
-              "macro_recall": 0.5503,
-              "macro_f1": 0.4574,
+              "accuracy": 0.6804,
+              "macro_precision": 0.449,
+              "macro_recall": 0.5077,
+              "macro_f1": 0.4663,
               "confusion_matrix": [
                 [
-                  5.5468,
-                  1.4326,
-                  0.9206,
-                  0.543
+                  3.2581,
+                  4.3795,
+                  0.4062,
+                  0.5794
                 ],
                 [
-                  7.2108,
-                  15.0726,
-                  16.9942,
-                  5.1343
+                  2.2043,
+                  25.2451,
+                  11.2797,
+                  7.1143
                 ],
                 [
-                  4.6421,
-                  8.2096,
-                  27.0475,
-                  20.4808
+                  1.8084,
+                  16.9949,
+                  20.7284,
+                  24.4952
                 ],
                 [
-                  9.451,
-                  21.9211,
-                  44.1633,
-                  235.185
+                  4.6624,
+                  36.9167,
+                  29.4698,
+                  249.5045
                 ]
               ],
               "labels": [
@@ -2222,114 +2060,114 @@
         ],
         "selected_algorithms": {
           "cost": "xgboost",
-          "delay": "lightgbm"
+          "delay": "extra_trees"
         },
         "internal_algorithm_comparisons": {
           "cost": [
             {
               "algorithm": "lightgbm",
-              "MAE": 40.74,
-              "RMSE": 87.576,
-              "R2": 0.2343,
-              "MAPE": 170.29,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 38.443,
+              "RMSE": 55.909,
+              "R2": 0.5091,
+              "MAPE": 131.634,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "xgboost",
-              "MAE": 39.284,
-              "RMSE": 84.68,
-              "R2": 0.2841,
-              "MAPE": 167.167,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 36.804,
+              "RMSE": 54.521,
+              "R2": 0.5332,
+              "MAPE": 116.09,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "extra_trees",
-              "MAE": 42.124,
-              "RMSE": 82.008,
-              "R2": 0.3286,
-              "MAPE": 175.057,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 39.063,
+              "RMSE": 59.583,
+              "R2": 0.4425,
+              "MAPE": 115.013,
+              "rows": 1630,
+              "unique_projects": 95
             }
           ],
           "delay": [
             {
               "algorithm": "lightgbm",
-              "MAE": 344.685,
-              "RMSE": 558.209,
-              "R2": 0.576,
-              "MAPE": 58.029,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 472.016,
+              "RMSE": 646.909,
+              "R2": 0.6201,
+              "MAPE": 39.631,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "xgboost",
-              "MAE": 369.963,
-              "RMSE": 566.205,
-              "R2": 0.5638,
-              "MAPE": 63.781,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 498.135,
+              "RMSE": 681.47,
+              "R2": 0.5785,
+              "MAPE": 41.791,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "extra_trees",
-              "MAE": 363.426,
-              "RMSE": 539.465,
-              "R2": 0.604,
-              "MAPE": 75.39,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 456.024,
+              "RMSE": 625.956,
+              "R2": 0.6443,
+              "MAPE": 39.348,
+              "rows": 1630,
+              "unique_projects": 95
             }
           ]
         },
         "metrics": {
           "cost": {
-            "MAE": 39.958,
-            "RMSE": 72.331,
-            "R2": 0.1551,
-            "MAPE": 220.377,
-            "rows": 24186,
-            "unique_projects": 1549
+            "MAE": 42.364,
+            "RMSE": 74.848,
+            "R2": 0.1169,
+            "MAPE": 237.967,
+            "rows": 25282,
+            "unique_projects": 1620
           },
           "delay": {
-            "MAE": 532.811,
-            "RMSE": 809.813,
-            "R2": 0.4723,
-            "MAPE": 55.143,
-            "rows": 24186,
-            "unique_projects": 1549
+            "MAE": 529.85,
+            "RMSE": 797.662,
+            "R2": 0.4811,
+            "MAPE": 68.839,
+            "rows": 25282,
+            "unique_projects": 1620
           },
           "risk": {
-            "accuracy": 0.5563,
-            "macro_precision": 0.4333,
-            "macro_recall": 0.5234,
-            "macro_f1": 0.4376,
+            "accuracy": 0.5634,
+            "macro_precision": 0.4346,
+            "macro_recall": 0.4936,
+            "macro_f1": 0.4327,
             "confusion_matrix": [
               [
-                40.6846,
-                2.9297,
-                1.5903,
-                2.3004
+                30.486,
+                17.122,
+                0.6892,
+                1.3043
               ],
               [
-                30.2857,
-                21.3581,
-                17.9267,
-                6.1397
+                22.805,
+                38.3175,
+                10.0026,
+                8.2488
               ],
               [
-                26.8763,
-                15.9757,
-                30.5415,
-                21.254
+                22.4517,
+                30.0129,
+                21.4407,
+                26.9177
               ],
               [
-                42.5035,
-                39.7908,
-                56.2218,
-                238.1148
+                35.9684,
+                61.1761,
+                33.286,
+                258.1998
               ]
             ],
             "labels": [
@@ -2344,49 +2182,49 @@
           "early": {
             "available": true,
             "cost": {
-              "MAE": 42.054,
-              "RMSE": 63.451,
-              "R2": -0.1775,
-              "MAPE": 197.328,
-              "rows": 671,
-              "unique_projects": 302
+              "MAE": 44.477,
+              "RMSE": 65.038,
+              "R2": -0.2957,
+              "MAPE": 248.977,
+              "rows": 711,
+              "unique_projects": 326
             },
             "delay": {
-              "MAE": 480.467,
-              "RMSE": 728.551,
-              "R2": -0.1349,
-              "MAPE": 85.347,
-              "rows": 671,
-              "unique_projects": 302
+              "MAE": 501.385,
+              "RMSE": 717.449,
+              "R2": -0.1568,
+              "MAPE": 114.506,
+              "rows": 711,
+              "unique_projects": 326
             },
             "risk": {
-              "accuracy": 0.3483,
-              "macro_precision": 0.2216,
-              "macro_recall": 0.2515,
-              "macro_f1": 0.1525,
+              "accuracy": 0.3041,
+              "macro_precision": 0.1819,
+              "macro_recall": 0.2503,
+              "macro_f1": 0.18,
               "confusion_matrix": [
                 [
-                  4.3645,
+                  3.5049,
+                  1.1198,
                   0.0,
-                  0.012,
-                  0.1818
+                  0.1939
                 ],
                 [
-                  2.2061,
-                  0.0556,
-                  0.0709,
+                  1.8054,
+                  0.6446,
+                  0.0192,
                   0.0
                 ],
                 [
-                  2.3582,
-                  0.054,
-                  0.0347,
+                  1.9264,
+                  0.9106,
+                  0.0069,
                   0.0
                 ],
                 [
-                  3.242,
-                  0.2029,
-                  0.0786,
+                  2.2495,
+                  1.1137,
+                  0.2618,
                   0.038
                 ]
               ],
@@ -2401,50 +2239,50 @@
           "mid": {
             "available": true,
             "cost": {
-              "MAE": 39.279,
-              "RMSE": 58.396,
-              "R2": -0.2804,
-              "MAPE": 229.096,
-              "rows": 1934,
-              "unique_projects": 649
+              "MAE": 39.139,
+              "RMSE": 58.874,
+              "R2": -0.3359,
+              "MAPE": 279.972,
+              "rows": 2072,
+              "unique_projects": 688
             },
             "delay": {
-              "MAE": 469.529,
-              "RMSE": 703.811,
-              "R2": -0.1122,
-              "MAPE": 97.01,
-              "rows": 1934,
-              "unique_projects": 649
+              "MAE": 477.697,
+              "RMSE": 689.039,
+              "R2": -0.0916,
+              "MAPE": 137.342,
+              "rows": 2072,
+              "unique_projects": 688
             },
             "risk": {
-              "accuracy": 0.3825,
-              "macro_precision": 0.2759,
-              "macro_recall": 0.2624,
-              "macro_f1": 0.1717,
+              "accuracy": 0.2802,
+              "macro_precision": 0.2644,
+              "macro_recall": 0.2265,
+              "macro_f1": 0.1695,
               "confusion_matrix": [
                 [
-                  17.733,
-                  0.0,
-                  0.2351,
-                  0.091
+                  11.9185,
+                  6.8934,
+                  0.018,
+                  0.0319
                 ],
                 [
-                  6.8884,
-                  0.1947,
-                  0.1584,
+                  5.9115,
+                  2.011,
+                  0.0385,
                   0.2639
                 ],
                 [
-                  8.2246,
-                  0.5055,
-                  0.203,
-                  0.0
+                  6.4782,
+                  3.2676,
+                  0.0823,
+                  0.0451
                 ],
                 [
-                  11.4129,
-                  1.4376,
-                  0.475,
-                  0.2597
+                  8.6106,
+                  4.5727,
+                  0.6444,
+                  0.3025
                 ]
               ],
               "labels": [
@@ -2458,50 +2296,50 @@
           "late": {
             "available": true,
             "cost": {
-              "MAE": 37.578,
-              "RMSE": 68.627,
-              "R2": 0.0681,
-              "MAPE": 230.409,
-              "rows": 2945,
-              "unique_projects": 901
+              "MAE": 40.406,
+              "RMSE": 70.873,
+              "R2": -0.0297,
+              "MAPE": 259.656,
+              "rows": 3119,
+              "unique_projects": 953
             },
             "delay": {
-              "MAE": 523.446,
-              "RMSE": 783.741,
-              "R2": -0.2234,
-              "MAPE": 98.665,
-              "rows": 2945,
-              "unique_projects": 901
+              "MAE": 504.419,
+              "RMSE": 748.985,
+              "R2": -0.1348,
+              "MAPE": 131.795,
+              "rows": 3119,
+              "unique_projects": 953
             },
             "risk": {
-              "accuracy": 0.233,
-              "macro_precision": 0.2639,
-              "macro_recall": 0.2755,
-              "macro_f1": 0.1756,
+              "accuracy": 0.2542,
+              "macro_precision": 0.2739,
+              "macro_recall": 0.2944,
+              "macro_f1": 0.1988,
               "confusion_matrix": [
                 [
-                  13.6035,
-                  0.4232,
-                  0.6731,
-                  0.8621
+                  11.926,
+                  3.8479,
+                  0.2589,
+                  0.3825
                 ],
                 [
-                  14.6198,
-                  0.8154,
-                  0.7854,
-                  0.4041
+                  10.0956,
+                  6.7407,
+                  0.1508,
+                  0.6375
                 ],
                 [
-                  11.6401,
-                  1.3708,
-                  2.1078,
-                  0.6919
+                  8.6216,
+                  7.2663,
+                  0.3392,
+                  0.6989
                 ],
                 [
-                  19.0155,
-                  5.1936,
-                  2.9816,
-                  1.2952
+                  13.7856,
+                  12.7327,
+                  1.486,
+                  1.4358
                 ]
               ],
               "labels": [
@@ -2515,50 +2353,50 @@
           "very_late": {
             "available": true,
             "cost": {
-              "MAE": 37.421,
-              "RMSE": 68.119,
-              "R2": 0.2077,
-              "MAPE": 217.728,
-              "rows": 17162,
-              "unique_projects": 1421
+              "MAE": 40.516,
+              "RMSE": 72.358,
+              "R2": 0.151,
+              "MAPE": 229.657,
+              "rows": 17847,
+              "unique_projects": 1489
             },
             "delay": {
-              "MAE": 527.006,
-              "RMSE": 787.896,
-              "R2": 0.5163,
-              "MAPE": 42.672,
-              "rows": 17162,
-              "unique_projects": 1421
+              "MAE": 523.243,
+              "RMSE": 772.881,
+              "R2": 0.5287,
+              "MAPE": 51.5,
+              "rows": 17847,
+              "unique_projects": 1489
             },
             "risk": {
-              "accuracy": 0.6558,
-              "macro_precision": 0.4284,
-              "macro_recall": 0.5367,
-              "macro_f1": 0.4524,
+              "accuracy": 0.676,
+              "macro_precision": 0.436,
+              "macro_recall": 0.4974,
+              "macro_f1": 0.4522,
               "confusion_matrix": [
                 [
-                  4.9765,
-                  1.9787,
-                  0.4991,
-                  0.9887
+                  2.7798,
+                  5.0169,
+                  0.3026,
+                  0.524
                 ],
                 [
-                  6.5626,
-                  16.0578,
-                  16.5019,
-                  5.2896
+                  3.2116,
+                  26.3272,
+                  9.673,
+                  6.6317
                 ],
                 [
-                  4.6231,
-                  8.1224,
-                  27.6308,
-                  20.0037
+                  2.3763,
+                  16.1678,
+                  20.6346,
+                  24.8483
                 ],
                 [
-                  8.3897,
-                  24.487,
-                  48.4697,
-                  229.3741
+                  4.8037,
+                  39.5399,
+                  29.1541,
+                  247.0557
                 ]
               ],
               "labels": [
@@ -2597,114 +2435,114 @@
         ],
         "selected_algorithms": {
           "cost": "xgboost",
-          "delay": "lightgbm"
+          "delay": "extra_trees"
         },
         "internal_algorithm_comparisons": {
           "cost": [
             {
               "algorithm": "lightgbm",
-              "MAE": 41.186,
-              "RMSE": 87.567,
-              "R2": 0.2344,
-              "MAPE": 175.463,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 38.703,
+              "RMSE": 56.274,
+              "R2": 0.5027,
+              "MAPE": 131.543,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "xgboost",
-              "MAE": 40.128,
-              "RMSE": 83.797,
-              "R2": 0.2989,
-              "MAPE": 170.315,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 36.886,
+              "RMSE": 54.67,
+              "R2": 0.5307,
+              "MAPE": 121.809,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "extra_trees",
-              "MAE": 42.39,
-              "RMSE": 81.172,
-              "R2": 0.3422,
-              "MAPE": 176.444,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 39.403,
+              "RMSE": 60.133,
+              "R2": 0.4322,
+              "MAPE": 115.657,
+              "rows": 1630,
+              "unique_projects": 95
             }
           ],
           "delay": [
             {
               "algorithm": "lightgbm",
-              "MAE": 346.041,
-              "RMSE": 555.881,
-              "R2": 0.5795,
-              "MAPE": 59.671,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 476.408,
+              "RMSE": 650.798,
+              "R2": 0.6156,
+              "MAPE": 40.282,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "xgboost",
-              "MAE": 370.816,
-              "RMSE": 567.224,
-              "R2": 0.5622,
-              "MAPE": 66.398,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 503.581,
+              "RMSE": 684.905,
+              "R2": 0.5742,
+              "MAPE": 43.11,
+              "rows": 1630,
+              "unique_projects": 95
             },
             {
               "algorithm": "extra_trees",
-              "MAE": 366.0,
-              "RMSE": 548.462,
-              "R2": 0.5907,
-              "MAPE": 74.825,
-              "rows": 1096,
-              "unique_projects": 71
+              "MAE": 458.626,
+              "RMSE": 632.133,
+              "R2": 0.6373,
+              "MAPE": 38.634,
+              "rows": 1630,
+              "unique_projects": 95
             }
           ]
         },
         "metrics": {
           "cost": {
-            "MAE": 38.866,
-            "RMSE": 71.33,
-            "R2": 0.1783,
-            "MAPE": 212.824,
-            "rows": 24186,
-            "unique_projects": 1549
+            "MAE": 41.942,
+            "RMSE": 74.164,
+            "R2": 0.1329,
+            "MAPE": 235.923,
+            "rows": 25282,
+            "unique_projects": 1620
           },
           "delay": {
-            "MAE": 531.617,
-            "RMSE": 807.808,
-            "R2": 0.475,
-            "MAPE": 56.192,
-            "rows": 24186,
-            "unique_projects": 1549
+            "MAE": 530.447,
+            "RMSE": 798.519,
+            "R2": 0.48,
+            "MAPE": 68.338,
+            "rows": 25282,
+            "unique_projects": 1620
           },
           "risk": {
-            "accuracy": 0.531,
-            "macro_precision": 0.4325,
-            "macro_recall": 0.5248,
-            "macro_f1": 0.4334,
+            "accuracy": 0.5451,
+            "macro_precision": 0.4378,
+            "macro_recall": 0.5024,
+            "macro_f1": 0.4282,
             "confusion_matrix": [
               [
-                40.1025,
-                4.5103,
-                1.549,
-                1.3432
+                33.5485,
+                13.6438,
+                1.1125,
+                1.2966
               ],
               [
-                28.9822,
-                25.6668,
-                16.6831,
-                4.3781
+                27.3391,
+                38.2511,
+                9.5037,
+                4.2799
               ],
               [
-                25.9835,
-                20.4823,
-                31.9377,
-                16.244
+                27.6352,
+                28.0291,
+                22.968,
+                22.1908
               ],
               [
-                43.4875,
-                49.3029,
-                65.865,
-                217.9754
+                45.0024,
+                68.2421,
+                33.066,
+                242.3198
               ]
             ],
             "labels": [
@@ -2719,49 +2557,49 @@
           "early": {
             "available": true,
             "cost": {
-              "MAE": 42.397,
-              "RMSE": 63.425,
-              "R2": -0.1766,
-              "MAPE": 205.523,
-              "rows": 671,
-              "unique_projects": 302
+              "MAE": 45.4,
+              "RMSE": 64.817,
+              "R2": -0.2869,
+              "MAPE": 269.049,
+              "rows": 711,
+              "unique_projects": 326
             },
             "delay": {
-              "MAE": 481.928,
-              "RMSE": 726.115,
-              "R2": -0.1273,
-              "MAPE": 90.97,
-              "rows": 671,
-              "unique_projects": 302
+              "MAE": 499.195,
+              "RMSE": 717.496,
+              "R2": -0.1569,
+              "MAPE": 109.724,
+              "rows": 711,
+              "unique_projects": 326
             },
             "risk": {
-              "accuracy": 0.341,
-              "macro_precision": 0.2043,
-              "macro_recall": 0.2505,
-              "macro_f1": 0.1612,
+              "accuracy": 0.3486,
+              "macro_precision": 0.2739,
+              "macro_recall": 0.2912,
+              "macro_f1": 0.2225,
               "confusion_matrix": [
                 [
-                  4.1881,
-                  0.1765,
-                  0.0,
+                  3.9017,
+                  0.6564,
+                  0.0667,
                   0.1939
                 ],
                 [
-                  2.1226,
-                  0.1583,
-                  0.0516,
+                  1.6466,
+                  0.7411,
+                  0.0815,
                   0.0
                 ],
                 [
-                  2.3345,
-                  0.1055,
-                  0.0069,
+                  2.0881,
+                  0.6346,
+                  0.1212,
                   0.0
                 ],
                 [
-                  3.1703,
-                  0.2642,
-                  0.082,
+                  2.4465,
+                  1.0007,
+                  0.1708,
                   0.0451
                 ]
               ],
@@ -2776,50 +2614,50 @@
           "mid": {
             "available": true,
             "cost": {
-              "MAE": 38.918,
-              "RMSE": 58.314,
-              "R2": -0.2768,
-              "MAPE": 225.699,
-              "rows": 1934,
-              "unique_projects": 649
+              "MAE": 39.825,
+              "RMSE": 58.118,
+              "R2": -0.3017,
+              "MAPE": 289.132,
+              "rows": 2072,
+              "unique_projects": 688
             },
             "delay": {
-              "MAE": 470.636,
-              "RMSE": 703.359,
-              "R2": -0.1108,
-              "MAPE": 99.902,
-              "rows": 1934,
-              "unique_projects": 649
+              "MAE": 479.573,
+              "RMSE": 691.602,
+              "R2": -0.0998,
+              "MAPE": 137.179,
+              "rows": 2072,
+              "unique_projects": 688
             },
             "risk": {
-              "accuracy": 0.3877,
-              "macro_precision": 0.3197,
-              "macro_recall": 0.2719,
-              "macro_f1": 0.1868,
+              "accuracy": 0.3287,
+              "macro_precision": 0.3316,
+              "macro_recall": 0.258,
+              "macro_f1": 0.1985,
               "confusion_matrix": [
                 [
-                  17.6794,
-                  0.2353,
-                  0.1125,
+                  14.3977,
+                  4.2646,
+                  0.1677,
                   0.0319
                 ],
                 [
-                  6.6218,
-                  0.4919,
-                  0.1278,
+                  6.1283,
+                  1.7036,
+                  0.1291,
                   0.2639
                 ],
                 [
-                  8.1362,
-                  0.5815,
-                  0.2153,
-                  0.0
+                  7.2565,
+                  2.1667,
+                  0.4164,
+                  0.0336
                 ],
                 [
-                  11.5678,
-                  1.2436,
-                  0.5185,
-                  0.2553
+                  9.2902,
+                  4.0705,
+                  0.4955,
+                  0.2739
                 ]
               ],
               "labels": [
@@ -2833,50 +2671,50 @@
           "late": {
             "available": true,
             "cost": {
-              "MAE": 37.104,
-              "RMSE": 68.874,
-              "R2": 0.0614,
-              "MAPE": 221.735,
-              "rows": 2945,
-              "unique_projects": 901
+              "MAE": 40.468,
+              "RMSE": 70.216,
+              "R2": -0.0107,
+              "MAPE": 259.338,
+              "rows": 3119,
+              "unique_projects": 953
             },
             "delay": {
-              "MAE": 519.13,
-              "RMSE": 780.922,
-              "R2": -0.2146,
-              "MAPE": 99.651,
-              "rows": 2945,
-              "unique_projects": 901
+              "MAE": 502.063,
+              "RMSE": 746.313,
+              "R2": -0.1267,
+              "MAPE": 130.743,
+              "rows": 3119,
+              "unique_projects": 953
             },
             "risk": {
-              "accuracy": 0.2362,
-              "macro_precision": 0.2722,
-              "macro_recall": 0.2794,
-              "macro_f1": 0.1697,
+              "accuracy": 0.2279,
+              "macro_precision": 0.2744,
+              "macro_recall": 0.2642,
+              "macro_f1": 0.1812,
               "confusion_matrix": [
                 [
-                  14.175,
-                  0.55,
-                  0.4652,
-                  0.3718
+                  11.6158,
+                  4.0844,
+                  0.3327,
+                  0.3825
                 ],
                 [
-                  14.0539,
-                  1.7814,
-                  0.3853,
-                  0.4041
+                  12.188,
+                  4.6007,
+                  0.2329,
+                  0.603
                 ],
                 [
-                  11.5872,
-                  2.7641,
-                  0.9077,
-                  0.5516
+                  9.7783,
+                  5.8093,
+                  0.6619,
+                  0.6766
                 ],
                 [
-                  19.7544,
-                  4.5434,
-                  2.9881,
-                  1.2
+                  15.8938,
+                  10.1992,
+                  1.9017,
+                  1.4452
                 ]
               ],
               "labels": [
@@ -2890,50 +2728,50 @@
           "very_late": {
             "available": true,
             "cost": {
-              "MAE": 36.126,
-              "RMSE": 66.943,
-              "R2": 0.2348,
-              "MAPE": 209.209,
-              "rows": 17162,
-              "unique_projects": 1421
+              "MAE": 39.917,
+              "RMSE": 71.856,
+              "R2": 0.1628,
+              "MAPE": 225.678,
+              "rows": 17847,
+              "unique_projects": 1489
             },
             "delay": {
-              "MAE": 527.281,
-              "RMSE": 787.002,
-              "R2": 0.5173,
-              "MAPE": 43.375,
-              "rows": 17162,
-              "unique_projects": 1421
+              "MAE": 524.631,
+              "RMSE": 775.264,
+              "R2": 0.5258,
+              "MAPE": 51.108,
+              "rows": 17847,
+              "unique_projects": 1489
             },
             "risk": {
-              "accuracy": 0.6223,
-              "macro_precision": 0.4164,
-              "macro_recall": 0.5214,
-              "macro_f1": 0.4367,
+              "accuracy": 0.6571,
+              "macro_precision": 0.4343,
+              "macro_recall": 0.5195,
+              "macro_f1": 0.4485,
               "confusion_matrix": [
                 [
-                  4.053,
-                  3.0011,
-                  0.7244,
-                  0.6645
+                  3.109,
+                  4.5746,
+                  0.3496,
+                  0.5901
                 ],
                 [
-                  6.1751,
-                  19.2196,
-                  15.3071,
-                  3.7101
+                  3.6337,
+                  30.5161,
+                  8.3479,
+                  3.3458
                 ],
                 [
-                  3.9256,
-                  11.0987,
-                  29.8811,
-                  15.4746
+                  3.0881,
+                  19.1348,
+                  20.5344,
+                  21.2696
                 ],
                 [
-                  8.633,
-                  34.5936,
-                  56.8073,
-                  210.6865
+                  7.0617,
+                  51.6937,
+                  27.4478,
+                  234.3501
                 ]
               ],
               "labels": [
@@ -2952,7 +2790,7 @@
       "delay": false,
       "risk": false
     },
-    "created_at": "2026-08-23T22:15:57.650757+00:00"
+    "created_at": "2026-08-24T16:12:59.203533+00:00"
   },
   "identity_resolution": {
     "rows": 195934,
@@ -2969,50 +2807,50 @@
     ],
     "metrics": {
       "cost": {
-        "MAE": 43.782,
-        "RMSE": 78.457,
-        "R2": 0.0059,
-        "MAPE": 124.993,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 44.32,
+        "RMSE": 78.541,
+        "R2": 0.0276,
+        "MAPE": 128.479,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "delay": {
-        "MAE": 844.423,
-        "RMSE": 1215.08,
-        "R2": -0.1879,
-        "MAPE": 133.994,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 804.356,
+        "RMSE": 1160.824,
+        "R2": -0.099,
+        "MAPE": 156.858,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "risk": {
-        "accuracy": 0.1687,
-        "macro_precision": 0.2672,
-        "macro_recall": 0.2709,
-        "macro_f1": 0.1365,
+        "accuracy": 0.5636,
+        "macro_precision": 0.2324,
+        "macro_recall": 0.2442,
+        "macro_f1": 0.2135,
         "confusion_matrix": [
           [
-            39.2157,
-            2.0754,
-            3.9093,
-            2.3045
+            3.1181,
+            0.6644,
+            2.0371,
+            43.7818
           ],
           [
-            61.4698,
-            1.1979,
-            6.6966,
-            6.346
+            4.4013,
+            0.6554,
+            0.951,
+            73.3663
           ],
           [
-            72.0226,
-            2.2816,
-            10.5431,
-            9.8002
+            5.8146,
+            1.0089,
+            2.5373,
+            91.4622
           ],
           [
-            279.5674,
-            15.4109,
-            32.3124,
-            49.3402
+            29.0781,
+            4.4597,
+            12.8535,
+            342.239
           ]
         ],
         "labels": [
@@ -3027,50 +2865,50 @@
       "early": {
         "available": true,
         "cost": {
-          "MAE": 41.431,
-          "RMSE": 61.704,
-          "R2": -0.1136,
-          "MAPE": 102.705,
-          "rows": 671,
-          "unique_projects": 302
+          "MAE": 41.675,
+          "RMSE": 60.96,
+          "R2": -0.1383,
+          "MAPE": 112.485,
+          "rows": 711,
+          "unique_projects": 326
         },
         "delay": {
-          "MAE": 731.405,
-          "RMSE": 917.932,
-          "R2": -0.8015,
-          "MAPE": 266.612,
-          "rows": 671,
-          "unique_projects": 302
+          "MAE": 700.816,
+          "RMSE": 846.628,
+          "R2": -0.6108,
+          "MAPE": 422.888,
+          "rows": 711,
+          "unique_projects": 326
         },
         "risk": {
-          "accuracy": 0.3863,
-          "macro_precision": 0.2777,
-          "macro_recall": 0.3116,
-          "macro_f1": 0.2616,
+          "accuracy": 0.2374,
+          "macro_precision": 0.1988,
+          "macro_recall": 0.2166,
+          "macro_f1": 0.1674,
           "confusion_matrix": [
             [
-              3.8583,
-              0.0709,
-              0.4483,
-              0.1809
+              0.73,
+              0.0842,
+              0.3728,
+              3.6315
             ],
             [
-              1.6137,
+              0.3049,
               0.0,
-              0.6175,
-              0.1013
+              0.1932,
+              1.9711
             ],
             [
-              1.2518,
-              0.17,
-              0.6604,
-              0.3647
+              0.302,
+              0.1043,
+              0.2533,
+              2.1843
             ],
             [
-              1.5412,
-              0.3624,
-              1.194,
-              0.464
+              0.4809,
+              0.1844,
+              0.7058,
+              2.2919
             ]
           ],
           "labels": [
@@ -3084,50 +2922,50 @@
       "mid": {
         "available": true,
         "cost": {
-          "MAE": 40.62,
-          "RMSE": 56.771,
-          "R2": -0.2102,
-          "MAPE": 119.6,
-          "rows": 1934,
-          "unique_projects": 649
+          "MAE": 40.263,
+          "RMSE": 56.1,
+          "R2": -0.2129,
+          "MAPE": 120.526,
+          "rows": 2072,
+          "unique_projects": 688
         },
         "delay": {
-          "MAE": 692.123,
-          "RMSE": 856.913,
-          "R2": -0.6488,
-          "MAPE": 294.515,
-          "rows": 1934,
-          "unique_projects": 649
+          "MAE": 715.024,
+          "RMSE": 844.761,
+          "R2": -0.6408,
+          "MAPE": 377.543,
+          "rows": 2072,
+          "unique_projects": 688
         },
         "risk": {
-          "accuracy": 0.4011,
-          "macro_precision": 0.2993,
-          "macro_recall": 0.303,
-          "macro_f1": 0.2683,
+          "accuracy": 0.2353,
+          "macro_precision": 0.1818,
+          "macro_recall": 0.2123,
+          "macro_f1": 0.1377,
           "confusion_matrix": [
             [
-              14.8992,
-              0.1899,
-              1.9984,
-              0.9716
+              1.1159,
+              0.2151,
+              0.5177,
+              17.0131
             ],
             [
-              5.8983,
-              0.0333,
-              1.1152,
-              0.4586
+              0.6429,
+              0.0,
+              0.1454,
+              7.4365
             ],
             [
-              5.8788,
-              0.3911,
-              1.6212,
-              1.0419
+              0.6448,
+              0.1818,
+              0.5975,
+              8.4491
             ],
             [
-              6.3114,
-              1.3145,
-              3.2288,
-              2.7303
+              1.442,
+              0.6296,
+              1.7498,
+              10.3088
             ]
           ],
           "labels": [
@@ -3141,50 +2979,50 @@
       "late": {
         "available": true,
         "cost": {
-          "MAE": 40.202,
-          "RMSE": 73.425,
-          "R2": -0.0668,
-          "MAPE": 132.899,
-          "rows": 2945,
-          "unique_projects": 901
+          "MAE": 39.881,
+          "RMSE": 72.384,
+          "R2": -0.074,
+          "MAPE": 136.304,
+          "rows": 3119,
+          "unique_projects": 953
         },
         "delay": {
-          "MAE": 650.902,
-          "RMSE": 828.38,
-          "R2": -0.3668,
-          "MAPE": 292.574,
-          "rows": 2945,
-          "unique_projects": 901
+          "MAE": 661.593,
+          "RMSE": 816.4,
+          "R2": -0.3483,
+          "MAPE": 347.285,
+          "rows": 3119,
+          "unique_projects": 953
         },
         "risk": {
-          "accuracy": 0.2884,
-          "macro_precision": 0.3399,
-          "macro_recall": 0.3199,
-          "macro_f1": 0.236,
+          "accuracy": 0.3114,
+          "macro_precision": 0.1845,
+          "macro_recall": 0.221,
+          "macro_f1": 0.15,
           "confusion_matrix": [
             [
-              13.7612,
-              0.5319,
-              0.9572,
-              0.3117
+              0.6156,
+              0.0597,
+              0.7256,
+              15.0144
             ],
             [
-              13.495,
-              0.6063,
-              1.3898,
-              1.1336
+              1.1697,
+              0.1646,
+              0.1651,
+              16.1252
             ],
             [
-              10.9319,
-              0.3565,
-              3.1523,
-              1.37
+              0.6662,
+              0.1094,
+              0.5167,
+              15.6338
             ],
             [
-              17.5631,
-              1.8522,
-              4.5311,
-              4.5394
+              2.5327,
+              0.853,
+              2.3095,
+              23.7447
             ]
           ],
           "labels": [
@@ -3198,50 +3036,50 @@
       "very_late": {
         "available": true,
         "cost": {
-          "MAE": 43.019,
-          "RMSE": 77.087,
-          "R2": -0.0147,
-          "MAPE": 125.984,
-          "rows": 17162,
-          "unique_projects": 1421
+          "MAE": 44.132,
+          "RMSE": 78.426,
+          "R2": 0.0027,
+          "MAPE": 129.814,
+          "rows": 17847,
+          "unique_projects": 1489
         },
         "delay": {
-          "MAE": 902.554,
-          "RMSE": 1300.448,
-          "R2": -0.3179,
-          "MAPE": 95.921,
-          "rows": 17162,
-          "unique_projects": 1421
+          "MAE": 846.135,
+          "RMSE": 1243.747,
+          "R2": -0.2205,
+          "MAPE": 103.702,
+          "rows": 17847,
+          "unique_projects": 1489
         },
         "risk": {
-          "accuracy": 0.1187,
-          "macro_precision": 0.2426,
-          "macro_recall": 0.2311,
-          "macro_f1": 0.0933,
+          "accuracy": 0.6588,
+          "macro_precision": 0.2412,
+          "macro_recall": 0.2486,
+          "macro_f1": 0.2201,
           "confusion_matrix": [
             [
-              5.9705,
-              1.2827,
-              0.4364,
-              0.7533
+              0.6296,
+              0.3053,
+              0.4152,
+              7.2732
             ],
             [
-              36.3738,
-              0.3581,
-              3.1879,
-              4.4921
+              1.9533,
+              0.3879,
+              0.4472,
+              43.0552
             ],
             [
-              47.3865,
-              1.3269,
-              5.0494,
-              6.6173
+              4.1489,
+              0.585,
+              1.1142,
+              58.1788
             ],
             [
-              237.6719,
-              11.2961,
-              22.7944,
-              38.958
+              23.32,
+              2.5388,
+              7.5905,
+              287.1041
             ]
           ],
           "labels": [
@@ -3284,50 +3122,50 @@
     ],
     "metrics": {
       "cost": {
-        "MAE": 40.265,
-        "RMSE": 72.035,
-        "R2": 0.162,
-        "MAPE": 222.842,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 42.106,
+        "RMSE": 74.042,
+        "R2": 0.1358,
+        "MAPE": 233.947,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "delay": {
-        "MAE": 535.48,
-        "RMSE": 812.6,
-        "R2": 0.4687,
-        "MAPE": 54.885,
-        "rows": 24186,
-        "unique_projects": 1549
+        "MAE": 527.8,
+        "RMSE": 795.241,
+        "R2": 0.4842,
+        "MAPE": 68.701,
+        "rows": 25282,
+        "unique_projects": 1620
       },
       "risk": {
-        "accuracy": 0.5617,
-        "macro_precision": 0.4348,
-        "macro_recall": 0.523,
-        "macro_f1": 0.4408,
+        "accuracy": 0.5515,
+        "macro_precision": 0.4305,
+        "macro_recall": 0.4807,
+        "macro_f1": 0.4261,
         "confusion_matrix": [
           [
-            39.721,
-            4.2589,
-            2.0592,
-            1.4657
+            27.3087,
+            19.627,
+            1.0715,
+            1.5943
           ],
           [
-            28.4619,
-            23.7225,
-            16.5302,
-            6.9956
+            21.9688,
+            38.5025,
+            13.0003,
+            5.9023
           ],
           [
-            26.2106,
-            17.864,
-            28.3666,
-            22.2064
+            20.9004,
+            32.0897,
+            24.3483,
+            23.4847
           ],
           [
-            41.142,
-            44.1432,
-            49.2165,
-            242.1291
+            35.7375,
+            66.1337,
+            35.8722,
+            250.8868
           ]
         ],
         "labels": [
@@ -3342,50 +3180,50 @@
       "early": {
         "available": true,
         "cost": {
-          "MAE": 42.488,
-          "RMSE": 63.956,
-          "R2": -0.1964,
-          "MAPE": 202.352,
-          "rows": 671,
-          "unique_projects": 302
+          "MAE": 44.797,
+          "RMSE": 64.587,
+          "R2": -0.2778,
+          "MAPE": 252.536,
+          "rows": 711,
+          "unique_projects": 326
         },
         "delay": {
-          "MAE": 482.857,
-          "RMSE": 729.254,
-          "R2": -0.137,
-          "MAPE": 86.607,
-          "rows": 671,
-          "unique_projects": 302
+          "MAE": 502.955,
+          "RMSE": 719.256,
+          "R2": -0.1626,
+          "MAPE": 110.257,
+          "rows": 711,
+          "unique_projects": 326
         },
         "risk": {
-          "accuracy": 0.3481,
-          "macro_precision": 0.2799,
-          "macro_recall": 0.2605,
-          "macro_f1": 0.1805,
+          "accuracy": 0.3131,
+          "macro_precision": 0.1664,
+          "macro_recall": 0.2658,
+          "macro_f1": 0.1901,
           "confusion_matrix": [
             [
-              4.1764,
-              0.1765,
-              0.0237,
-              0.1818
+              3.4624,
+              1.1623,
+              0.0,
+              0.1939
             ],
             [
-              2.0679,
-              0.1713,
-              0.0934,
+              1.5513,
+              0.8364,
+              0.0815,
               0.0
             ],
             [
-              2.2136,
-              0.1361,
-              0.0972,
+              1.8332,
+              1.0038,
+              0.0069,
               0.0
             ],
             [
-              3.1972,
-              0.2329,
-              0.0864,
-              0.0451
+              2.0303,
+              1.3981,
+              0.2216,
+              0.013
             ]
           ],
           "labels": [
@@ -3399,50 +3237,50 @@
       "mid": {
         "available": true,
         "cost": {
-          "MAE": 39.486,
-          "RMSE": 58.617,
-          "R2": -0.2902,
-          "MAPE": 235.43,
-          "rows": 1934,
-          "unique_projects": 649
+          "MAE": 39.511,
+          "RMSE": 58.964,
+          "R2": -0.3399,
+          "MAPE": 281.866,
+          "rows": 2072,
+          "unique_projects": 688
         },
         "delay": {
-          "MAE": 471.106,
-          "RMSE": 704.625,
-          "R2": -0.1148,
-          "MAPE": 94.737,
-          "rows": 1934,
-          "unique_projects": 649
+          "MAE": 477.456,
+          "RMSE": 689.271,
+          "R2": -0.0924,
+          "MAPE": 137.369,
+          "rows": 2072,
+          "unique_projects": 688
         },
         "risk": {
-          "accuracy": 0.3814,
-          "macro_precision": 0.3145,
-          "macro_recall": 0.2708,
-          "macro_f1": 0.1932,
+          "accuracy": 0.2736,
+          "macro_precision": 0.2703,
+          "macro_recall": 0.236,
+          "macro_f1": 0.1778,
           "confusion_matrix": [
             [
-              17.1793,
-              0.5068,
-              0.3652,
-              0.0078
+              10.7995,
+              7.9491,
+              0.0147,
+              0.0986
             ],
             [
-              6.4959,
-              0.5113,
-              0.2344,
+              5.1293,
+              2.7456,
+              0.0861,
               0.2639
             ],
             [
-              7.7582,
-              0.747,
-              0.4279,
-              0.0
+              5.8164,
+              3.7896,
+              0.2221,
+              0.0451
             ],
             [
-              10.9503,
-              1.8267,
-              0.5896,
-              0.2185
+              7.7493,
+              5.542,
+              0.6254,
+              0.2135
             ]
           ],
           "labels": [
@@ -3456,50 +3294,50 @@
       "late": {
         "available": true,
         "cost": {
-          "MAE": 37.976,
-          "RMSE": 68.888,
-          "R2": 0.061,
-          "MAPE": 235.993,
-          "rows": 2945,
-          "unique_projects": 901
+          "MAE": 40.375,
+          "RMSE": 70.278,
+          "R2": -0.0125,
+          "MAPE": 260.665,
+          "rows": 3119,
+          "unique_projects": 953
         },
         "delay": {
-          "MAE": 526.774,
-          "RMSE": 787.218,
-          "R2": -0.2343,
-          "MAPE": 97.42,
-          "rows": 2945,
-          "unique_projects": 901
+          "MAE": 504.168,
+          "RMSE": 746.629,
+          "R2": -0.1277,
+          "MAPE": 131.974,
+          "rows": 3119,
+          "unique_projects": 953
         },
         "risk": {
-          "accuracy": 0.2434,
-          "macro_precision": 0.2767,
-          "macro_recall": 0.2876,
-          "macro_f1": 0.1848,
+          "accuracy": 0.2219,
+          "macro_precision": 0.2637,
+          "macro_recall": 0.2562,
+          "macro_f1": 0.1804,
           "confusion_matrix": [
             [
-              13.8894,
-              0.497,
-              0.671,
-              0.5046
+              9.5026,
+              6.1043,
+              0.3423,
+              0.4661
             ],
             [
-              13.1919,
-              2.3587,
-              0.67,
-              0.4041
+              10.3621,
+              6.4946,
+              0.1304,
+              0.6375
             ],
             [
-              12.0764,
-              1.9578,
-              1.1636,
-              0.6128
+              7.6588,
+              8.066,
+              0.5847,
+              0.6166
             ],
             [
-              18.3115,
-              5.5299,
-              3.4414,
-              1.2031
+              13.5642,
+              12.834,
+              1.7787,
+              1.2631
             ]
           ],
           "labels": [
@@ -3513,50 +3351,50 @@
       "very_late": {
         "available": true,
         "cost": {
-          "MAE": 37.643,
-          "RMSE": 67.72,
-          "R2": 0.2169,
-          "MAPE": 218.386,
-          "rows": 17162,
-          "unique_projects": 1421
+          "MAE": 40.097,
+          "RMSE": 71.321,
+          "R2": 0.1752,
+          "MAPE": 223.57,
+          "rows": 17847,
+          "unique_projects": 1489
         },
         "delay": {
-          "MAE": 529.61,
-          "RMSE": 790.837,
-          "R2": 0.5126,
-          "MAPE": 42.641,
-          "rows": 17162,
-          "unique_projects": 1421
+          "MAE": 520.208,
+          "RMSE": 770.469,
+          "R2": 0.5316,
+          "MAPE": 51.381,
+          "rows": 17847,
+          "unique_projects": 1489
         },
         "risk": {
-          "accuracy": 0.6623,
-          "macro_precision": 0.4237,
-          "macro_recall": 0.521,
-          "macro_f1": 0.4472,
+          "accuracy": 0.6683,
+          "macro_precision": 0.4399,
+          "macro_recall": 0.5128,
+          "macro_f1": 0.459,
           "confusion_matrix": [
             [
-              4.4688,
-              2.4772,
-              0.9022,
-              0.5948
+              3.1669,
+              4.2395,
+              0.5359,
+              0.681
             ],
             [
-              6.7063,
-              16.2765,
-              15.2128,
-              6.2162
+              2.7365,
+              26.2522,
+              12.5338,
+              4.3211
             ],
             [
-              4.1623,
-              8.8754,
-              26.3389,
-              21.0035
+              2.2336,
+              16.9557,
+              23.0287,
+              21.8089
             ],
             [
-              8.3258,
-              26.3497,
-              42.3472,
-              233.6977
+              5.9035,
+              42.5878,
+              31.0932,
+              240.9689
             ]
           ],
           "labels": [
@@ -3597,115 +3435,115 @@
         "agency_cost_overrun_rate"
       ],
       "selected_algorithms": {
-        "cost": "xgboost",
-        "delay": "lightgbm"
+        "cost": "extra_trees",
+        "delay": "extra_trees"
       },
       "internal_algorithm_comparisons": {
         "cost": [
           {
             "algorithm": "lightgbm",
-            "MAE": 41.195,
-            "RMSE": 89.365,
-            "R2": 0.2027,
-            "MAPE": 181.532,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 44.963,
+            "RMSE": 77.143,
+            "R2": 0.0655,
+            "MAPE": 149.047,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "xgboost",
-            "MAE": 40.354,
-            "RMSE": 90.614,
-            "R2": 0.1802,
-            "MAPE": 170.254,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 41.935,
+            "RMSE": 66.218,
+            "R2": 0.3115,
+            "MAPE": 124.212,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 42.653,
-            "RMSE": 85.409,
-            "R2": 0.2717,
-            "MAPE": 173.96,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 41.401,
+            "RMSE": 66.272,
+            "R2": 0.3103,
+            "MAPE": 115.206,
+            "rows": 1630,
+            "unique_projects": 95
           }
         ],
         "delay": [
           {
             "algorithm": "lightgbm",
-            "MAE": 352.052,
-            "RMSE": 564.184,
-            "R2": 0.5669,
-            "MAPE": 60.473,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 474.558,
+            "RMSE": 651.95,
+            "R2": 0.6142,
+            "MAPE": 38.293,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "xgboost",
-            "MAE": 376.8,
-            "RMSE": 577.149,
-            "R2": 0.5468,
-            "MAPE": 65.493,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 497.535,
+            "RMSE": 680.161,
+            "R2": 0.5801,
+            "MAPE": 41.728,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 368.479,
-            "RMSE": 551.81,
-            "R2": 0.5857,
-            "MAPE": 75.95,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 459.262,
+            "RMSE": 631.614,
+            "R2": 0.6379,
+            "MAPE": 39.24,
+            "rows": 1630,
+            "unique_projects": 95
           }
         ]
       },
       "metrics": {
         "cost": {
-          "MAE": 38.675,
-          "RMSE": 71.072,
-          "R2": 0.1842,
-          "MAPE": 199.088,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 38.457,
+          "RMSE": 72.47,
+          "R2": 0.1721,
+          "MAPE": 189.18,
+          "rows": 25282,
+          "unique_projects": 1620
         },
         "delay": {
-          "MAE": 534.668,
-          "RMSE": 808.341,
-          "R2": 0.4743,
-          "MAPE": 57.311,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 529.127,
+          "RMSE": 794.377,
+          "R2": 0.4854,
+          "MAPE": 69.27,
+          "rows": 25282,
+          "unique_projects": 1620
         },
         "risk": {
-          "accuracy": 0.5607,
-          "macro_precision": 0.4318,
-          "macro_recall": 0.5217,
-          "macro_f1": 0.4348,
+          "accuracy": 0.5614,
+          "macro_precision": 0.4299,
+          "macro_recall": 0.4819,
+          "macro_f1": 0.4282,
           "confusion_matrix": [
             [
-              41.3656,
-              2.935,
-              2.0622,
-              1.1422
+              27.6621,
+              19.441,
+              1.1514,
+              1.3469
             ],
             [
-              31.0193,
-              19.8178,
-              19.0069,
-              5.8663
+              20.5516,
+              38.4317,
+              11.8929,
+              8.4976
             ],
             [
-              27.4691,
-              16.3724,
-              29.3195,
-              21.4867
+              21.2623,
+              31.6637,
+              22.1315,
+              25.7655
             ],
             [
-              44.3486,
-              36.8257,
-              52.6443,
-              242.8123
+              34.1902,
+              61.2518,
+              34.255,
+              258.9333
             ]
           ],
           "labels": [
@@ -3720,50 +3558,50 @@
         "early": {
           "available": true,
           "cost": {
-            "MAE": 41.569,
-            "RMSE": 62.123,
-            "R2": -0.1288,
-            "MAPE": 197.552,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 41.91,
+            "RMSE": 60.884,
+            "R2": -0.1355,
+            "MAPE": 236.137,
+            "rows": 711,
+            "unique_projects": 326
           },
           "delay": {
-            "MAE": 491.191,
-            "RMSE": 740.177,
-            "R2": -0.1714,
-            "MAPE": 83.942,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 506.959,
+            "RMSE": 724.334,
+            "R2": -0.1791,
+            "MAPE": 110.728,
+            "rows": 711,
+            "unique_projects": 326
           },
           "risk": {
-            "accuracy": 0.3568,
-            "macro_precision": 0.4226,
-            "macro_recall": 0.2633,
-            "macro_f1": 0.1742,
+            "accuracy": 0.2902,
+            "macro_precision": 0.224,
+            "macro_recall": 0.2397,
+            "macro_f1": 0.1776,
             "confusion_matrix": [
               [
-                4.3532,
-                0.1873,
-                0.0058,
-                0.012
+                3.3131,
+                1.245,
+                0.0667,
+                0.1939
               ],
               [
-                2.1437,
-                0.118,
-                0.0709,
+                1.8142,
+                0.5927,
+                0.0623,
                 0.0
               ],
               [
-                2.0925,
-                0.2684,
-                0.086,
-                0.0
+                1.9343,
+                0.8212,
+                0.0591,
+                0.0294
               ],
               [
-                3.1912,
-                0.2682,
-                0.0571,
-                0.0451
+                2.2839,
+                1.2886,
+                0.0526,
+                0.038
               ]
             ],
             "labels": [
@@ -3777,50 +3615,50 @@
         "mid": {
           "available": true,
           "cost": {
-            "MAE": 39.582,
-            "RMSE": 56.704,
-            "R2": -0.2073,
-            "MAPE": 229.496,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 40.35,
+            "RMSE": 55.354,
+            "R2": -0.1809,
+            "MAPE": 271.22,
+            "rows": 2072,
+            "unique_projects": 688
           },
           "delay": {
-            "MAE": 478.838,
-            "RMSE": 708.628,
-            "R2": -0.1275,
-            "MAPE": 98.148,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 489.356,
+            "RMSE": 695.317,
+            "R2": -0.1116,
+            "MAPE": 138.703,
+            "rows": 2072,
+            "unique_projects": 688
           },
           "risk": {
-            "accuracy": 0.3808,
-            "macro_precision": 0.3191,
-            "macro_recall": 0.268,
-            "macro_f1": 0.1877,
+            "accuracy": 0.2811,
+            "macro_precision": 0.3135,
+            "macro_recall": 0.2443,
+            "macro_f1": 0.1886,
             "confusion_matrix": [
               [
-                17.2794,
-                0.5177,
-                0.2302,
-                0.0319
+                10.8982,
+                7.7502,
+                0.1707,
+                0.0428
               ],
               [
-                6.6882,
-                0.4188,
-                0.1346,
-                0.2639
+                5.0202,
+                2.8223,
+                0.1053,
+                0.277
               ],
               [
-                7.7479,
-                0.8173,
-                0.3678,
-                0.0
+                6.1696,
+                3.2917,
+                0.3526,
+                0.0592
               ],
               [
-                11.1457,
-                1.6956,
-                0.4987,
-                0.2451
+                7.9996,
+                5.3418,
+                0.4999,
+                0.2889
               ]
             ],
             "labels": [
@@ -3834,50 +3672,50 @@
         "late": {
           "available": true,
           "cost": {
-            "MAE": 36.955,
-            "RMSE": 69.191,
-            "R2": 0.0527,
-            "MAPE": 225.345,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 38.158,
+            "RMSE": 69.024,
+            "R2": 0.0234,
+            "MAPE": 250.762,
+            "rows": 3119,
+            "unique_projects": 953
           },
           "delay": {
-            "MAE": 524.113,
-            "RMSE": 783.634,
-            "R2": -0.2231,
-            "MAPE": 102.647,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 511.206,
+            "RMSE": 749.624,
+            "R2": -0.1367,
+            "MAPE": 136.533,
+            "rows": 3119,
+            "unique_projects": 953
           },
           "risk": {
-            "accuracy": 0.2244,
-            "macro_precision": 0.2524,
-            "macro_recall": 0.2666,
-            "macro_f1": 0.1523,
+            "accuracy": 0.2277,
+            "macro_precision": 0.267,
+            "macro_recall": 0.2623,
+            "macro_f1": 0.1871,
             "confusion_matrix": [
               [
-                14.1791,
-                0.25,
-                0.7544,
-                0.3784
+                9.5241,
+                6.0557,
+                0.4398,
+                0.3957
               ],
               [
-                14.7722,
-                0.8424,
-                0.606,
-                0.4041
+                9.9364,
+                6.7569,
+                0.2342,
+                0.6971
               ],
               [
-                12.6893,
-                1.5826,
-                1.0429,
-                0.4958
+                7.9603,
+                7.5821,
+                0.664,
+                0.7196
               ],
               [
-                19.7018,
-                5.048,
-                2.6367,
-                1.0994
+                12.867,
+                13.262,
+                1.9503,
+                1.3606
               ]
             ],
             "labels": [
@@ -3891,50 +3729,50 @@
         "very_late": {
           "available": true,
           "cost": {
-            "MAE": 35.906,
-            "RMSE": 67.105,
-            "R2": 0.2311,
-            "MAPE": 189.662,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 35.765,
+            "RMSE": 69.869,
+            "R2": 0.2085,
+            "MAPE": 167.676,
+            "rows": 17847,
+            "unique_projects": 1489
           },
           "delay": {
-            "MAE": 529.798,
-            "RMSE": 785.685,
-            "R2": 0.519,
-            "MAPE": 44.98,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 520.366,
+            "RMSE": 769.257,
+            "R2": 0.5331,
+            "MAPE": 51.354,
+            "rows": 17847,
+            "unique_projects": 1489
           },
           "risk": {
-            "accuracy": 0.6672,
-            "macro_precision": 0.4333,
-            "macro_recall": 0.5503,
-            "macro_f1": 0.4574,
+            "accuracy": 0.6804,
+            "macro_precision": 0.449,
+            "macro_recall": 0.5077,
+            "macro_f1": 0.4663,
             "confusion_matrix": [
               [
-                5.5468,
-                1.4326,
-                0.9206,
-                0.543
+                3.2581,
+                4.3795,
+                0.4062,
+                0.5794
               ],
               [
-                7.2108,
-                15.0726,
-                16.9942,
-                5.1343
+                2.2043,
+                25.2451,
+                11.2797,
+                7.1143
               ],
               [
-                4.6421,
-                8.2096,
-                27.0475,
-                20.4808
+                1.8084,
+                16.9949,
+                20.7284,
+                24.4952
               ],
               [
-                9.451,
-                21.9211,
-                44.1633,
-                235.185
+                4.6624,
+                36.9167,
+                29.4698,
+                249.5045
               ]
             ],
             "labels": [
@@ -3974,114 +3812,114 @@
       ],
       "selected_algorithms": {
         "cost": "xgboost",
-        "delay": "lightgbm"
+        "delay": "extra_trees"
       },
       "internal_algorithm_comparisons": {
         "cost": [
           {
             "algorithm": "lightgbm",
-            "MAE": 40.74,
-            "RMSE": 87.576,
-            "R2": 0.2343,
-            "MAPE": 170.29,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 38.443,
+            "RMSE": 55.909,
+            "R2": 0.5091,
+            "MAPE": 131.634,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "xgboost",
-            "MAE": 39.284,
-            "RMSE": 84.68,
-            "R2": 0.2841,
-            "MAPE": 167.167,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 36.804,
+            "RMSE": 54.521,
+            "R2": 0.5332,
+            "MAPE": 116.09,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 42.124,
-            "RMSE": 82.008,
-            "R2": 0.3286,
-            "MAPE": 175.057,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 39.063,
+            "RMSE": 59.583,
+            "R2": 0.4425,
+            "MAPE": 115.013,
+            "rows": 1630,
+            "unique_projects": 95
           }
         ],
         "delay": [
           {
             "algorithm": "lightgbm",
-            "MAE": 344.685,
-            "RMSE": 558.209,
-            "R2": 0.576,
-            "MAPE": 58.029,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 472.016,
+            "RMSE": 646.909,
+            "R2": 0.6201,
+            "MAPE": 39.631,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "xgboost",
-            "MAE": 369.963,
-            "RMSE": 566.205,
-            "R2": 0.5638,
-            "MAPE": 63.781,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 498.135,
+            "RMSE": 681.47,
+            "R2": 0.5785,
+            "MAPE": 41.791,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 363.426,
-            "RMSE": 539.465,
-            "R2": 0.604,
-            "MAPE": 75.39,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 456.024,
+            "RMSE": 625.956,
+            "R2": 0.6443,
+            "MAPE": 39.348,
+            "rows": 1630,
+            "unique_projects": 95
           }
         ]
       },
       "metrics": {
         "cost": {
-          "MAE": 39.958,
-          "RMSE": 72.331,
-          "R2": 0.1551,
-          "MAPE": 220.377,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 42.364,
+          "RMSE": 74.848,
+          "R2": 0.1169,
+          "MAPE": 237.967,
+          "rows": 25282,
+          "unique_projects": 1620
         },
         "delay": {
-          "MAE": 532.811,
-          "RMSE": 809.813,
-          "R2": 0.4723,
-          "MAPE": 55.143,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 529.85,
+          "RMSE": 797.662,
+          "R2": 0.4811,
+          "MAPE": 68.839,
+          "rows": 25282,
+          "unique_projects": 1620
         },
         "risk": {
-          "accuracy": 0.5563,
-          "macro_precision": 0.4333,
-          "macro_recall": 0.5234,
-          "macro_f1": 0.4376,
+          "accuracy": 0.5634,
+          "macro_precision": 0.4346,
+          "macro_recall": 0.4936,
+          "macro_f1": 0.4327,
           "confusion_matrix": [
             [
-              40.6846,
-              2.9297,
-              1.5903,
-              2.3004
+              30.486,
+              17.122,
+              0.6892,
+              1.3043
             ],
             [
-              30.2857,
-              21.3581,
-              17.9267,
-              6.1397
+              22.805,
+              38.3175,
+              10.0026,
+              8.2488
             ],
             [
-              26.8763,
-              15.9757,
-              30.5415,
-              21.254
+              22.4517,
+              30.0129,
+              21.4407,
+              26.9177
             ],
             [
-              42.5035,
-              39.7908,
-              56.2218,
-              238.1148
+              35.9684,
+              61.1761,
+              33.286,
+              258.1998
             ]
           ],
           "labels": [
@@ -4096,49 +3934,49 @@
         "early": {
           "available": true,
           "cost": {
-            "MAE": 42.054,
-            "RMSE": 63.451,
-            "R2": -0.1775,
-            "MAPE": 197.328,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 44.477,
+            "RMSE": 65.038,
+            "R2": -0.2957,
+            "MAPE": 248.977,
+            "rows": 711,
+            "unique_projects": 326
           },
           "delay": {
-            "MAE": 480.467,
-            "RMSE": 728.551,
-            "R2": -0.1349,
-            "MAPE": 85.347,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 501.385,
+            "RMSE": 717.449,
+            "R2": -0.1568,
+            "MAPE": 114.506,
+            "rows": 711,
+            "unique_projects": 326
           },
           "risk": {
-            "accuracy": 0.3483,
-            "macro_precision": 0.2216,
-            "macro_recall": 0.2515,
-            "macro_f1": 0.1525,
+            "accuracy": 0.3041,
+            "macro_precision": 0.1819,
+            "macro_recall": 0.2503,
+            "macro_f1": 0.18,
             "confusion_matrix": [
               [
-                4.3645,
+                3.5049,
+                1.1198,
                 0.0,
-                0.012,
-                0.1818
+                0.1939
               ],
               [
-                2.2061,
-                0.0556,
-                0.0709,
+                1.8054,
+                0.6446,
+                0.0192,
                 0.0
               ],
               [
-                2.3582,
-                0.054,
-                0.0347,
+                1.9264,
+                0.9106,
+                0.0069,
                 0.0
               ],
               [
-                3.242,
-                0.2029,
-                0.0786,
+                2.2495,
+                1.1137,
+                0.2618,
                 0.038
               ]
             ],
@@ -4153,50 +3991,50 @@
         "mid": {
           "available": true,
           "cost": {
-            "MAE": 39.279,
-            "RMSE": 58.396,
-            "R2": -0.2804,
-            "MAPE": 229.096,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 39.139,
+            "RMSE": 58.874,
+            "R2": -0.3359,
+            "MAPE": 279.972,
+            "rows": 2072,
+            "unique_projects": 688
           },
           "delay": {
-            "MAE": 469.529,
-            "RMSE": 703.811,
-            "R2": -0.1122,
-            "MAPE": 97.01,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 477.697,
+            "RMSE": 689.039,
+            "R2": -0.0916,
+            "MAPE": 137.342,
+            "rows": 2072,
+            "unique_projects": 688
           },
           "risk": {
-            "accuracy": 0.3825,
-            "macro_precision": 0.2759,
-            "macro_recall": 0.2624,
-            "macro_f1": 0.1717,
+            "accuracy": 0.2802,
+            "macro_precision": 0.2644,
+            "macro_recall": 0.2265,
+            "macro_f1": 0.1695,
             "confusion_matrix": [
               [
-                17.733,
-                0.0,
-                0.2351,
-                0.091
+                11.9185,
+                6.8934,
+                0.018,
+                0.0319
               ],
               [
-                6.8884,
-                0.1947,
-                0.1584,
+                5.9115,
+                2.011,
+                0.0385,
                 0.2639
               ],
               [
-                8.2246,
-                0.5055,
-                0.203,
-                0.0
+                6.4782,
+                3.2676,
+                0.0823,
+                0.0451
               ],
               [
-                11.4129,
-                1.4376,
-                0.475,
-                0.2597
+                8.6106,
+                4.5727,
+                0.6444,
+                0.3025
               ]
             ],
             "labels": [
@@ -4210,50 +4048,50 @@
         "late": {
           "available": true,
           "cost": {
-            "MAE": 37.578,
-            "RMSE": 68.627,
-            "R2": 0.0681,
-            "MAPE": 230.409,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 40.406,
+            "RMSE": 70.873,
+            "R2": -0.0297,
+            "MAPE": 259.656,
+            "rows": 3119,
+            "unique_projects": 953
           },
           "delay": {
-            "MAE": 523.446,
-            "RMSE": 783.741,
-            "R2": -0.2234,
-            "MAPE": 98.665,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 504.419,
+            "RMSE": 748.985,
+            "R2": -0.1348,
+            "MAPE": 131.795,
+            "rows": 3119,
+            "unique_projects": 953
           },
           "risk": {
-            "accuracy": 0.233,
-            "macro_precision": 0.2639,
-            "macro_recall": 0.2755,
-            "macro_f1": 0.1756,
+            "accuracy": 0.2542,
+            "macro_precision": 0.2739,
+            "macro_recall": 0.2944,
+            "macro_f1": 0.1988,
             "confusion_matrix": [
               [
-                13.6035,
-                0.4232,
-                0.6731,
-                0.8621
+                11.926,
+                3.8479,
+                0.2589,
+                0.3825
               ],
               [
-                14.6198,
-                0.8154,
-                0.7854,
-                0.4041
+                10.0956,
+                6.7407,
+                0.1508,
+                0.6375
               ],
               [
-                11.6401,
-                1.3708,
-                2.1078,
-                0.6919
+                8.6216,
+                7.2663,
+                0.3392,
+                0.6989
               ],
               [
-                19.0155,
-                5.1936,
-                2.9816,
-                1.2952
+                13.7856,
+                12.7327,
+                1.486,
+                1.4358
               ]
             ],
             "labels": [
@@ -4267,50 +4105,50 @@
         "very_late": {
           "available": true,
           "cost": {
-            "MAE": 37.421,
-            "RMSE": 68.119,
-            "R2": 0.2077,
-            "MAPE": 217.728,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 40.516,
+            "RMSE": 72.358,
+            "R2": 0.151,
+            "MAPE": 229.657,
+            "rows": 17847,
+            "unique_projects": 1489
           },
           "delay": {
-            "MAE": 527.006,
-            "RMSE": 787.896,
-            "R2": 0.5163,
-            "MAPE": 42.672,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 523.243,
+            "RMSE": 772.881,
+            "R2": 0.5287,
+            "MAPE": 51.5,
+            "rows": 17847,
+            "unique_projects": 1489
           },
           "risk": {
-            "accuracy": 0.6558,
-            "macro_precision": 0.4284,
-            "macro_recall": 0.5367,
-            "macro_f1": 0.4524,
+            "accuracy": 0.676,
+            "macro_precision": 0.436,
+            "macro_recall": 0.4974,
+            "macro_f1": 0.4522,
             "confusion_matrix": [
               [
-                4.9765,
-                1.9787,
-                0.4991,
-                0.9887
+                2.7798,
+                5.0169,
+                0.3026,
+                0.524
               ],
               [
-                6.5626,
-                16.0578,
-                16.5019,
-                5.2896
+                3.2116,
+                26.3272,
+                9.673,
+                6.6317
               ],
               [
-                4.6231,
-                8.1224,
-                27.6308,
-                20.0037
+                2.3763,
+                16.1678,
+                20.6346,
+                24.8483
               ],
               [
-                8.3897,
-                24.487,
-                48.4697,
-                229.3741
+                4.8037,
+                39.5399,
+                29.1541,
+                247.0557
               ]
             ],
             "labels": [
@@ -4349,114 +4187,114 @@
       ],
       "selected_algorithms": {
         "cost": "xgboost",
-        "delay": "lightgbm"
+        "delay": "extra_trees"
       },
       "internal_algorithm_comparisons": {
         "cost": [
           {
             "algorithm": "lightgbm",
-            "MAE": 41.186,
-            "RMSE": 87.567,
-            "R2": 0.2344,
-            "MAPE": 175.463,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 38.703,
+            "RMSE": 56.274,
+            "R2": 0.5027,
+            "MAPE": 131.543,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "xgboost",
-            "MAE": 40.128,
-            "RMSE": 83.797,
-            "R2": 0.2989,
-            "MAPE": 170.315,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 36.886,
+            "RMSE": 54.67,
+            "R2": 0.5307,
+            "MAPE": 121.809,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 42.39,
-            "RMSE": 81.172,
-            "R2": 0.3422,
-            "MAPE": 176.444,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 39.403,
+            "RMSE": 60.133,
+            "R2": 0.4322,
+            "MAPE": 115.657,
+            "rows": 1630,
+            "unique_projects": 95
           }
         ],
         "delay": [
           {
             "algorithm": "lightgbm",
-            "MAE": 346.041,
-            "RMSE": 555.881,
-            "R2": 0.5795,
-            "MAPE": 59.671,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 476.408,
+            "RMSE": 650.798,
+            "R2": 0.6156,
+            "MAPE": 40.282,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "xgboost",
-            "MAE": 370.816,
-            "RMSE": 567.224,
-            "R2": 0.5622,
-            "MAPE": 66.398,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 503.581,
+            "RMSE": 684.905,
+            "R2": 0.5742,
+            "MAPE": 43.11,
+            "rows": 1630,
+            "unique_projects": 95
           },
           {
             "algorithm": "extra_trees",
-            "MAE": 366.0,
-            "RMSE": 548.462,
-            "R2": 0.5907,
-            "MAPE": 74.825,
-            "rows": 1096,
-            "unique_projects": 71
+            "MAE": 458.626,
+            "RMSE": 632.133,
+            "R2": 0.6373,
+            "MAPE": 38.634,
+            "rows": 1630,
+            "unique_projects": 95
           }
         ]
       },
       "metrics": {
         "cost": {
-          "MAE": 38.866,
-          "RMSE": 71.33,
-          "R2": 0.1783,
-          "MAPE": 212.824,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 41.942,
+          "RMSE": 74.164,
+          "R2": 0.1329,
+          "MAPE": 235.923,
+          "rows": 25282,
+          "unique_projects": 1620
         },
         "delay": {
-          "MAE": 531.617,
-          "RMSE": 807.808,
-          "R2": 0.475,
-          "MAPE": 56.192,
-          "rows": 24186,
-          "unique_projects": 1549
+          "MAE": 530.447,
+          "RMSE": 798.519,
+          "R2": 0.48,
+          "MAPE": 68.338,
+          "rows": 25282,
+          "unique_projects": 1620
         },
         "risk": {
-          "accuracy": 0.531,
-          "macro_precision": 0.4325,
-          "macro_recall": 0.5248,
-          "macro_f1": 0.4334,
+          "accuracy": 0.5451,
+          "macro_precision": 0.4378,
+          "macro_recall": 0.5024,
+          "macro_f1": 0.4282,
           "confusion_matrix": [
             [
-              40.1025,
-              4.5103,
-              1.549,
-              1.3432
+              33.5485,
+              13.6438,
+              1.1125,
+              1.2966
             ],
             [
-              28.9822,
-              25.6668,
-              16.6831,
-              4.3781
+              27.3391,
+              38.2511,
+              9.5037,
+              4.2799
             ],
             [
-              25.9835,
-              20.4823,
-              31.9377,
-              16.244
+              27.6352,
+              28.0291,
+              22.968,
+              22.1908
             ],
             [
-              43.4875,
-              49.3029,
-              65.865,
-              217.9754
+              45.0024,
+              68.2421,
+              33.066,
+              242.3198
             ]
           ],
           "labels": [
@@ -4471,49 +4309,49 @@
         "early": {
           "available": true,
           "cost": {
-            "MAE": 42.397,
-            "RMSE": 63.425,
-            "R2": -0.1766,
-            "MAPE": 205.523,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 45.4,
+            "RMSE": 64.817,
+            "R2": -0.2869,
+            "MAPE": 269.049,
+            "rows": 711,
+            "unique_projects": 326
           },
           "delay": {
-            "MAE": 481.928,
-            "RMSE": 726.115,
-            "R2": -0.1273,
-            "MAPE": 90.97,
-            "rows": 671,
-            "unique_projects": 302
+            "MAE": 499.195,
+            "RMSE": 717.496,
+            "R2": -0.1569,
+            "MAPE": 109.724,
+            "rows": 711,
+            "unique_projects": 326
           },
           "risk": {
-            "accuracy": 0.341,
-            "macro_precision": 0.2043,
-            "macro_recall": 0.2505,
-            "macro_f1": 0.1612,
+            "accuracy": 0.3486,
+            "macro_precision": 0.2739,
+            "macro_recall": 0.2912,
+            "macro_f1": 0.2225,
             "confusion_matrix": [
               [
-                4.1881,
-                0.1765,
-                0.0,
+                3.9017,
+                0.6564,
+                0.0667,
                 0.1939
               ],
               [
-                2.1226,
-                0.1583,
-                0.0516,
+                1.6466,
+                0.7411,
+                0.0815,
                 0.0
               ],
               [
-                2.3345,
-                0.1055,
-                0.0069,
+                2.0881,
+                0.6346,
+                0.1212,
                 0.0
               ],
               [
-                3.1703,
-                0.2642,
-                0.082,
+                2.4465,
+                1.0007,
+                0.1708,
                 0.0451
               ]
             ],
@@ -4528,50 +4366,50 @@
         "mid": {
           "available": true,
           "cost": {
-            "MAE": 38.918,
-            "RMSE": 58.314,
-            "R2": -0.2768,
-            "MAPE": 225.699,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 39.825,
+            "RMSE": 58.118,
+            "R2": -0.3017,
+            "MAPE": 289.132,
+            "rows": 2072,
+            "unique_projects": 688
           },
           "delay": {
-            "MAE": 470.636,
-            "RMSE": 703.359,
-            "R2": -0.1108,
-            "MAPE": 99.902,
-            "rows": 1934,
-            "unique_projects": 649
+            "MAE": 479.573,
+            "RMSE": 691.602,
+            "R2": -0.0998,
+            "MAPE": 137.179,
+            "rows": 2072,
+            "unique_projects": 688
           },
           "risk": {
-            "accuracy": 0.3877,
-            "macro_precision": 0.3197,
-            "macro_recall": 0.2719,
-            "macro_f1": 0.1868,
+            "accuracy": 0.3287,
+            "macro_precision": 0.3316,
+            "macro_recall": 0.258,
+            "macro_f1": 0.1985,
             "confusion_matrix": [
               [
-                17.6794,
-                0.2353,
-                0.1125,
+                14.3977,
+                4.2646,
+                0.1677,
                 0.0319
               ],
               [
-                6.6218,
-                0.4919,
-                0.1278,
+                6.1283,
+                1.7036,
+                0.1291,
                 0.2639
               ],
               [
-                8.1362,
-                0.5815,
-                0.2153,
-                0.0
+                7.2565,
+                2.1667,
+                0.4164,
+                0.0336
               ],
               [
-                11.5678,
-                1.2436,
-                0.5185,
-                0.2553
+                9.2902,
+                4.0705,
+                0.4955,
+                0.2739
               ]
             ],
             "labels": [
@@ -4585,50 +4423,50 @@
         "late": {
           "available": true,
           "cost": {
-            "MAE": 37.104,
-            "RMSE": 68.874,
-            "R2": 0.0614,
-            "MAPE": 221.735,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 40.468,
+            "RMSE": 70.216,
+            "R2": -0.0107,
+            "MAPE": 259.338,
+            "rows": 3119,
+            "unique_projects": 953
           },
           "delay": {
-            "MAE": 519.13,
-            "RMSE": 780.922,
-            "R2": -0.2146,
-            "MAPE": 99.651,
-            "rows": 2945,
-            "unique_projects": 901
+            "MAE": 502.063,
+            "RMSE": 746.313,
+            "R2": -0.1267,
+            "MAPE": 130.743,
+            "rows": 3119,
+            "unique_projects": 953
           },
           "risk": {
-            "accuracy": 0.2362,
-            "macro_precision": 0.2722,
-            "macro_recall": 0.2794,
-            "macro_f1": 0.1697,
+            "accuracy": 0.2279,
+            "macro_precision": 0.2744,
+            "macro_recall": 0.2642,
+            "macro_f1": 0.1812,
             "confusion_matrix": [
               [
-                14.175,
-                0.55,
-                0.4652,
-                0.3718
+                11.6158,
+                4.0844,
+                0.3327,
+                0.3825
               ],
               [
-                14.0539,
-                1.7814,
-                0.3853,
-                0.4041
+                12.188,
+                4.6007,
+                0.2329,
+                0.603
               ],
               [
-                11.5872,
-                2.7641,
-                0.9077,
-                0.5516
+                9.7783,
+                5.8093,
+                0.6619,
+                0.6766
               ],
               [
-                19.7544,
-                4.5434,
-                2.9881,
-                1.2
+                15.8938,
+                10.1992,
+                1.9017,
+                1.4452
               ]
             ],
             "labels": [
@@ -4642,50 +4480,50 @@
         "very_late": {
           "available": true,
           "cost": {
-            "MAE": 36.126,
-            "RMSE": 66.943,
-            "R2": 0.2348,
-            "MAPE": 209.209,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 39.917,
+            "RMSE": 71.856,
+            "R2": 0.1628,
+            "MAPE": 225.678,
+            "rows": 17847,
+            "unique_projects": 1489
           },
           "delay": {
-            "MAE": 527.281,
-            "RMSE": 787.002,
-            "R2": 0.5173,
-            "MAPE": 43.375,
-            "rows": 17162,
-            "unique_projects": 1421
+            "MAE": 524.631,
+            "RMSE": 775.264,
+            "R2": 0.5258,
+            "MAPE": 51.108,
+            "rows": 17847,
+            "unique_projects": 1489
           },
           "risk": {
-            "accuracy": 0.6223,
-            "macro_precision": 0.4164,
-            "macro_recall": 0.5214,
-            "macro_f1": 0.4367,
+            "accuracy": 0.6571,
+            "macro_precision": 0.4343,
+            "macro_recall": 0.5195,
+            "macro_f1": 0.4485,
             "confusion_matrix": [
               [
-                4.053,
-                3.0011,
-                0.7244,
-                0.6645
+                3.109,
+                4.5746,
+                0.3496,
+                0.5901
               ],
               [
-                6.1751,
-                19.2196,
-                15.3071,
-                3.7101
+                3.6337,
+                30.5161,
+                8.3479,
+                3.3458
               ],
               [
-                3.9256,
-                11.0987,
-                29.8811,
-                15.4746
+                3.0881,
+                19.1348,
+                20.5344,
+                21.2696
               ],
               [
-                8.633,
-                34.5936,
-                56.8073,
-                210.6865
+                7.0617,
+                51.6937,
+                27.4478,
+                234.3501
               ]
             ],
             "labels": [
@@ -4705,119 +4543,103 @@
       "features": [
         {
           "feature": "expenditure_ratio",
-          "importance": 0.335156
+          "importance": 0.404725
         },
         {
           "feature": "cost_escalation_percentage",
-          "importance": 0.195355
+          "importance": 0.140707
         },
         {
           "feature": "planned_duration_days",
-          "importance": 0.072543
-        },
-        {
-          "feature": "cumulative_expenditure_cr",
-          "importance": 0.060439
-        },
-        {
-          "feature": "agency_delay_rate",
-          "importance": 0.058967
+          "importance": 0.082112
         },
         {
           "feature": "revised_cost_cr",
-          "importance": 0.043675
-        },
-        {
-          "feature": "expected_progress_percentage",
-          "importance": 0.032704
+          "importance": 0.066809
         },
         {
           "feature": "approved_cost_cr",
-          "importance": 0.027491
+          "importance": 0.056331
         },
         {
-          "feature": "schedule_slippage_ratio",
-          "importance": 0.026444
+          "feature": "agency_delay_rate",
+          "importance": 0.052537
         },
         {
-          "feature": "sector",
-          "importance": 0.026433
+          "feature": "cumulative_expenditure_cr",
+          "importance": 0.041715
         },
         {
           "feature": "duration_ratio",
-          "importance": 0.023147
-        },
-        {
-          "feature": "sector_average_delay",
-          "importance": 0.019171
-        },
-        {
-          "feature": "implementing_agency",
-          "importance": 0.01708
-        },
-        {
-          "feature": "elapsed_duration_days",
-          "importance": 0.014677
-        },
-        {
-          "feature": "agency_average_delay",
-          "importance": 0.013403
+          "importance": 0.027861
         },
         {
           "feature": "schedule_slippage_days",
-          "importance": 0.010522
+          "importance": 0.022703
         },
         {
-          "feature": "missingindicator_schedule_slippage_days",
-          "importance": 0.007006
+          "feature": "agency_average_delay",
+          "importance": 0.019644
         },
         {
-          "feature": "agency_cost_overrun_rate",
-          "importance": 0.005551
+          "feature": "elapsed_duration_days",
+          "importance": 0.019128
         },
         {
-          "feature": "agency_average_cost_overrun",
-          "importance": 0.003262
+          "feature": "sector_average_delay",
+          "importance": 0.015734
         },
         {
-          "feature": "sector_average_cost_overrun",
-          "importance": 0.003219
+          "feature": "implementing_agency",
+          "importance": 0.010734
+        },
+        {
+          "feature": "sector",
+          "importance": 0.010535
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "importance": 0.009208
+        },
+        {
+          "feature": "schedule_slippage_ratio",
+          "importance": 0.008373
         },
         {
           "feature": "project_size_category",
-          "importance": 0.000911
+          "importance": 0.006926
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.001268
+        },
+        {
+          "feature": "agency_average_cost_overrun",
+          "importance": 0.001064
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "importance": 0.00087
         },
         {
           "feature": "missingindicator_schedule_slippage_ratio",
-          "importance": 0.000904
+          "importance": 0.000463
         },
         {
-          "feature": "missingindicator_revised_cost_cr",
-          "importance": 0.000558
-        },
-        {
-          "feature": "missingindicator_planned_duration_days",
-          "importance": 0.000489
-        },
-        {
-          "feature": "missingindicator_cost_growth_velocity_6m",
-          "importance": 0.000298
-        },
-        {
-          "feature": "missingindicator_cost_escalation_percentage",
-          "importance": 0.000191
+          "feature": "missingindicator_cost_growth_velocity_3m",
+          "importance": 0.000282
         },
         {
           "feature": "cost_growth_velocity_6m",
-          "importance": 0.000187
+          "importance": 9.4e-05
         },
         {
-          "feature": "missingindicator_sector_average_delay",
-          "importance": 0.000144
+          "feature": "missingindicator_planned_duration_days",
+          "importance": 9.2e-05
         },
         {
-          "feature": "missingindicator_duration_ratio",
-          "importance": 7.4e-05
+          "feature": "missingindicator_schedule_slippage_days",
+          "importance": 8.6e-05
         },
         {
           "feature": "cost_growth_velocity_3m",
@@ -4836,11 +4658,11 @@
           "importance": 0.0
         },
         {
-          "feature": "missingindicator_sector_average_cost_overrun",
+          "feature": "missingindicator_expenditure_ratio",
           "importance": 0.0
         },
         {
-          "feature": "missingindicator_expenditure_ratio",
+          "feature": "missingindicator_duration_ratio",
           "importance": 0.0
         },
         {
@@ -4848,35 +4670,19 @@
           "importance": 0.0
         },
         {
-          "feature": "missingindicator_cost_growth_velocity_3m",
+          "feature": "missingindicator_revised_cost_cr",
+          "importance": 0.0
+        },
+        {
+          "feature": "missingindicator_cost_escalation_percentage",
+          "importance": 0.0
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_6m",
           "importance": 0.0
         },
         {
           "feature": "missingindicator_cost_acceleration",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_sector_delay_rate",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_sector_cost_overrun_rate",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_average_delay",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_average_cost_overrun",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_delay_rate",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_cost_overrun_rate",
           "importance": 0.0
         }
       ]
@@ -4885,120 +4691,128 @@
       "method": "tree_feature_importance",
       "features": [
         {
-          "feature": "elapsed_duration_days",
-          "importance": 0.122344
+          "feature": "schedule_slippage_days",
+          "importance": 0.362449
         },
         {
-          "feature": "schedule_slippage_days",
-          "importance": 0.10803
+          "feature": "elapsed_duration_days",
+          "importance": 0.25129
         },
         {
           "feature": "duration_ratio",
-          "importance": 0.101991
-        },
-        {
-          "feature": "approved_cost_cr",
-          "importance": 0.081414
-        },
-        {
-          "feature": "planned_duration_days",
-          "importance": 0.075375
-        },
-        {
-          "feature": "revised_cost_cr",
-          "importance": 0.072467
-        },
-        {
-          "feature": "expenditure_ratio",
-          "importance": 0.069783
-        },
-        {
-          "feature": "sector",
-          "importance": 0.069336
-        },
-        {
-          "feature": "cost_escalation_percentage",
-          "importance": 0.061284
+          "importance": 0.123146
         },
         {
           "feature": "implementing_agency",
-          "importance": 0.053903
+          "importance": 0.041752
         },
         {
-          "feature": "cumulative_expenditure_cr",
-          "importance": 0.051666
-        },
-        {
-          "feature": "sector_average_delay",
-          "importance": 0.031313
+          "feature": "sector",
+          "importance": 0.039762
         },
         {
           "feature": "schedule_slippage_ratio",
-          "importance": 0.027287
+          "importance": 0.039402
         },
         {
-          "feature": "agency_average_delay",
-          "importance": 0.013867
+          "feature": "planned_duration_days",
+          "importance": 0.031438
         },
         {
-          "feature": "sector_average_cost_overrun",
-          "importance": 0.011631
+          "feature": "cost_escalation_percentage",
+          "importance": 0.015311
         },
         {
-          "feature": "agency_delay_rate",
-          "importance": 0.011407
-        },
-        {
-          "feature": "agency_average_cost_overrun",
-          "importance": 0.008723
-        },
-        {
-          "feature": "missingindicator_revised_cost_cr",
-          "importance": 0.007828
-        },
-        {
-          "feature": "agency_cost_overrun_rate",
-          "importance": 0.005144
-        },
-        {
-          "feature": "expected_progress_percentage",
-          "importance": 0.004921
+          "feature": "expenditure_ratio",
+          "importance": 0.014124
         },
         {
           "feature": "project_size_category",
-          "importance": 0.003355
+          "importance": 0.012141
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "importance": 0.011086
+        },
+        {
+          "feature": "revised_cost_cr",
+          "importance": 0.009446
+        },
+        {
+          "feature": "approved_cost_cr",
+          "importance": 0.009217
+        },
+        {
+          "feature": "cumulative_expenditure_cr",
+          "importance": 0.005431
+        },
+        {
+          "feature": "missingindicator_duration_ratio",
+          "importance": 0.004293
         },
         {
           "feature": "missingindicator_schedule_slippage_ratio",
-          "importance": 0.003131
+          "importance": 0.004178
         },
         {
-          "feature": "missingindicator_schedule_slippage_days",
-          "importance": 0.001789
+          "feature": "missingindicator_planned_duration_days",
+          "importance": 0.003596
         },
         {
-          "feature": "missingindicator_cost_growth_velocity_3m",
-          "importance": 0.000895
+          "feature": "missingindicator_expected_progress_percentage",
+          "importance": 0.003556
         },
         {
-          "feature": "cost_growth_velocity_6m",
-          "importance": 0.000447
+          "feature": "agency_average_delay",
+          "importance": 0.002439
         },
         {
           "feature": "missingindicator_cost_growth_velocity_6m",
-          "importance": 0.000447
+          "importance": 0.002309
         },
         {
-          "feature": "missingindicator_cost_escalation_percentage",
-          "importance": 0.000224
+          "feature": "missingindicator_schedule_slippage_days",
+          "importance": 0.00227
         },
         {
-          "feature": "cost_growth_velocity_3m",
-          "importance": 0.0
+          "feature": "agency_delay_rate",
+          "importance": 0.002187
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.002069
+        },
+        {
+          "feature": "sector_average_delay",
+          "importance": 0.001837
+        },
+        {
+          "feature": "agency_average_cost_overrun",
+          "importance": 0.001789
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "importance": 0.001396
+        },
+        {
+          "feature": "missingindicator_cost_growth_velocity_3m",
+          "importance": 0.000902
+        },
+        {
+          "feature": "missingindicator_cost_acceleration",
+          "importance": 0.000888
+        },
+        {
+          "feature": "cost_growth_velocity_6m",
+          "importance": 0.000216
         },
         {
           "feature": "cost_acceleration",
-          "importance": 0.0
+          "importance": 6.3e-05
+        },
+        {
+          "feature": "cost_growth_velocity_3m",
+          "importance": 1.6e-05
         },
         {
           "feature": "sector_delay_rate",
@@ -5009,55 +4823,15 @@
           "importance": 0.0
         },
         {
-          "feature": "missingindicator_sector_average_delay",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_sector_average_cost_overrun",
-          "importance": 0.0
-        },
-        {
           "feature": "missingindicator_expenditure_ratio",
           "importance": 0.0
         },
         {
-          "feature": "missingindicator_planned_duration_days",
+          "feature": "missingindicator_revised_cost_cr",
           "importance": 0.0
         },
         {
-          "feature": "missingindicator_duration_ratio",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_expected_progress_percentage",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_cost_acceleration",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_sector_delay_rate",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_sector_cost_overrun_rate",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_average_delay",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_average_cost_overrun",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_delay_rate",
-          "importance": 0.0
-        },
-        {
-          "feature": "missingindicator_agency_cost_overrun_rate",
+          "feature": "missingindicator_cost_escalation_percentage",
           "importance": 0.0
         }
       ]
@@ -5066,172 +4840,140 @@
       "method": "tree_feature_importance",
       "features": [
         {
-          "feature": "sector",
-          "importance": 0.119786
+          "feature": "duration_ratio",
+          "importance": 0.131807
         },
         {
           "feature": "schedule_slippage_days",
-          "importance": 0.117139
+          "importance": 0.122157
         },
         {
-          "feature": "duration_ratio",
-          "importance": 0.112622
+          "feature": "sector",
+          "importance": 0.111654
         },
         {
           "feature": "schedule_slippage_ratio",
-          "importance": 0.102202
-        },
-        {
-          "feature": "expected_progress_percentage",
-          "importance": 0.081283
+          "importance": 0.093053
         },
         {
           "feature": "elapsed_duration_days",
-          "importance": 0.073392
+          "importance": 0.081535
+        },
+        {
+          "feature": "expected_progress_percentage",
+          "importance": 0.068933
         },
         {
           "feature": "implementing_agency",
-          "importance": 0.054434
+          "importance": 0.048387
         },
         {
           "feature": "expenditure_ratio",
-          "importance": 0.040274
+          "importance": 0.044593
         },
         {
           "feature": "planned_duration_days",
-          "importance": 0.03673
+          "importance": 0.041919
         },
         {
           "feature": "cumulative_expenditure_cr",
-          "importance": 0.025535
+          "importance": 0.034792
         },
         {
           "feature": "approved_cost_cr",
-          "importance": 0.025117
+          "importance": 0.033368
         },
         {
           "feature": "revised_cost_cr",
-          "importance": 0.02359
+          "importance": 0.032889
         },
         {
           "feature": "cost_escalation_percentage",
-          "importance": 0.022379
-        },
-        {
-          "feature": "agency_delay_rate",
-          "importance": 0.018505
-        },
-        {
-          "feature": "sector_average_cost_overrun",
-          "importance": 0.017575
-        },
-        {
-          "feature": "agency_average_cost_overrun",
-          "importance": 0.01568
-        },
-        {
-          "feature": "agency_average_delay",
-          "importance": 0.015091
-        },
-        {
-          "feature": "sector_average_delay",
-          "importance": 0.014844
-        },
-        {
-          "feature": "agency_cost_overrun_rate",
-          "importance": 0.012023
+          "importance": 0.021236
         },
         {
           "feature": "project_size_category",
-          "importance": 0.011698
+          "importance": 0.015981
         },
         {
-          "feature": "missingindicator_revised_cost_cr",
-          "importance": 0.008683
+          "feature": "agency_average_cost_overrun",
+          "importance": 0.015673
         },
         {
-          "feature": "missingindicator_cost_escalation_percentage",
-          "importance": 0.007772
+          "feature": "agency_delay_rate",
+          "importance": 0.015147
+        },
+        {
+          "feature": "agency_average_delay",
+          "importance": 0.014581
+        },
+        {
+          "feature": "sector_average_cost_overrun",
+          "importance": 0.01321
+        },
+        {
+          "feature": "agency_cost_overrun_rate",
+          "importance": 0.012075
+        },
+        {
+          "feature": "sector_average_delay",
+          "importance": 0.011315
         },
         {
           "feature": "missingindicator_cost_growth_velocity_6m",
-          "importance": 0.005125
-        },
-        {
-          "feature": "missingindicator_cost_acceleration",
-          "importance": 0.004951
+          "importance": 0.005274
         },
         {
           "feature": "missingindicator_cost_growth_velocity_3m",
-          "importance": 0.004599
+          "importance": 0.004291
         },
         {
           "feature": "cost_growth_velocity_6m",
-          "importance": 0.004566
+          "importance": 0.00405
         },
         {
-          "feature": "cost_acceleration",
-          "importance": 0.002801
-        },
-        {
-          "feature": "cost_growth_velocity_3m",
-          "importance": 0.002593
-        },
-        {
-          "feature": "missingindicator_agency_average_delay",
-          "importance": 0.001937
-        },
-        {
-          "feature": "missingindicator_schedule_slippage_ratio",
-          "importance": 0.001757
-        },
-        {
-          "feature": "missingindicator_duration_ratio",
-          "importance": 0.001609
-        },
-        {
-          "feature": "missingindicator_agency_average_cost_overrun",
-          "importance": 0.001586
+          "feature": "missingindicator_cost_acceleration",
+          "importance": 0.003771
         },
         {
           "feature": "missingindicator_expected_progress_percentage",
-          "importance": 0.001522
+          "importance": 0.003257
         },
         {
-          "feature": "missingindicator_planned_duration_days",
-          "importance": 0.00147
-        },
-        {
-          "feature": "missingindicator_agency_cost_overrun_rate",
-          "importance": 0.001398
-        },
-        {
-          "feature": "missingindicator_agency_delay_rate",
-          "importance": 0.001394
-        },
-        {
-          "feature": "missingindicator_sector_cost_overrun_rate",
-          "importance": 0.001382
+          "feature": "missingindicator_schedule_slippage_ratio",
+          "importance": 0.002856
         },
         {
           "feature": "missingindicator_schedule_slippage_days",
-          "importance": 0.001334
+          "importance": 0.00264
         },
         {
-          "feature": "missingindicator_sector_average_delay",
-          "importance": 0.001192
+          "feature": "missingindicator_planned_duration_days",
+          "importance": 0.002361
         },
         {
-          "feature": "missingindicator_sector_average_cost_overrun",
-          "importance": 0.001157
+          "feature": "cost_acceleration",
+          "importance": 0.002354
         },
         {
-          "feature": "missingindicator_sector_delay_rate",
-          "importance": 0.001131
+          "feature": "missingindicator_duration_ratio",
+          "importance": 0.002337
+        },
+        {
+          "feature": "cost_growth_velocity_3m",
+          "importance": 0.002051
         },
         {
           "feature": "missingindicator_expenditure_ratio",
-          "importance": 0.000139
+          "importance": 0.000261
+        },
+        {
+          "feature": "missingindicator_cost_escalation_percentage",
+          "importance": 0.000181
+        },
+        {
+          "feature": "missingindicator_revised_cost_cr",
+          "importance": 1e-05
         },
         {
           "feature": "sector_delay_rate",
@@ -5249,9 +4991,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2006-09-30",
-      "predicted_cost_overrun": -16.93,
+      "predicted_cost_overrun": -6.736,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 379.487,
+      "predicted_delay_days": 860.664,
       "actual_delay_days": 3225.0,
       "predicted_risk": "LOW",
       "actual_risk": "CRITICAL"
@@ -5260,9 +5002,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2006-12-31",
-      "predicted_cost_overrun": -16.767,
+      "predicted_cost_overrun": 6.63,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 379.487,
+      "predicted_delay_days": 851.232,
       "actual_delay_days": 3225.0,
       "predicted_risk": "LOW",
       "actual_risk": "CRITICAL"
@@ -5271,9 +5013,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2007-03-31",
-      "predicted_cost_overrun": -17.693,
+      "predicted_cost_overrun": -2.149,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 319.655,
+      "predicted_delay_days": 827.585,
       "actual_delay_days": 3225.0,
       "predicted_risk": "LOW",
       "actual_risk": "CRITICAL"
@@ -5282,9 +5024,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2007-06-30",
-      "predicted_cost_overrun": -20.853,
+      "predicted_cost_overrun": -17.212,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 386.765,
+      "predicted_delay_days": 768.659,
       "actual_delay_days": 3225.0,
       "predicted_risk": "LOW",
       "actual_risk": "CRITICAL"
@@ -5293,9 +5035,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2007-08-31",
-      "predicted_cost_overrun": -20.972,
+      "predicted_cost_overrun": -14.018,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 386.539,
+      "predicted_delay_days": 753.084,
       "actual_delay_days": 3225.0,
       "predicted_risk": "LOW",
       "actual_risk": "CRITICAL"
@@ -5304,9 +5046,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2007-10-31",
-      "predicted_cost_overrun": -20.972,
+      "predicted_cost_overrun": -14.018,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 386.765,
+      "predicted_delay_days": 725.516,
       "actual_delay_days": 3225.0,
       "predicted_risk": "LOW",
       "actual_risk": "CRITICAL"
@@ -5315,9 +5057,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2009-03-31",
-      "predicted_cost_overrun": -6.945,
+      "predicted_cost_overrun": -6.6,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 626.325,
+      "predicted_delay_days": 895.162,
       "actual_delay_days": 3225.0,
       "predicted_risk": "HIGH",
       "actual_risk": "CRITICAL"
@@ -5326,9 +5068,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2009-09-30",
-      "predicted_cost_overrun": -6.489,
+      "predicted_cost_overrun": -3.205,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1017.945,
+      "predicted_delay_days": 1005.33,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5337,9 +5079,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2009-12-31",
-      "predicted_cost_overrun": -6.308,
+      "predicted_cost_overrun": -2.189,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1031.841,
+      "predicted_delay_days": 1086.489,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5348,9 +5090,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2010-03-31",
-      "predicted_cost_overrun": -9.024,
+      "predicted_cost_overrun": -6.162,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 997.966,
+      "predicted_delay_days": 1082.339,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5359,9 +5101,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2010-06-30",
-      "predicted_cost_overrun": -8.002,
+      "predicted_cost_overrun": -7.065,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1009.411,
+      "predicted_delay_days": 1160.22,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5370,9 +5112,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2010-09-30",
-      "predicted_cost_overrun": -8.037,
+      "predicted_cost_overrun": -5.962,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1269.219,
+      "predicted_delay_days": 1390.532,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5381,9 +5123,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2010-12-31",
-      "predicted_cost_overrun": -9.166,
+      "predicted_cost_overrun": -8.869,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1290.454,
+      "predicted_delay_days": 1412.101,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5392,9 +5134,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2011-03-31",
-      "predicted_cost_overrun": -13.176,
+      "predicted_cost_overrun": -12.67,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1817.751,
+      "predicted_delay_days": 1438.311,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5403,9 +5145,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2011-06-30",
-      "predicted_cost_overrun": -14.223,
+      "predicted_cost_overrun": -14.323,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1845.707,
+      "predicted_delay_days": 1455.141,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5414,9 +5156,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2011-09-30",
-      "predicted_cost_overrun": -13.452,
+      "predicted_cost_overrun": -10.793,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1870.015,
+      "predicted_delay_days": 1554.601,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5425,9 +5167,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2011-12-31",
-      "predicted_cost_overrun": -5.261,
+      "predicted_cost_overrun": -10.885,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1934.172,
+      "predicted_delay_days": 1683.613,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5436,9 +5178,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2012-03-31",
-      "predicted_cost_overrun": -6.073,
+      "predicted_cost_overrun": -11.837,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1949.166,
+      "predicted_delay_days": 1647.281,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5447,9 +5189,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2012-06-30",
-      "predicted_cost_overrun": -3.375,
+      "predicted_cost_overrun": -9.882,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1973.967,
+      "predicted_delay_days": 1690.332,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5458,9 +5200,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2012-09-30",
-      "predicted_cost_overrun": -4.021,
+      "predicted_cost_overrun": -6.441,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1973.967,
+      "predicted_delay_days": 1722.957,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5469,9 +5211,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2012-12-31",
-      "predicted_cost_overrun": -0.691,
+      "predicted_cost_overrun": -8.017,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1973.967,
+      "predicted_delay_days": 1730.234,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5480,9 +5222,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2013-03-31",
-      "predicted_cost_overrun": -1.516,
+      "predicted_cost_overrun": -8.047,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1998.374,
+      "predicted_delay_days": 1754.444,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5491,9 +5233,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2013-06-30",
-      "predicted_cost_overrun": 0.739,
+      "predicted_cost_overrun": -9.788,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2052.457,
+      "predicted_delay_days": 1976.408,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5502,9 +5244,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2013-09-30",
-      "predicted_cost_overrun": 0.739,
+      "predicted_cost_overrun": -9.639,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2046.719,
+      "predicted_delay_days": 2075.64,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5513,9 +5255,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2013-12-31",
-      "predicted_cost_overrun": 0.739,
+      "predicted_cost_overrun": -5.454,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2018.339,
+      "predicted_delay_days": 2117.351,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5524,9 +5266,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2014-03-31",
-      "predicted_cost_overrun": 8.072,
+      "predicted_cost_overrun": -8.891,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 1940.679,
+      "predicted_delay_days": 2267.859,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5535,9 +5277,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2014-06-30",
-      "predicted_cost_overrun": 12.15,
+      "predicted_cost_overrun": -7.491,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2354.657,
+      "predicted_delay_days": 2270.484,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5546,9 +5288,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2014-09-30",
-      "predicted_cost_overrun": 9.958,
+      "predicted_cost_overrun": -7.196,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2497.67,
+      "predicted_delay_days": 2310.559,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5557,9 +5299,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2014-12-31",
-      "predicted_cost_overrun": 15.541,
+      "predicted_cost_overrun": -5.207,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2747.98,
+      "predicted_delay_days": 2340.995,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5568,9 +5310,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2015-03-31",
-      "predicted_cost_overrun": 15.541,
+      "predicted_cost_overrun": -5.207,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2767.095,
+      "predicted_delay_days": 2301.362,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5579,9 +5321,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2015-06-30",
-      "predicted_cost_overrun": 30.644,
+      "predicted_cost_overrun": 18.591,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2778.792,
+      "predicted_delay_days": 2343.875,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5590,9 +5332,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2015-09-30",
-      "predicted_cost_overrun": 35.412,
+      "predicted_cost_overrun": 21.003,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2771.957,
+      "predicted_delay_days": 2341.323,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5601,9 +5343,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2015-12-31",
-      "predicted_cost_overrun": 33.994,
+      "predicted_cost_overrun": 24.357,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2821.932,
+      "predicted_delay_days": 2420.185,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5612,9 +5354,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2016-03-31",
-      "predicted_cost_overrun": 36.557,
+      "predicted_cost_overrun": 24.357,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2821.932,
+      "predicted_delay_days": 2428.48,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5623,9 +5365,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2016-06-30",
-      "predicted_cost_overrun": 37.725,
+      "predicted_cost_overrun": 22.447,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2828.189,
+      "predicted_delay_days": 2454.162,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5634,9 +5376,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2016-08-31",
-      "predicted_cost_overrun": 37.725,
+      "predicted_cost_overrun": 22.159,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 2831.536,
+      "predicted_delay_days": 2592.235,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5645,9 +5387,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2017-03-31",
-      "predicted_cost_overrun": 41.312,
+      "predicted_cost_overrun": 22.129,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 3540.463,
+      "predicted_delay_days": 2985.804,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5656,9 +5398,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2017-06-30",
-      "predicted_cost_overrun": 36.407,
+      "predicted_cost_overrun": 22.681,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 3540.463,
+      "predicted_delay_days": 3064.517,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
@@ -5667,9 +5409,9 @@
       "project_id": "020100040",
       "project_name": "KUDANKULAM APP (NPCIL)",
       "snapshot_date": "2017-08-31",
-      "predicted_cost_overrun": 38.037,
+      "predicted_cost_overrun": 24.026,
       "actual_cost_overrun": 69.615,
-      "predicted_delay_days": 3613.91,
+      "predicted_delay_days": 3153.026,
       "actual_delay_days": 3225.0,
       "predicted_risk": "CRITICAL",
       "actual_risk": "CRITICAL"
