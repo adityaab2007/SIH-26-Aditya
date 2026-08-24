@@ -75,9 +75,6 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
         in_progress = training_marker.exists()
         provenance_verified, provenance_status = _provenance_status(manifest, metadata)
         base_complete = bool(not in_progress and has_evaluation and has_metadata and has_validation_rows and has_models)
-        # Legacy runs remain inspectable but are not called provenance-verified.
-        # A present-but-invalid manifest is more dangerous than no manifest and
-        # therefore makes the run incomplete until it is retrained.
         manifest_invalid = bool(manifest_path.exists() and not provenance_verified)
         complete = bool(base_complete and not manifest_invalid)
 
@@ -128,7 +125,7 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
             "complete": complete,
             "summary_available": has_evaluation,
             "status": status,
-            "created_at": manifest.get("created_at") or metadata.get("created_at"),
+            "created_at": metadata.get("created_at") or manifest.get("created_at"),
         })
 
     items.sort(key=lambda item: (item["training_start"], item["training_end"]))
