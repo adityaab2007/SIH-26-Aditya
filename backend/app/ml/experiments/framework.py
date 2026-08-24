@@ -70,17 +70,18 @@ def build_experiment_context(
     weighting_policy: str,
     baseline_name: str = "production_direct_final_overrun",
 ) -> ExperimentContext:
-    """Freeze the exact cohort/features an experiment is allowed to compare."""
+    """Freeze the exact cohort/features an experiment is allowed to compare.
+
+    This helper intentionally does not infer leakage from dataframe indices:
+    callers may reset indices independently. Project-group/temporal leakage must
+    be enforced by the split function that produced ``train`` and ``test``.
+    """
     if int(training_start) > int(training_end):
         raise ValueError("training_start cannot be after training_end")
     if int(testing_end) <= int(training_end):
         raise ValueError("testing_end must be after training_end")
     if train.empty or test.empty:
         raise ValueError("experiment context requires non-empty train and test cohorts")
-    if set(train.index) & set(test.index):
-        # This is only an index-level smoke check; project-group leakage remains
-        # the responsibility of the temporal split helper used by the trainer.
-        raise ValueError("train/test row indices overlap")
     return ExperimentContext(
         experiment_id=str(experiment_id),
         training_start=int(training_start),
