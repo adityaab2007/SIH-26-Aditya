@@ -37,7 +37,13 @@ def _provenance_status(manifest: dict, metadata: dict) -> tuple[bool, str]:
 
 
 def lifecycle_runs(models_dir: Path | None = None) -> dict:
-    """Discover lifecycle runs and expose artifact/provenance integrity."""
+    """Discover production lifecycle runs and expose artifact/provenance integrity.
+
+    The ``monthly_lifecycle/<YYYY_YYYY>`` namespace is the production namespace.
+    Legacy artifacts that predate ``model_role`` are treated as production for
+    backward compatibility, but any artifact explicitly marked experiment is
+    excluded so it can never appear in judge-facing run selectors.
+    """
     root = (models_dir or MODELS_DIR) / "monthly_lifecycle"
     if not root.exists():
         return {"items": [], "count": 0}
@@ -61,10 +67,14 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
 
         evaluation = _read_json(evaluation_path)
         metadata = dict(evaluation.get("metadata") or _read_json(metadata_path))
+        manifest = _read_json(manifest_path)
+        model_role = metadata.get("model_role") or manifest.get("model_role") or "production"
+        if model_role != "production":
+            continue
+
         quality = dict(metadata.get("feature_availability") or {})
         quality.update(_read_json(quality_path))
         lifecycle_metrics = (evaluation.get("lifecycle") or {}).get("metrics") or metadata.get("lifecycle_metrics") or {}
-        manifest = _read_json(manifest_path)
 
         has_evaluation = evaluation_path.exists()
         has_metadata = metadata_path.exists() or bool(metadata)
@@ -100,6 +110,7 @@ def lifecycle_runs(models_dir: Path | None = None) -> dict:
 
         items.append({
             "window": path.name,
+            "model_role": "production",
             "model_version": metadata.get("model_version") or f"monthly-{start_year}-{end_year}",
             "run_id": metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id"),
             "dataset_fingerprint": metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint"),
