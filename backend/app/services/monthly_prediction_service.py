@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 import json
+from pathlib import Path
 
 import joblib
 import numpy as np
@@ -11,7 +12,7 @@ import pandas as pd
 from backend.app.ml.monthly_lifecycle import OUTCOMES, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
 from backend.app.services.simulation_service import _shap_factors_for_model
 
-ROOT = __import__("pathlib").Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[3]
 MODEL_ROOT = ROOT / "models" / "monthly_lifecycle"
 COMPARISON = ROOT / "reports" / "monthly_lifecycle_model_comparison.json"
 
@@ -22,6 +23,27 @@ def lifecycle_comparison() -> dict:
     return {"available": True, **json.loads(COMPARISON.read_text())}
 
 
+def _validate_bundle_provenance(window: str, metadata: dict, manifest: dict) -> None:
+    if not manifest:
+        # Older committed runs remain readable for backwards compatibility, but
+        # callers can see provenance.verified=false in the response.
+        return
+    if manifest.get("status") != "complete":
+        raise RuntimeError(
+            f"Lifecycle model {window} is not provenance-valid ({manifest.get('status') or 'invalid manifest'}). Retrain this window before inference."
+        )
+    manifest_run = manifest.get("run_id")
+    metadata_run = metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id")
+    manifest_dataset = manifest.get("dataset_fingerprint")
+    metadata_dataset = metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint")
+    if not manifest_run or not metadata_run or not manifest_dataset or not metadata_dataset:
+        raise RuntimeError(f"Lifecycle model {window} has an incomplete provenance manifest. Retrain this window before inference.")
+    if manifest_run != metadata_run:
+        raise RuntimeError(f"Lifecycle model {window} failed provenance validation: manifest/metadata run IDs differ.")
+    if manifest_dataset != metadata_dataset:
+        raise RuntimeError(f"Lifecycle model {window} failed provenance validation: manifest/metadata dataset fingerprints differ.")
+
+
 @lru_cache(maxsize=2)
 def _bundle(window: str) -> dict:
     target = MODEL_ROOT / window
@@ -30,15 +52,7 @@ def _bundle(window: str) -> dict:
     manifest_path = target / "run_manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     metadata = json.loads((target / "metadata.json").read_text())
-    if manifest and manifest.get("status") == "complete":
-        manifest_run = manifest.get("run_id")
-        metadata_run = metadata.get("run_id") or (metadata.get("provenance") or {}).get("run_id")
-        if manifest_run and metadata_run and manifest_run != metadata_run:
-            raise RuntimeError(f"Lifecycle model {window} failed provenance validation: manifest/metadata run IDs differ.")
-        manifest_dataset = manifest.get("dataset_fingerprint")
-        metadata_dataset = metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint")
-        if manifest_dataset and metadata_dataset and manifest_dataset != metadata_dataset:
-            raise RuntimeError(f"Lifecycle model {window} failed provenance validation: manifest/metadata dataset fingerprints differ.")
+    _validate_bundle_provenance(window, metadata, manifest)
     return {
         "metadata": metadata,
         "manifest": manifest,
@@ -93,7 +107,7 @@ def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
         "provenance": {
             "run_id": bundle["metadata"].get("run_id") or provenance.get("run_id"),
             "dataset_fingerprint": bundle["metadata"].get("dataset_fingerprint") or provenance.get("dataset_fingerprint"),
-            "verified": bool(bundle.get("manifest") and (bundle["metadata"].get("run_id") or provenance.get("run_id"))),
+            "verified": bool(bundle.get("manifest") and bundle["manifest"].get("status") == "complete"),
         },
         "model_scope": "Official PAIMANA monthly lifecycle model; trajectory features use this project only through the displayed snapshot date.",
     }
