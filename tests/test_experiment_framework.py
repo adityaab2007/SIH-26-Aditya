@@ -53,7 +53,7 @@ def test_context_freezes_comparison_evidence_and_experiment_paths_are_run_scoped
     assert manifest["model_role"] == "experiment"
     assert manifest["promotion_allowed"] is False
     path = experiment_run_directory("exp_next", context.window, manifest["run_id"])
-    assert path.parts[-4:] == ("exp_next", "2001_2015", "run-123")[-4:]
+    assert path.parts[-3:] == ("exp_next", "2001_2015", "run-123")
 
 
 def test_comparison_contract_rejects_changed_test_or_weighting_context():
