@@ -1,6 +1,7 @@
 const JSON_HEADERS = { "Content-Type": "application/json" };
 const DEFAULT_TIMEOUT_MS = 45000;
 const HEAVY_TIMEOUT_MS = 10 * 60 * 1000;
+const COMPARE_TIMEOUT_MS = 60 * 60 * 1000;
 const SELECTED_MODEL_KEY = 'selected_validation_model';
 const ACTIVE_LIFECYCLE_KEY = 'active_lifecycle_run';
 
@@ -20,7 +21,9 @@ async function request(path, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
     return response.json();
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new Error('Request timed out. The backend may be busy; retry in a moment.');
+      throw new Error(timeoutMs === COMPARE_TIMEOUT_MS
+        ? 'Retrain & Compare timed out. The pending comparison was discarded; retry the requested range.'
+        : 'Request timed out. The backend may be busy; retry in a moment.');
     }
     throw error;
   } finally {
@@ -91,11 +94,22 @@ export const api = {
   trainCustomSimulation: (startYear, endYear, runId = null) => request('/api/model-simulations/custom/train', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), run_id: runId }),
   }, HEAVY_TIMEOUT_MS),
+  retrainAndCompare: (startYear, endYear, experimentId = null) => request('/api/model-simulations/custom/retrain-compare', {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), experiment_id: experimentId }),
+  }, COMPARE_TIMEOUT_MS),
   customSimulationProjects: (sessionId, year) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
+  comparisonProjects: (sessionId, year) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
   predictCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/predict`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
   }),
+  predictComparison: (sessionId, recordIndex) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/predict`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
+  }),
   revealCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/reveal`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
+  }),
+  revealComparison: (sessionId, recordIndex) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/reveal`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
   }),
   historyList: () => request('/api/history'),
