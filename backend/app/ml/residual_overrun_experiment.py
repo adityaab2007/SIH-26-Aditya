@@ -50,6 +50,7 @@ def _with_residual_target(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def _renormalize_project_weights(frame: pd.DataFrame) -> pd.DataFrame:
+    """Give every project total weight 1 after experiment-specific filtering."""
     result = frame.copy()
     counts = result.groupby("canonical_project_id")["canonical_project_id"].transform("size")
     result["sample_weight"] = 1.0 / counts.clip(lower=1).astype(float)
@@ -57,6 +58,13 @@ def _renormalize_project_weights(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def prepare_common_cost_cohort(data: pd.DataFrame, training_start: int, training_end: int, test_end: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return one common cohort used by both direct and residual approaches.
+
+    Rows lacking current cost escalation cannot define a residual target, so they
+    are removed *before* either model is fit/evaluated. We then recalculate
+    per-project weights on that exact retained cohort so each project contributes
+    total weight 1 to both approaches.
+    """
     frame = data.copy()
     frame["completion_year"] = pd.to_numeric(frame["completion_year"], errors="coerce")
     train, test = temporal_project_split(frame, int(training_start), int(training_end), int(test_end))
@@ -113,6 +121,12 @@ def run_residual_overrun_experiment(
     data: pd.DataFrame | None = None,
     persist: bool = True,
 ) -> dict:
+    """Compare direct vs remaining-overrun forecasting on identical snapshots.
+
+    The same audited features and the same selected regressor family are used for
+    both approaches. This deliberately isolates the target formulation rather
+    than allowing a different algorithm or cohort to create a false improvement.
+    """
     if data is None:
         data, _identity = build_training_dataset()
     frame = data.copy()
