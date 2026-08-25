@@ -5,36 +5,7 @@
     "experiments_are_never_auto_promoted": true,
     "promotion_requires_explicit_acceptance": true
   },
-  "experiments": [
-    {
-      "experiment_id": "exp_03",
-      "name": "remaining_overrun_target",
-      "model_role": "experiment",
-      "status": "COMPLETED",
-      "decision": "REJECTED",
-      "promotion_allowed": false,
-      "changed_dimension": "cost_target",
-      "training_period": [2001, 2015],
-      "testing_period": [2016, 2025],
-      "training_projects": 747,
-      "training_rows": 7263,
-      "test_projects": 1549,
-      "test_rows": 24186,
-      "algorithm": "xgboost",
-      "baseline_final_cost_mae": 42.413,
-      "candidate_final_cost_mae": 55.475,
-      "improvement_percentage": -30.797,
-      "success_threshold_percentage": 10.0,
-      "same_train_snapshots": true,
-      "same_test_snapshots": true,
-      "same_regressor_family": true,
-      "explicit_as_of_lineage": true,
-      "post_sampling_project_weights": true,
-      "evidence_id": "github-actions-run-32769211956",
-      "evidence_source": "PR #23 residual-experiment CI job",
-      "note": "Rejected on reconstructed final-overrun MAE. This experiment never replaced the production direct-final-overrun lifecycle model."
-    }
-  ],
+  "experiments": [],
   "legacy_history_source": "reports/experiments/model_evolution.json",
-  "note": "This registry is the canonical decision log for lifecycle experiments going forward. Legacy experiment files may use different baselines and must not be compared as if they shared this contract."
+  "note": "This registry is the canonical decision log for lifecycle experiments going forward. Individual experiment PRs add their own immutable evidence entries."
 }
