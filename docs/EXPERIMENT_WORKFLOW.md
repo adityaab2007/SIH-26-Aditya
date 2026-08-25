@@ -80,7 +80,7 @@ Use `paired_project_mae_comparison(...)` when repeated lifecycle snapshots exist
 
 A completed experiment may be `ACCEPTED` or `REJECTED`, but comparison status alone never changes production. `promotion_guard(...)` requires an explicit accepted/promotion decision, and a separate deliberate production-integration PR is still required.
 
-Rejected experiment implementations may remain in history for reproducibility. A later higher-sequence adapter can become the default challenger without deleting the older evidence.
+When an experiment is definitively rejected, its active `adapter_expXX.py` should be removed from the comparison harness so it no longer occupies the challenger slot. Its isolated implementation, immutable run evidence, manifests, fingerprints, and historical Git commits may remain for reproducibility. With no installed adapter, Model Simulation correctly reports that no challenger is installed; the next experiment PR can add its own higher-sequence adapter and become the challenger without modifying the generic harness.
 
 ## Heavy experiment execution
 
