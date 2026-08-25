@@ -7,6 +7,7 @@ from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
 from backend.app.services.lifecycle_run_service import lifecycle_runs
 from backend.app.services.monthly_prediction_service import lifecycle_comparison, forecast_evolution, lifecycle_specialist_comparison, lifecycle_specialist_convergence
 from backend.app.ml.experiments.lifecycle_specialists import EXPERIMENT_ROOT, STAGES, train_lifecycle_specialists
+from backend.app.ml.experiments.improved_lifecycle_specialists import IMPROVED_ROOT, run_improved_experiment
 from backend.app.ml.residual_overrun_experiment import run_residual_overrun_experiment
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -60,6 +61,25 @@ def lifecycle_specialists_retrain(payload: TrainingRange):
         return train_lifecycle_specialists(payload.start_year, payload.end_year, max_year, data=data, identity=identity)
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         raise HTTPException(409, str(exc))
+
+
+@router.post("/experiments/lifecycle-specialists-improved/retrain")
+def improved_lifecycle_specialists_retrain(payload: TrainingRange):
+    """Run Experiment 4 v2 in its separate artifact namespace."""
+    try:
+        from backend.app.services.lifecycle_retraining_service import _training_data
+        data, _, _, max_year = _training_data()
+        return run_improved_experiment(payload.start_year, payload.end_year, max_year, data=data)
+    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+        raise HTTPException(409, str(exc))
+
+
+@router.get("/lifecycle-specialists-improved/{window}/comparison")
+def improved_lifecycle_specialists_comparison(window: str):
+    path = IMPROVED_ROOT / "comparison.json"
+    if not path.exists():
+        raise HTTPException(404, f"Improved Experiment 4 artifact {window} is unavailable")
+    return json.loads(path.read_text())
 
 
 @router.get("/lifecycle-specialists/{window}/comparison")

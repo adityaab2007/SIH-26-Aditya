@@ -24,12 +24,22 @@ DIRECT_FEATURES = [
     "cost_escalation_percentage", "current_schedule_status", "sector", "project_size_category",
     "implementing_agency", "ministry",
 ]
+IMPROVED_EARLY_FEATURES = [
+    "expenditure_time_gap", "expenditure_burn_rate", "approved_cost_per_planned_day",
+    "current_cost_revision_flag", "current_cost_revision_percentage",
+    "schedule_slippage_onset_flag", "slippage_per_elapsed_day", "snapshots_observed_so_far",
+    "cost_change_from_first_snapshot", "expenditure_change_from_first_snapshot",
+    "cost_change_from_previous_snapshot", "expenditure_change_from_previous_snapshot",
+    "short_history_cost_velocity", "short_history_expenditure_velocity",
+    "schedule_slippage_change_from_previous_snapshot", "sector_x_project_size",
+    "sector_x_planned_duration", "agency_x_sector",
+]
 TRAJECTORY_FEATURES = ["cost_growth_velocity_3m", "cost_growth_velocity_6m", "cost_acceleration", "progress_velocity_3m", "progress_velocity_6m", "progress_acceleration"]
 PRIOR_FEATURES = [
     "sector_average_delay", "sector_average_cost_overrun", "sector_delay_rate", "sector_cost_overrun_rate",
     "agency_average_delay", "agency_average_cost_overrun", "agency_delay_rate", "agency_cost_overrun_rate",
 ]
-CANDIDATE_FEATURES = list(dict.fromkeys(DIRECT_FEATURES + TRAJECTORY_FEATURES + PRIOR_FEATURES))
+CANDIDATE_FEATURES = list(dict.fromkeys(DIRECT_FEATURES + TRAJECTORY_FEATURES + PRIOR_FEATURES + IMPROVED_EARLY_FEATURES))
 TARGETS = ["actual_cost_overrun_percentage", "actual_delay_days", "actual_risk"]
 DATE_COLUMNS = ["snapshot_date", "approval_date", "planned_start_date", "planned_completion_date", "revised_completion_date", "actual_completion_date"]
 
@@ -70,6 +80,15 @@ for _feature in PRIOR_FEATURES:
         "kind": "historical_prior",
         "sources": ["completion_date", "actual_delay_days", "actual_cost_overrun_percentage"],
         "temporal_rule": _PRIOR_SOURCE,
+    }
+for _feature in IMPROVED_EARLY_FEATURES:
+    AS_OF_FEATURE_LINEAGE[_feature] = {
+        "proven": True,
+        "kind": "snapshot_derived" if _feature in {"expenditure_time_gap", "expenditure_burn_rate", "approved_cost_per_planned_day", "current_cost_revision_flag", "current_cost_revision_percentage", "schedule_slippage_onset_flag", "slippage_per_elapsed_day", "sector_x_project_size", "sector_x_planned_duration", "agency_x_sector"} else "trajectory",
+        "sources": ["snapshot_date", "approved_cost_cr", "cumulative_expenditure_cr", "revised_cost_cr", "planned_duration_days", "schedule_slippage_days"],
+        "temporal_rule": _SNAPSHOT_SOURCE if _feature in {"expenditure_time_gap", "expenditure_burn_rate", "approved_cost_per_planned_day", "current_cost_revision_flag", "current_cost_revision_percentage", "schedule_slippage_onset_flag", "slippage_per_elapsed_day", "sector_x_project_size", "sector_x_planned_duration", "agency_x_sector"} else _TRAJECTORY_SOURCE,
+        "previous_records_required": _feature not in {"expenditure_time_gap", "expenditure_burn_rate", "approved_cost_per_planned_day", "current_cost_revision_flag", "current_cost_revision_percentage", "schedule_slippage_onset_flag", "slippage_per_elapsed_day", "sector_x_project_size", "sector_x_planned_duration", "agency_x_sector"},
+        "missing_data_behavior": "preserve missing values; model imputation is fit on training rows only",
     }
 
 
@@ -275,14 +294,36 @@ def engineer_as_of_features(frame: pd.DataFrame, outcomes: pd.DataFrame) -> pd.D
     current_target = data.revised_completion_date.fillna(data.planned_completion_date)
     data["schedule_slippage_days"] = (current_target - data.planned_completion_date).dt.days
     data["schedule_slippage_ratio"] = np.where(data.planned_duration_days.gt(0), data.schedule_slippage_days / data.planned_duration_days, np.nan)
+    data["expenditure_time_gap"] = data.expenditure_ratio - data.duration_ratio
+    data["expenditure_burn_rate"] = np.where(data.elapsed_duration_days.ge(1), data.cumulative_expenditure_cr / data.elapsed_duration_days, np.nan)
+    data["approved_cost_per_planned_day"] = np.where(data.planned_duration_days.gt(0), data.approved_cost_cr / data.planned_duration_days, np.nan)
+    data["current_cost_revision_flag"] = np.where(data.revised_cost_cr.notna() & data.approved_cost_cr.notna(), data.revised_cost_cr.sub(data.approved_cost_cr).abs().gt(0.01), np.nan)
+    data["current_cost_revision_percentage"] = data.cost_escalation_percentage
+    data["schedule_slippage_onset_flag"] = np.where(data.schedule_slippage_days.notna(), data.schedule_slippage_days.gt(0), np.nan)
+    data["slippage_per_elapsed_day"] = np.where(data.elapsed_duration_days.ge(1), data.schedule_slippage_days / data.elapsed_duration_days, np.nan)
     data["expected_progress_percentage"] = np.where(data.duration_ratio.notna(), np.minimum(100, np.maximum(0, 100 * data.duration_ratio)), np.nan)
     data["progress_deviation"] = data.physical_progress - data.expected_progress_percentage
     for _, group in data.groupby("canonical_project_id", sort=False):
+        ordered = group.sort_values("snapshot_date")
+        revised = pd.to_numeric(ordered.revised_cost_cr, errors="coerce")
+        expenditure = pd.to_numeric(ordered.cumulative_expenditure_cr, errors="coerce")
+        slippage = pd.to_numeric(ordered.schedule_slippage_days, errors="coerce")
+        data.loc[ordered.index, "snapshots_observed_so_far"] = np.arange(1, len(ordered) + 1, dtype=float)
+        data.loc[ordered.index, "cost_change_from_first_snapshot"] = revised - revised.iloc[0]
+        data.loc[ordered.index, "expenditure_change_from_first_snapshot"] = expenditure - expenditure.iloc[0]
+        data.loc[ordered.index, "cost_change_from_previous_snapshot"] = revised.diff()
+        data.loc[ordered.index, "expenditure_change_from_previous_snapshot"] = expenditure.diff()
+        data.loc[ordered.index, "short_history_cost_velocity"] = revised.diff().rolling(2, min_periods=1).mean()
+        data.loc[ordered.index, "short_history_expenditure_velocity"] = expenditure.diff().rolling(2, min_periods=1).mean()
+        data.loc[ordered.index, "schedule_slippage_change_from_previous_snapshot"] = slippage.diff()
         for months in (3, 6):
             data.loc[group.index, f"cost_growth_velocity_{months}m"] = _slope_as_of(group, "revised_cost_cr", months)
             data.loc[group.index, f"progress_velocity_{months}m"] = _slope_as_of(group, "physical_progress", months)
     data["cost_acceleration"] = data.cost_growth_velocity_3m - data.cost_growth_velocity_6m
     data["progress_acceleration"] = data.progress_velocity_3m - data.progress_velocity_6m
+    data["sector_x_project_size"] = data.sector.astype("string") + "__" + data.project_size_category.astype("string")
+    data["sector_x_planned_duration"] = data.sector.astype("string") + "__" + pd.cut(data.planned_duration_days, [-np.inf, 365, 730, 1460, np.inf], labels=["short", "medium", "long", "very_long"]).astype("string")
+    data["agency_x_sector"] = data.implementing_agency.astype("string") + "__" + data.sector.astype("string")
     data = _historical_priors(data, outcomes)
     # Experiment 4 uses fixed snapshot-time lifecycle bins. Values above 100%
     # remain in the final late specialist; missing ratios remain missing.
@@ -293,6 +334,12 @@ def engineer_as_of_features(frame: pd.DataFrame, outcomes: pd.DataFrame) -> pd.D
         labels=["early", "early_mid", "late_mid", "late"],
         right=False,
     ).astype("string")
+    # sklearn's categorical imputer cannot evaluate pandas.NA as a boolean
+    # with the supported pandas/sklearn versions. Keep the semantic missing
+    # value while handing estimators ordinary Python None values.
+    for column in data.columns:
+        if pd.api.types.is_string_dtype(data[column]):
+            data[column] = data[column].astype(object).where(data[column].notna(), None)
     return data
 
 

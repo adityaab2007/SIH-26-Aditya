@@ -18,7 +18,7 @@ import pandas as pd
 
 from backend.app.ml.feature_audit import audit_features
 from backend.app.ml.monthly_lifecycle import (
-    BASELINE_FEATURES, CANDIDATE_FEATURES, TARGETS, TRAINING_DATA, IDENTITY_AUDIT,
+    BASELINE_FEATURES, CANDIDATE_FEATURES, IMPROVED_EARLY_FEATURES, TARGETS, TRAINING_DATA, IDENTITY_AUDIT,
     as_of_feature_evidence, build_training_dataset,
 )
 from backend.app.ml.monthly_training import (
@@ -78,6 +78,19 @@ def _valid_features(features: list[str], frame: pd.DataFrame) -> list[str]:
     return [name for name in dict.fromkeys(features) if name in frame.columns and name not in LEAKY_COLUMNS]
 
 
+def renormalize_stage_weights(frame: pd.DataFrame, *, tolerance: float = 1e-10) -> pd.DataFrame:
+    """Give each project one unit of mass inside a filtered lifecycle cohort."""
+    result = frame.copy()
+    if result.empty:
+        return result
+    counts = result.groupby("canonical_project_id").canonical_project_id.transform("size")
+    result["sample_weight"] = 1.0 / counts.clip(lower=1)
+    sums = result.groupby("canonical_project_id").sample_weight.sum()
+    if not np.allclose(sums.to_numpy(dtype=float), 1.0, rtol=0, atol=tolerance):
+        raise AssertionError("Each specialist cohort must have project-balanced weights summing to one.")
+    return result
+
+
 def _strict_selection(train: pd.DataFrame, features: list[str], target: str, seed: int) -> tuple[str, Any, list[dict[str, Any]]] | None:
     """Select an algorithm only with a project-disjoint temporal validation cohort."""
     years = pd.to_numeric(train["completion_year"], errors="coerce").dropna()
@@ -90,13 +103,11 @@ def _strict_selection(train: pd.DataFrame, features: list[str], target: str, see
         return None
     comparisons = []
     for name, model in _regressors(seed).items():
-        model.set_params(n_estimators=min(int(model.get_params().get("n_estimators", 100)), 100))
         fitted = _fit_pipeline(model, fitting, features, target)
         predicted = np.maximum(0, fitted.predict(validation[features])) if target == "actual_delay_days" else fitted.predict(validation[features])
         comparisons.append({"algorithm": name, **_regression_metrics(validation[target], predicted, validation.sample_weight, validation.canonical_project_id)})
     winner = min(comparisons, key=lambda item: (item["MAE"], item["RMSE"]))["algorithm"]
     final_model = _regressors(seed)[winner]
-    final_model.set_params(n_estimators=min(int(final_model.get_params().get("n_estimators", 100)), 100))
     return winner, _fit_pipeline(final_model, train, features, target), comparisons
 
 
@@ -148,7 +159,7 @@ def _importance(model: Any, frame: pd.DataFrame, features: list[str]) -> dict[st
     return {"method": "tree_feature_importance", "features": [{"feature": key, "importance": round(value, 6)} for key, value in sorted(aggregate.items(), key=lambda item: item[1], reverse=True)]}
 
 
-def train_lifecycle_specialists(training_start: int, training_end: int, test_end: int, data: pd.DataFrame | None = None, identity: pd.DataFrame | None = None, artifact_root: Path | None = None) -> dict[str, Any]:
+def train_lifecycle_specialists(training_start: int, training_end: int, test_end: int, data: pd.DataFrame | None = None, identity: pd.DataFrame | None = None, artifact_root: Path | None = None, include_improved_features: bool = False) -> dict[str, Any]:
     """Train Experiment 4 for a year window and persist namespaced artifacts."""
     if data is None:
         if TRAINING_DATA.exists():
@@ -163,7 +174,8 @@ def train_lifecycle_specialists(training_start: int, training_end: int, test_end
     train, test = temporal_project_split(data, int(training_start), int(training_end), int(test_end))
     if train.canonical_project_id.nunique() < MIN_TRAIN_PROJECTS or test.canonical_project_id.nunique() < MIN_TEST_PROJECTS:
         raise ValueError("Experiment 4 requires enough project-disjoint training and future holdout projects.")
-    audit = audit_features(train, CANDIDATE_FEATURES, minimum_availability=10, minimum_year_coverage=2, as_of_evidence=as_of_feature_evidence(CANDIDATE_FEATURES))
+    candidate_features = CANDIDATE_FEATURES if include_improved_features else [name for name in CANDIDATE_FEATURES if name not in IMPROVED_EARLY_FEATURES]
+    audit = audit_features(train, candidate_features, minimum_availability=10, minimum_year_coverage=2, as_of_evidence=as_of_feature_evidence(candidate_features))
     features = _valid_features(list(dict.fromkeys(BASELINE_FEATURES + audit["features_used"])), train)
     destination = (artifact_root or EXPERIMENT_ROOT) / f"{training_start}_{training_end}"
     destination.mkdir(parents=True, exist_ok=True)
@@ -177,6 +189,12 @@ def train_lifecycle_specialists(training_start: int, training_end: int, test_end
     for index, stage in enumerate(STAGES):
         stage_train = train[train.lifecycle_stage.eq(stage)].copy()
         stage_test = test[test.lifecycle_stage.eq(stage)].copy()
+        # Filtering a globally balanced cohort changes the per-project mass.
+        # Specialists must be trained and scored with a fresh stage-local unit
+        # of mass for every project. The routed headline keeps the original
+        # full-holdout weighting policy below.
+        stage_train = renormalize_stage_weights(stage_train)
+        stage_test = renormalize_stage_weights(stage_test)
         train_projects = int(stage_train.canonical_project_id.nunique())
         valid_year = int(stage_train.completion_year.max()) if not stage_train.empty else None
         valid_projects = int(stage_train[stage_train.completion_year.eq(valid_year)].canonical_project_id.nunique()) if valid_year else 0
@@ -207,13 +225,17 @@ def train_lifecycle_specialists(training_start: int, training_end: int, test_end
     routed = global_rows.copy()
     routed["specialist_model"] = "global_fallback"
     routed["specialist_used"] = False
-    for predictions in specialist_rows:
-        for _, prediction in predictions.iterrows():
-            mask = routed.canonical_project_id.eq(prediction.canonical_project_id) & routed.snapshot_date.eq(prediction.snapshot_date)
-            routed.loc[mask, "predicted_cost_overrun"] = prediction.predicted_cost_overrun
-            routed.loc[mask, "predicted_delay_days"] = prediction.predicted_delay_days
-            routed.loc[mask, "specialist_model"] = prediction.specialist_model
-            routed.loc[mask, "specialist_used"] = True
+    if specialist_rows:
+        specialist_frame = pd.concat(specialist_rows, ignore_index=True)
+        keys = ["canonical_project_id", "snapshot_date"]
+        specialist_frame = specialist_frame[keys + ["predicted_cost_overrun", "predicted_delay_days", "specialist_model"]]
+        routed = routed.merge(specialist_frame, on=keys, how="left", suffixes=("", "_specialist"))
+        has_specialist = routed.predicted_cost_overrun_specialist.notna() & routed.predicted_delay_days_specialist.notna()
+        routed.loc[has_specialist, "predicted_cost_overrun"] = routed.loc[has_specialist, "predicted_cost_overrun_specialist"]
+        routed.loc[has_specialist, "predicted_delay_days"] = routed.loc[has_specialist, "predicted_delay_days_specialist"]
+        routed.loc[has_specialist, "specialist_model"] = routed.loc[has_specialist, "specialist_model_specialist"]
+        routed.loc[has_specialist, "specialist_used"] = True
+        routed = routed.drop(columns=["predicted_cost_overrun_specialist", "predicted_delay_days_specialist", "specialist_model_specialist"])
     comparison = _comparison(global_rows, routed)
     specialist_overall = _overall(routed) if not routed.empty else None
     overall_comparison = {"cost_improvement_pct": improvement_percent(global_metrics["cost"].get("MAE"), specialist_overall["cost"].get("MAE") if specialist_overall else None), "delay_improvement_pct": improvement_percent(global_metrics["delay"].get("MAE"), specialist_overall["delay"].get("MAE") if specialist_overall else None)}

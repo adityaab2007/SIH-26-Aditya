@@ -126,7 +126,7 @@ export async function ModelSimulationPage(root) {
     </div>
     <div id="held-out-note" class="notice compact">After retraining, only projects completed after the selected training end year will be offered here.</div>
   </section>
-  <section class="panel"><div class="panel-head"><div><span class="kicker">Experiment 4</span><h2>Lifecycle Specialist Comparison</h2></div></div><p class="muted">Train the experiment separately, then compare one routed specialist with the global lifecycle model for the selected snapshot. Actual outcomes remain hidden until the existing reveal action.</p><button class="secondary-btn" id="specialist-train">Train Lifecycle Specialists</button><div id="specialist-output" class="notice compact">No specialist experiment is active for this training window.</div></section>
+  <section class="panel"><div class="panel-head"><div><span class="kicker">Experiment 4</span><h2>Lifecycle Specialist Comparison</h2></div></div><p class="muted">Train the frozen v1 and the separate improved v2 experiment. Actual outcomes remain hidden until the existing reveal action.</p><button class="secondary-btn" id="specialist-train">Train Lifecycle Specialists v1</button> <button class="secondary-btn" id="improved-specialist-train">Train Experiment 4 Improved</button><div id="specialist-output" class="notice compact">No specialist experiment is active for this training window.</div><div id="improved-specialist-output" class="notice compact">No improved experiment is active for this training window.</div></section>
   <div id="custom-output"></div>`;
 
   const start = root.querySelector('#custom-start');
@@ -142,6 +142,8 @@ export async function ModelSimulationPage(root) {
   const output = root.querySelector('#custom-output');
   const specialistTrainButton = root.querySelector('#specialist-train');
   const specialistOutput = root.querySelector('#specialist-output');
+  const improvedSpecialistTrainButton = root.querySelector('#improved-specialist-train');
+  const improvedSpecialistOutput = root.querySelector('#improved-specialist-output');
 
   let session = null;
   let projectRows = [];
@@ -164,6 +166,21 @@ export async function ModelSimulationPage(root) {
       specialistOutput.innerHTML = `<strong>Experiment 4 unavailable:</strong> ${escape(error.message)}`;
     } finally {
       specialistTrainButton.disabled = false;
+    }
+  });
+
+  improvedSpecialistTrainButton.addEventListener('click', async () => {
+    improvedSpecialistTrainButton.disabled = true;
+    improvedSpecialistOutput.textContent = 'Running fairness-corrected and partial-pooling evaluation…';
+    try {
+      const result = await api.improvedLifecycleSpecialistsRetrain(Number(start.value), Number(end.value));
+      const overall = result.hybrid || {};
+      const early = result.partial_pooling?.early || {};
+      improvedSpecialistOutput.innerHTML = `<strong>Experiment 4 Improved trained.</strong> Hybrid cost MAE: ${fixed(overall.cost?.MAE)} pp · delay MAE: ${fixed(overall.delay?.MAE)} days · early partial-pooling cost: ${fixed(early.cost?.MAE)} pp · delay: ${fixed(early.delay?.MAE)} days. Production/global defaults are unchanged.`;
+    } catch (error) {
+      improvedSpecialistOutput.innerHTML = `<strong>Improved Experiment 4 unavailable:</strong> ${escape(error.message)}`;
+    } finally {
+      improvedSpecialistTrainButton.disabled = false;
     }
   });
 
