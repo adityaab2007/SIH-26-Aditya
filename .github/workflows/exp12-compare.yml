@@ -7,13 +7,14 @@ on:
       - '.github/workflows/exp12-compare.yml'
       - 'backend/app/ml/experiments/adapter_exp12.py'
       - 'backend/app/ml/experiments/trajectory_exp12.py'
+      - 'backend/app/ml/experiments/trajectory_exp12_v2.py'
       - 'backend/app/services/lifecycle_model_comparison_service.py'
   workflow_dispatch:
 
 jobs:
   compare:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -57,6 +58,7 @@ jobs:
           overall = payload['overall_comparison'] or {}
           summary = {
               'window': payload['window'],
+              'implementation_revision': (payload['experiment'] or {}).get('implementation_revision'),
               'production_cost_mae': overall.get('production_cost_mae'),
               'experiment_cost_mae': overall.get('experiment_cost_mae'),
               'cost_improvement_percentage': overall.get('improvement_percentage'),
@@ -68,8 +70,12 @@ jobs:
               'paired_project_cost_comparison': overall.get('paired_project_cost_comparison'),
               'paired_project_delay_comparison': overall.get('paired_project_delay_comparison'),
               'stage_balanced': overall.get('stage_balanced'),
+              'internal_feature_selection': overall.get('internal_feature_selection'),
               'production_selected_algorithms': (payload['production'] or {}).get('selected_algorithms'),
               'experiment_selected_algorithms': (payload['experiment'] or {}).get('selected_algorithms'),
+              'experiment_selected_feature_groups': (payload['experiment'] or {}).get('selected_feature_groups'),
+              'cost_added_features': (payload['experiment'] or {}).get('cost_added_features'),
+              'delay_added_features': (payload['experiment'] or {}).get('delay_added_features'),
           }
           print('EXP12_REAL_COMPARISON=' + json.dumps(summary, sort_keys=True))
           PY
