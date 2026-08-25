@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from backend.app.services.model_service import model_table, global_importances
@@ -5,7 +6,7 @@ from backend.app.services.validation_service import rolling_validation_report, v
 from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
 from backend.app.services.lifecycle_run_service import lifecycle_runs
 from backend.app.services.monthly_prediction_service import lifecycle_comparison, forecast_evolution, lifecycle_specialist_comparison, lifecycle_specialist_convergence
-from backend.app.ml.experiments.lifecycle_specialists import train_lifecycle_specialists
+from backend.app.ml.experiments.lifecycle_specialists import EXPERIMENT_ROOT, STAGES, train_lifecycle_specialists
 from backend.app.ml.residual_overrun_experiment import run_residual_overrun_experiment
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -73,15 +74,20 @@ def lifecycle_specialists_comparison(window: str):
 def lifecycle_specialists_stages(window: str):
     try:
         report = lifecycle_specialist_comparison(window)
-        return {"window": window, "boundaries": report.get("lifecycle_boundaries"), "stages": report.get("specialists", {})}
+        stages = report.get("specialists", {})
+        for stage in STAGES:
+            path = EXPERIMENT_ROOT / window / stage / "shap_importance.json"
+            if path.exists():
+                stages.setdefault(stage, {})["feature_importance"] = json.loads(path.read_text())
+        return {"window": window, "boundaries": report.get("lifecycle_boundaries"), "stages": stages}
     except FileNotFoundError as exc:
         raise HTTPException(404, str(exc))
 
 
 @router.get("/lifecycle-specialists/{window}/convergence/{project_id}")
-def lifecycle_specialists_convergence(window: str, project_id: str):
+def lifecycle_specialists_convergence(window: str, project_id: str, reveal: bool = False):
     try:
-        return lifecycle_specialist_convergence(project_id, window)
+        return lifecycle_specialist_convergence(project_id, window, include_actual=reveal)
     except (FileNotFoundError, KeyError) as exc:
         raise HTTPException(404, str(exc))
 

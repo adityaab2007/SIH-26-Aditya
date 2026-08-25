@@ -74,7 +74,7 @@ export const api = {
   lifecycleSpecialistsRetrain: (startYear, endYear) => request('/api/models/experiments/lifecycle-specialists/retrain', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear) }) }, HEAVY_TIMEOUT_MS),
   lifecycleSpecialistsComparison: (window = '2015_2021') => request(`/api/models/lifecycle-specialists/${encodeURIComponent(window)}/comparison`),
   lifecycleSpecialistsStages: (window = '2015_2021') => request(`/api/models/lifecycle-specialists/${encodeURIComponent(window)}/stages`),
-  lifecycleSpecialistsConvergence: (projectId, window = '2015_2021') => request(`/api/models/lifecycle-specialists/${encodeURIComponent(window)}/convergence/${encodeURIComponent(projectId)}`),
+  lifecycleSpecialistsConvergence: (projectId, window = '2015_2021', reveal = false) => request(`/api/models/lifecycle-specialists/${encodeURIComponent(window)}/convergence/${encodeURIComponent(projectId)}?reveal=${reveal ? 'true' : 'false'}`),
   lifecycleSpecialistForecast: (code, window = '2015_2021') => request(`/api/projects/${encodeURIComponent(code)}/lifecycle-specialist-forecast?window=${encodeURIComponent(window)}`),
   setValidationModel: (model) => model ? sessionStorage.setItem(SELECTED_MODEL_KEY, model) : sessionStorage.removeItem(SELECTED_MODEL_KEY),
   getValidationModel: () => selectedModel(),

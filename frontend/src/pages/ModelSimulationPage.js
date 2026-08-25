@@ -297,6 +297,10 @@ export async function ModelSimulationPage(root) {
       actual = await api.revealCustomSimulation(session.session_id, prediction.record_index);
       if (session.run_id && actual.run_id !== session.run_id) throw new Error('Reveal response belongs to a different model run.');
       if (session.dataset_fingerprint && actual.dataset_fingerprint !== session.dataset_fingerprint) throw new Error('Reveal response belongs to a different dataset snapshot.');
+      const selectedProject = projectRows.find((row) => String(row.record_index) === String(project.value));
+      if (specialistWindow && selectedProject?.project_id) {
+        try { convergence = await api.lifecycleSpecialistsConvergence(selectedProject.project_id, specialistWindow, true); } catch (_) { /* optional reveal detail */ }
+      }
       output.innerHTML = predictionCard(prediction, actual) + specialistPredictionCard(specialistPrediction, actual, convergence);
     } catch (error) {
       output.innerHTML += `<div class="error-state">${escape(error.message)}</div>`;
