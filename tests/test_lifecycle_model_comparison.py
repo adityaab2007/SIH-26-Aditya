@@ -13,8 +13,8 @@ class _Candidate:
 
 def test_retrain_and_compare_binds_fresh_production_and_experiment(monkeypatch):
     data = pd.DataFrame([
-        {"canonical_project_id": "T", "completion_year": 2015, "record_index": 0, "cost_escalation_percentage": 5.0},
-        {"canonical_project_id": "H", "completion_year": 2019, "record_index": 1, "cost_escalation_percentage": 10.0},
+        {"canonical_project_id": "T", "completion_year": 2015, "snapshot_date": "2015-06-30", "record_index": 0, "cost_escalation_percentage": 5.0},
+        {"canonical_project_id": "H", "completion_year": 2019, "snapshot_date": "2019-06-30", "record_index": 1, "cost_escalation_percentage": 10.0},
     ])
     monkeypatch.setattr(comparison.retraining, "_training_data", lambda: (data, pd.DataFrame(), 2001, 2025))
     production = {
@@ -27,7 +27,6 @@ def test_retrain_and_compare_binds_fresh_production_and_experiment(monkeypatch):
     }
     monkeypatch.setattr(comparison.retraining, "retrain_lifecycle", lambda start, end: production)
     monkeypatch.setattr(comparison.simulation, "_artifact_bundle", lambda start, end, run_id=None: {"metadata": {"features_used": ["cost_escalation_percentage"], "selected_algorithms": {"cost": "xgboost"}}, "cost": object()})
-    monkeypatch.setattr(comparison.simulation, "train_custom", lambda start, end, run_id=None: {"session_id": "prod-session", "leakage_guard": "future held out"})
     held = pd.DataFrame([
         {"record_index": 4, "completion_year": 2019, "cost_escalation_percentage": 12.0},
         {"record_index": 5, "completion_year": 2020, "cost_escalation_percentage": np.nan},
@@ -53,6 +52,7 @@ def test_retrain_and_compare_binds_fresh_production_and_experiment(monkeypatch):
     }
     monkeypatch.setattr(comparison, "_fit_exp03_against_production", lambda **kwargs: (report, _Candidate()))
     comparison._COMPARISON_SESSIONS.clear()
+    comparison.simulation._CUSTOM_SESSIONS.clear()
 
     result = comparison.retrain_and_compare(2001, 2015)
     assert result["production"]["run_id"] == "prod-run"
