@@ -4,7 +4,8 @@ from backend.app.services.model_service import model_table, global_importances
 from backend.app.services.validation_service import rolling_validation_report, validation_payload, validation_report
 from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
 from backend.app.services.lifecycle_run_service import lifecycle_runs
-from backend.app.services.monthly_prediction_service import lifecycle_comparison, forecast_evolution
+from backend.app.services.monthly_prediction_service import lifecycle_comparison, forecast_evolution, lifecycle_specialist_comparison, lifecycle_specialist_convergence
+from backend.app.ml.experiments.lifecycle_specialists import train_lifecycle_specialists
 from backend.app.ml.residual_overrun_experiment import run_residual_overrun_experiment
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -47,6 +48,42 @@ def residual_overrun_experiment(payload: TrainingRange):
         return run_residual_overrun_experiment(payload.start_year, payload.end_year)
     except (FileNotFoundError, ValueError) as exc:
         raise HTTPException(409, str(exc))
+
+
+@router.post("/experiments/lifecycle-specialists/retrain")
+def lifecycle_specialists_retrain(payload: TrainingRange):
+    """Train Experiment 4 without replacing the production global model."""
+    try:
+        from backend.app.services.lifecycle_retraining_service import _training_data
+        data, identity, _, max_year = _training_data()
+        return train_lifecycle_specialists(payload.start_year, payload.end_year, max_year, data=data, identity=identity)
+    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+        raise HTTPException(409, str(exc))
+
+
+@router.get("/lifecycle-specialists/{window}/comparison")
+def lifecycle_specialists_comparison(window: str):
+    try:
+        return lifecycle_specialist_comparison(window)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc))
+
+
+@router.get("/lifecycle-specialists/{window}/stages")
+def lifecycle_specialists_stages(window: str):
+    try:
+        report = lifecycle_specialist_comparison(window)
+        return {"window": window, "boundaries": report.get("lifecycle_boundaries"), "stages": report.get("specialists", {})}
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc))
+
+
+@router.get("/lifecycle-specialists/{window}/convergence/{project_id}")
+def lifecycle_specialists_convergence(window: str, project_id: str):
+    try:
+        return lifecycle_specialist_convergence(project_id, window)
+    except (FileNotFoundError, KeyError) as exc:
+        raise HTTPException(404, str(exc))
 
 
 @router.get("/validation")

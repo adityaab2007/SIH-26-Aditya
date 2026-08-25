@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from backend.app.services.benchmark_service import peer_benchmark
 from backend.app.services.data_service import list_projects, row_to_dict, sectors, get_project
 from backend.app.services.prediction_service import project_forecast, project_prediction
-from backend.app.services.monthly_prediction_service import lifecycle_project_forecast
+from backend.app.services.monthly_prediction_service import lifecycle_project_forecast, lifecycle_specialist_forecast
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -41,6 +41,17 @@ def forecast(code: str):
 def lifecycle_forecast(code: str, window: str = "2015_2021"):
     try:
         return lifecycle_project_forecast(code, window)
+    except KeyError:
+        raise HTTPException(404, "No official monthly trajectory is available for this project")
+    except FileNotFoundError as exc:
+        raise HTTPException(409, str(exc))
+
+
+@router.get("/{code}/lifecycle-specialist-forecast")
+def lifecycle_specialist_forecast_route(code: str, window: str = "2015_2021"):
+    """Explicit Experiment 4 mode; production/default forecast remains global."""
+    try:
+        return lifecycle_specialist_forecast(code, window)
     except KeyError:
         raise HTTPException(404, "No official monthly trajectory is available for this project")
     except FileNotFoundError as exc:

@@ -93,7 +93,7 @@ def _risk_metrics(actual: pd.Series, predicted: np.ndarray, weights: pd.Series) 
 def _select_regressor(train: pd.DataFrame, features: list[str], target: str, seed: int) -> tuple[str, Pipeline, list[dict]]:
     validation_year = int(train.completion_year.max()); fitting = train[train.completion_year.lt(validation_year)]; validation = train[train.completion_year.eq(validation_year)]
     if fitting.canonical_project_id.nunique() < 5 or validation.canonical_project_id.nunique() < 2:
-        fitting = train; validation = train
+        raise ValueError(f"Internal temporal validation is unavailable for {target}: fitting_projects={fitting.canonical_project_id.nunique()}, validation_projects={validation.canonical_project_id.nunique()}")
     comparisons = []
     for name, model in _regressors(seed).items():
         fitted = _fit_pipeline(model, fitting, features, target); pred = fitted.predict(validation[features])
@@ -123,7 +123,7 @@ def _evaluate(models: dict, test: pd.DataFrame, features: list[str]) -> tuple[di
 
 def _stage_metrics(rows: pd.DataFrame) -> dict:
     result = {}
-    for stage in ["early", "mid", "late", "very_late"]:
+    for stage in ["early", "early_mid", "late_mid", "late"]:
         part = rows[rows.lifecycle_stage.eq(stage)]
         if part.empty:
             result[stage] = {"available": False, "reason": "no test snapshots with valid duration ratio"}; continue
@@ -136,7 +136,7 @@ def _stage_metrics(rows: pd.DataFrame) -> dict:
 
 def _stage_distribution(rows: pd.DataFrame) -> dict:
     distribution = {}
-    for stage in ["early", "mid", "late", "very_late"]:
+    for stage in ["early", "early_mid", "late_mid", "late"]:
         part = rows[rows.lifecycle_stage.eq(stage)]
         distribution[stage] = {"rows": int(len(part)), "unique_projects": int(part.canonical_project_id.nunique())}
     return distribution
@@ -156,7 +156,7 @@ def _balanced_stage_summary(stages: dict) -> dict:
         "cost_mae": avg(("cost", "MAE")),
         "delay_mae": avg(("delay", "MAE")),
         "risk_macro_f1": avg(("risk", "macro_f1")),
-        "early_warning": {stage: stages.get(stage) for stage in ("early", "mid")},
+        "early_warning": {stage: stages.get(stage) for stage in ("early", "early_mid")},
     }
 
 

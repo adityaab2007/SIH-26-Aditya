@@ -10,7 +10,7 @@ from backend.app.ml.experiments import lifecycle_specialists as specialists
 
 def _cohort() -> pd.DataFrame:
     rows = []
-    stages = ["early", "mid", "late", "very_late"]
+    stages = ["early", "early_mid", "late_mid", "late"]
     for stage_index, stage in enumerate(stages):
         for index in range(10):
             rows.append({
@@ -63,6 +63,14 @@ def _fake_train_variant(train, test, features, seed):
     }, metrics, rows
 
 
+class _ConstantModel:
+    def __init__(self, value):
+        self.value = value
+
+    def predict(self, frame):
+        return np.full(len(frame), self.value, dtype=float)
+
+
 def test_experiment_four_fits_and_saves_independent_stage_specialists(tmp_path, monkeypatch):
     data = _cohort()
     monkeypatch.setattr(
@@ -71,6 +79,8 @@ def test_experiment_four_fits_and_saves_independent_stage_specialists(tmp_path, 
         lambda *args, **kwargs: {"features_used": ["approved_cost_cr"]},
     )
     monkeypatch.setattr(specialists, "_train_variant", _fake_train_variant)
+    monkeypatch.setattr(specialists, "_strict_selection", lambda train, features, target, seed: ("test", _ConstantModel(1.0), [{"algorithm": "test", "MAE": 1.0, "RMSE": 1.0}]))
+    monkeypatch.setattr(specialists, "_importance", lambda *args, **kwargs: {"method": "tree_feature_importance", "features": []})
     monkeypatch.setattr(specialists.joblib, "dump", lambda model, path: Path(path).write_bytes(b"specialist"))
     monkeypatch.setattr(specialists, "git_commit_sha", lambda root: "test-commit")
 
@@ -84,12 +94,11 @@ def test_experiment_four_fits_and_saves_independent_stage_specialists(tmp_path, 
     )
 
     assert result["implementation"] == "independent_stage_models"
-    assert set(result["specialists"]) == {"early", "mid", "late", "very_late"}
+    assert set(result["specialists"]) == {"early", "early_mid", "late_mid", "late"}
     for stage, item in result["specialists"].items():
         assert item["available"] is True
         assert item["training_projects"] == 10
         assert item["testing_projects"] == 2
         assert (tmp_path / "2001_2015" / stage / "cost_model.pkl").exists()
         assert (tmp_path / "2001_2015" / stage / "delay_model.pkl").exists()
-        assert (tmp_path / "2001_2015" / stage / "risk_model.pkl").exists()
     assert (tmp_path / "2001_2015" / "experiment_4_results.json").exists()

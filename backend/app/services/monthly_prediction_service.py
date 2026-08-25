@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, SNAPSHOTS_GZ, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
+from backend.app.ml.experiments.lifecycle_specialists import load_specialist_bundle, predict_with_specialist
 from backend.app.ml.provenance import file_sha256
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -140,3 +141,54 @@ def forecast_evolution(project_id: str, window: str = "2015_2021") -> dict:
     safe = rows.astype(object).where(pd.notna(rows), None)
     return {"model_version": window, "project_id": project_id, "items": safe.to_dict("records"), "count": int(len(rows)),
             "source_policy": "Every point is an official historical snapshot; no synthetic interpolation is used."}
+
+
+def lifecycle_specialist_comparison(window: str) -> dict:
+    """Return the persisted Experiment 4 comparison without changing production inference."""
+    return load_specialist_bundle(window)["report"]
+
+
+def lifecycle_specialist_forecast(code: str, window: str = "2015_2021") -> dict:
+    """Predict one latest historical snapshot using exactly one specialist."""
+    code = str(code).strip().upper()
+    frame = _inference_frame()
+    rows = frame[frame.project_id.astype("string").str.upper().eq(code)].sort_values("snapshot_date")
+    if rows.empty:
+        raise KeyError(code)
+    latest = rows.iloc[-1]
+    global_bundle = _bundle(window)
+    features = global_bundle["metadata"]["features_used"]
+    X = latest.to_frame().T[features]
+    global_prediction = {
+        "cost": {"predicted_final_overrun_percentage": float(global_bundle["cost"].predict(X)[0]), "algorithm": global_bundle["metadata"].get("selected_algorithms", {}).get("cost")},
+        "delay": {"predicted_final_delay_days": float(max(0, global_bundle["delay"].predict(X)[0])), "algorithm": global_bundle["metadata"].get("selected_algorithms", {}).get("delay")},
+    }
+    result = predict_with_specialist(latest, load_specialist_bundle(window), global_prediction)
+    result.update({"project_id": code, "project_name": latest.project_name, "snapshot_date": pd.Timestamp(latest.snapshot_date).strftime("%Y-%m-%d")})
+    return result
+
+
+def lifecycle_specialist_convergence(code: str, window: str = "2015_2021") -> dict:
+    """Return nearest real historical milestones for one project; never interpolate rows."""
+    code = str(code).strip().upper()
+    frame = _inference_frame()
+    rows = frame[frame.project_id.astype("string").str.upper().eq(code)].sort_values("snapshot_date").copy()
+    if rows.empty:
+        raise KeyError(code)
+    bundle = load_specialist_bundle(window)
+    global_bundle = _bundle(window)
+    features = global_bundle["metadata"]["features_used"]
+    chosen = []
+    for milestone in (.25, .50, .75, float(rows.duration_ratio.max())):
+        if milestone is None or not np.isfinite(milestone):
+            continue
+        row = rows.iloc[(rows.duration_ratio - milestone).abs().argsort()[:1].to_numpy()[0]]
+        if int(row.name) not in [int(item.name) for item in chosen]:
+            chosen.append(row)
+    items = []
+    for row in chosen:
+        X = row.to_frame().T[features]
+        global_prediction = {"cost": {"predicted_final_overrun_percentage": float(global_bundle["cost"].predict(X)[0])}, "delay": {"predicted_final_delay_days": float(max(0, global_bundle["delay"].predict(X)[0]))}}
+        routed = predict_with_specialist(row, bundle, global_prediction)
+        items.append({"snapshot_date": pd.Timestamp(row.snapshot_date).strftime("%Y-%m-%d"), "lifecycle_percentage": None if pd.isna(row.duration_ratio) else float(row.duration_ratio) * 100, "lifecycle_stage": routed.get("lifecycle_stage"), "predicted_final_cost_overrun": routed["cost"]["predicted_final_overrun_percentage"], "actual_final_cost_overrun": None if pd.isna(row.get("actual_cost_overrun_percentage")) else float(row.actual_cost_overrun_percentage), "absolute_cost_error": None if pd.isna(row.get("actual_cost_overrun_percentage")) else abs(routed["cost"]["predicted_final_overrun_percentage"] - float(row.actual_cost_overrun_percentage)), "predicted_final_delay": routed["delay"]["predicted_final_delay_days"], "actual_final_delay": None if pd.isna(row.get("actual_delay_days")) else float(row.actual_delay_days), "absolute_delay_error": None if pd.isna(row.get("actual_delay_days")) else abs(routed["delay"]["predicted_final_delay_days"] - float(row.actual_delay_days)), "specialist_model": routed.get("lifecycle_stage") if routed.get("specialist_used") else "global_fallback", "algorithm": {"cost": routed["cost"].get("algorithm"), "delay": routed["delay"].get("algorithm")}})
+    return {"project_id": code, "items": items, "count": len(items), "source_policy": "Nearest available official historical snapshots only; no synthetic interpolation."}

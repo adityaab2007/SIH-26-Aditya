@@ -165,6 +165,44 @@ http://127.0.0.1:8000
 
 The frontend has no CDN/runtime dependency; FastAPI serves the API and the modular SPA together. On a fresh clone, first launch rebuilds the real PAIMANA dataset from the checked-in source-aligned seed and trains the selected inference artifacts before starting the server.
 
+## Experiment 4 — Lifecycle-Specific Forecasting
+
+Experiment 4 tests the hypothesis that the relationship between project signals
+and final cost/time overrun changes as a project matures. It keeps the existing
+global monthly lifecycle model as the production baseline and trains up to eight
+experiment-only regressors: one cost and one delay specialist for each stage.
+
+```text
+PROJECT SNAPSHOT → LIFECYCLE %
+       ├─ 0–25%   → early     → cost + delay
+       ├─ 25–50%  → early_mid → cost + delay
+       ├─ 50–75%  → late_mid  → cost + delay
+       └─ 75%+    → late      → cost + delay
+```
+
+The router selects exactly one specialist from the snapshot-time
+`duration_ratio`; it never averages the four predictions. Missing or invalid
+duration ratios, and unavailable stage models, explicitly fall back to the
+global model. Each model predicts the same final targets:
+`actual_cost_overrun_percentage` and `actual_delay_days`.
+
+Training uses the same identity-verified source data, quarterly snapshot
+deduplication, project-balanced weights, project-disjoint temporal holdout,
+as-of feature audit, and target exclusion as the baseline. Each specialist
+selects LightGBM, XGBoost, or Extra Trees using only an internal temporal
+validation cohort. Sparse stages are reported unavailable rather than fitted on
+training data reused as validation. Tree feature importance is labeled as such
+when SHAP is not available.
+
+Run the experiment explicitly through `POST
+/api/models/experiments/lifecycle-specialists/retrain` with
+`{"start_year": 2001, "end_year": 2015}`. Results are namespaced under
+`models/lifecycle_specialists/<window>/` and the comparison is available from
+`GET /api/models/lifecycle-specialists/<window>/comparison`. The experiment is
+not promoted to default production inference automatically. Accuracy results
+and limitations are recorded in the generated comparison artifact; no metrics
+are invented when the official processed dataset is unavailable.
+
 ## Run tests
 
 ```bash

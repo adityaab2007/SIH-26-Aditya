@@ -113,6 +113,7 @@ export async function ModelSimulationPage(root) {
     </div>
     <div id="held-out-note" class="notice compact">After retraining, only projects completed after the selected training end year will be offered here.</div>
   </section>
+  <section class="panel"><div class="panel-head"><div><span class="kicker">Experiment 4</span><h2>Lifecycle Specialist Comparison</h2></div></div><p class="muted">Train the experiment separately, then compare one routed specialist with the global lifecycle model for the selected snapshot. Actual outcomes remain hidden until the existing reveal action.</p><button class="secondary-btn" id="specialist-train">Train Lifecycle Specialists</button><div id="specialist-output" class="notice compact">No specialist experiment is active for this training window.</div></section>
   <div id="custom-output"></div>`;
 
   const start = root.querySelector('#custom-start');
@@ -126,11 +127,28 @@ export async function ModelSimulationPage(root) {
   const revealButton = root.querySelector('#custom-reveal');
   const heldOutNote = root.querySelector('#held-out-note');
   const output = root.querySelector('#custom-output');
+  const specialistTrainButton = root.querySelector('#specialist-train');
+  const specialistOutput = root.querySelector('#specialist-output');
 
   let session = null;
   let projectRows = [];
   let prediction = null;
   let actual = null;
+
+  specialistTrainButton.addEventListener('click', async () => {
+    specialistTrainButton.disabled = true;
+    specialistOutput.textContent = 'Training eight experiment-only cost/delay specialists…';
+    try {
+      const result = await api.lifecycleSpecialistsRetrain(Number(start.value), Number(end.value));
+      const cost = result.specialist_overall?.cost?.MAE;
+      const delay = result.specialist_overall?.delay?.MAE;
+      specialistOutput.innerHTML = `<strong>Experiment 4 trained.</strong> Routed holdout cost MAE: ${fixed(cost)} pp · delay MAE: ${fixed(delay)} days. The global model remains the production default.`;
+    } catch (error) {
+      specialistOutput.innerHTML = `<strong>Experiment 4 unavailable:</strong> ${escape(error.message)}`;
+    } finally {
+      specialistTrainButton.disabled = false;
+    }
+  });
 
   const resetPrediction = () => {
     prediction = null;

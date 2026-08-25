@@ -284,7 +284,15 @@ def engineer_as_of_features(frame: pd.DataFrame, outcomes: pd.DataFrame) -> pd.D
     data["cost_acceleration"] = data.cost_growth_velocity_3m - data.cost_growth_velocity_6m
     data["progress_acceleration"] = data.progress_velocity_3m - data.progress_velocity_6m
     data = _historical_priors(data, outcomes)
-    data["lifecycle_stage"] = pd.cut(data.duration_ratio, [-np.inf, .30, .60, .90, np.inf], labels=["early", "mid", "late", "very_late"]).astype("string")
+    # Experiment 4 uses fixed snapshot-time lifecycle bins. Values above 100%
+    # remain in the final late specialist; missing ratios remain missing.
+    valid_duration_ratio = data.duration_ratio.where(data.duration_ratio.ge(0))
+    data["lifecycle_stage"] = pd.cut(
+        valid_duration_ratio,
+        [-np.inf, .25, .50, .75, np.inf],
+        labels=["early", "early_mid", "late_mid", "late"],
+        right=False,
+    ).astype("string")
     return data
 
 
