@@ -123,10 +123,19 @@ def test_production_retrain_stamp_marks_both_persisted_truth_sources(tmp_path: P
     assert json.loads((target / "evaluation_results.json").read_text())["metadata"]["model_role"] == "production"
 
 
-def test_judge_facing_pages_do_not_invoke_experiment_endpoints():
+def test_judge_facing_model_simulation_uses_controlled_compare_orchestration():
     root = Path(__file__).resolve().parents[1]
     simulation = (root / "frontend" / "src" / "pages" / "ModelSimulationPage.js").read_text()
     accuracy = (root / "frontend" / "src" / "pages" / "PredictionAccuracyPage.js").read_text()
+    api_source = (root / "frontend" / "src" / "services" / "api.js").read_text()
+
+    # Prediction Accuracy remains production-only. Model Simulation may compare,
+    # but it must use the controlled server-side retrain-and-compare endpoint
+    # rather than invoking an experiment directly from the browser.
     assert "residualOverrunExperiment(" not in simulation
     assert "residualOverrunExperiment(" not in accuracy
-    assert "api.retrainModel(" in simulation
+    assert "api.retrainAndCompare(" in simulation
+    assert "api.predictComparison(" in simulation
+    assert "api.revealComparison(" in simulation
+    assert "retrainAndCompare:" in api_source
+    assert "/api/model-simulations/custom/retrain-compare" in api_source
