@@ -1,0 +1,81 @@
+name: Experiment 12 real comparison
+
+on:
+  push:
+    branches: [exp-12]
+    paths:
+      - '.github/workflows/exp12-compare.yml'
+      - 'backend/app/ml/experiments/adapter_exp12.py'
+      - 'backend/app/ml/experiments/trajectory_exp12.py'
+      - 'backend/app/services/lifecycle_model_comparison_service.py'
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 2001
+            end: 2019
+          - start: 2001
+            end: 2021
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Run production vs Experiment 12
+        env:
+          START_YEAR: ${{ matrix.start }}
+          END_YEAR: ${{ matrix.end }}
+        run: |
+          mkdir -p audit_outputs
+          PYTHONPATH=. python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from backend.app.services.lifecycle_model_comparison_service import retrain_and_compare
+
+          start = int(os.environ['START_YEAR'])
+          end = int(os.environ['END_YEAR'])
+          result = retrain_and_compare(start, end, 'exp_12')
+          payload = {
+              'window': f'{start}_{end}',
+              'production': result.get('production'),
+              'experiment': result.get('experiment'),
+              'overall_comparison': result.get('overall_comparison'),
+              'session': result.get('session'),
+          }
+          out = Path('audit_outputs') / f'exp12_compare_{start}_{end}.json'
+          out.write_text(json.dumps(payload, indent=2, allow_nan=False))
+          overall = payload['overall_comparison'] or {}
+          summary = {
+              'window': payload['window'],
+              'production_cost_mae': overall.get('production_cost_mae'),
+              'experiment_cost_mae': overall.get('experiment_cost_mae'),
+              'cost_improvement_percentage': overall.get('improvement_percentage'),
+              'production_delay_mae': overall.get('production_delay_mae'),
+              'experiment_delay_mae': overall.get('experiment_delay_mae'),
+              'delay_improvement_percentage': overall.get('delay_improvement_percentage'),
+              'comparison_test_projects': overall.get('comparison_test_projects'),
+              'comparison_test_snapshots': overall.get('comparison_test_snapshots'),
+              'paired_project_cost_comparison': overall.get('paired_project_cost_comparison'),
+              'paired_project_delay_comparison': overall.get('paired_project_delay_comparison'),
+              'stage_balanced': overall.get('stage_balanced'),
+              'production_selected_algorithms': (payload['production'] or {}).get('selected_algorithms'),
+              'experiment_selected_algorithms': (payload['experiment'] or {}).get('selected_algorithms'),
+          }
+          print('EXP12_REAL_COMPARISON=' + json.dumps(summary, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp12-comparison-${{ matrix.start }}-${{ matrix.end }}
+          path: audit_outputs/exp12_compare_${{ matrix.start }}_${{ matrix.end }}.json
+          if-no-files-found: warn
