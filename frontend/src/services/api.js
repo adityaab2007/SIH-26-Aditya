@@ -1,6 +1,7 @@
 const JSON_HEADERS = { "Content-Type": "application/json" };
 const DEFAULT_TIMEOUT_MS = 45000;
 const HEAVY_TIMEOUT_MS = 10 * 60 * 1000;
+const COMPARE_TIMEOUT_MS = 20 * 60 * 1000;
 const SELECTED_MODEL_KEY = 'selected_validation_model';
 const ACTIVE_LIFECYCLE_KEY = 'active_lifecycle_run';
 
@@ -86,7 +87,7 @@ export const api = {
   }, HEAVY_TIMEOUT_MS),
   retrainAndCompare: (startYear, endYear, experimentId = 'exp_03') => request('/api/model-simulations/custom/retrain-compare', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), experiment_id: experimentId }),
-  }, HEAVY_TIMEOUT_MS),
+  }, COMPARE_TIMEOUT_MS),
   customSimulationProjects: (sessionId, year) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
   comparisonProjects: (sessionId, year) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
   predictCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/predict`, {
