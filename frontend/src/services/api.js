@@ -85,7 +85,7 @@ export const api = {
   trainCustomSimulation: (startYear, endYear, runId = null) => request('/api/model-simulations/custom/train', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), run_id: runId }),
   }, HEAVY_TIMEOUT_MS),
-  retrainAndCompare: (startYear, endYear, experimentId = 'exp_03') => request('/api/model-simulations/custom/retrain-compare', {
+  retrainAndCompare: (startYear, endYear, experimentId = null) => request('/api/model-simulations/custom/retrain-compare', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), experiment_id: experimentId }),
   }, COMPARE_TIMEOUT_MS),
   customSimulationProjects: (sessionId, year) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
