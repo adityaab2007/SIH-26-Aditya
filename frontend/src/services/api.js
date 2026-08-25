@@ -84,11 +84,21 @@ export const api = {
   trainCustomSimulation: (startYear, endYear, runId = null) => request('/api/model-simulations/custom/train', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), run_id: runId }),
   }, HEAVY_TIMEOUT_MS),
+  retrainAndCompare: (startYear, endYear, experimentId = 'exp_03') => request('/api/model-simulations/custom/retrain-compare', {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ start_year: Number(startYear), end_year: Number(endYear), experiment_id: experimentId }),
+  }, HEAVY_TIMEOUT_MS),
   customSimulationProjects: (sessionId, year) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
+  comparisonProjects: (sessionId, year) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/projects?year=${encodeURIComponent(year)}`),
   predictCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/predict`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
   }),
+  predictComparison: (sessionId, recordIndex) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/predict`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
+  }),
   revealCustomSimulation: (sessionId, recordIndex) => request(`/api/model-simulations/custom/${encodeURIComponent(sessionId)}/reveal`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
+  }),
+  revealComparison: (sessionId, recordIndex) => request(`/api/model-simulations/compare/${encodeURIComponent(sessionId)}/reveal`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ record_index: Number(recordIndex) }),
   }),
   historyList: () => request('/api/history'),
