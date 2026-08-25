@@ -203,6 +203,23 @@ not promoted to default production inference automatically. Accuracy results
 and limitations are recorded in the generated comparison artifact; no metrics
 are invented when the official processed dataset is unavailable.
 
+The checked-in official snapshot run for 2001–2015 training and 2016–2025
+holdout produced the following result before any production promotion:
+
+| Approach | Cost MAE | Delay MAE |
+|---|---:|---:|
+| Global baseline | 39.998 pp | 535.479 days |
+| Lifecycle-aware global | 39.867 pp | 535.188 days |
+| Routed specialists | 37.347 pp | 530.613 days |
+
+On that run, routed specialists reduced cost MAE by 6.63% and delay MAE by
+0.91% versus the global baseline. Per-stage cost improvement was −3.43%,
+9.04%, 9.19%, and 7.34% for early, early-mid, late-mid, and late; delay
+improvement was −4.32%, −0.41%, 1.08%, and 1.15%. These results are reported
+honestly: early cost and delay specialists regressed, while later stages mostly
+improved. The overall routed metric includes the identical future holdout and
+explicit global fallback rows for snapshots without a usable specialist stage.
+
 ## Run tests
 
 ```bash

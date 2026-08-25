@@ -18,8 +18,8 @@ import pandas as pd
 
 from backend.app.ml.feature_audit import audit_features
 from backend.app.ml.monthly_lifecycle import (
-    BASELINE_FEATURES, CANDIDATE_FEATURES, TARGETS, as_of_feature_evidence,
-    build_training_dataset,
+    BASELINE_FEATURES, CANDIDATE_FEATURES, TARGETS, TRAINING_DATA, IDENTITY_AUDIT,
+    as_of_feature_evidence, build_training_dataset,
 )
 from backend.app.ml.monthly_training import (
     MODEL_ROOT, _fit_pipeline, _regression_metrics, _regressors, _train_variant,
@@ -67,7 +67,10 @@ def add_lifecycle_stages(frame: pd.DataFrame) -> pd.DataFrame:
         # Useful for isolated callers/tests that already supplied an audited
         # stage; production datasets always derive it from duration_ratio.
         return result
-    result["lifecycle_stage"] = result.get("duration_ratio", pd.Series(index=result.index, dtype=float)).map(select_lifecycle_stage).astype("string")
+    mapped = result.get("duration_ratio", pd.Series(index=result.index, dtype=float)).map(select_lifecycle_stage)
+    # sklearn's categorical imputer cannot safely consume pandas.NA under the
+    # current pandas/sklearn combination; preserve missingness as Python None.
+    result["lifecycle_stage"] = mapped.where(mapped.notna(), None).astype(object)
     return result
 
 
@@ -87,11 +90,14 @@ def _strict_selection(train: pd.DataFrame, features: list[str], target: str, see
         return None
     comparisons = []
     for name, model in _regressors(seed).items():
+        model.set_params(n_estimators=min(int(model.get_params().get("n_estimators", 100)), 100))
         fitted = _fit_pipeline(model, fitting, features, target)
         predicted = np.maximum(0, fitted.predict(validation[features])) if target == "actual_delay_days" else fitted.predict(validation[features])
         comparisons.append({"algorithm": name, **_regression_metrics(validation[target], predicted, validation.sample_weight, validation.canonical_project_id)})
     winner = min(comparisons, key=lambda item: (item["MAE"], item["RMSE"]))["algorithm"]
-    return winner, _fit_pipeline(_regressors(seed)[winner], train, features, target), comparisons
+    final_model = _regressors(seed)[winner]
+    final_model.set_params(n_estimators=min(int(final_model.get_params().get("n_estimators", 100)), 100))
+    return winner, _fit_pipeline(final_model, train, features, target), comparisons
 
 
 def _metrics(actual: pd.Series, predicted: np.ndarray, frame: pd.DataFrame) -> dict[str, Any]:
@@ -102,7 +108,7 @@ def _comparison(global_rows: pd.DataFrame, specialist_rows: pd.DataFrame) -> dic
     result = {}
     for stage in STAGES:
         global_part = global_rows[global_rows.lifecycle_stage.eq(stage)]
-        specialist_part = specialist_rows[specialist_rows.lifecycle_stage.eq(stage)]
+        specialist_part = specialist_rows[specialist_rows.lifecycle_stage.eq(stage) & specialist_rows.get("specialist_used", True)]
         item: dict[str, Any] = {"lifecycle_range": _serial_range(stage), "available": not specialist_part.empty}
         if global_part.empty:
             item["global_cost"] = item["global_delay"] = None
@@ -144,8 +150,14 @@ def _importance(model: Any, frame: pd.DataFrame, features: list[str]) -> dict[st
 
 def train_lifecycle_specialists(training_start: int, training_end: int, test_end: int, data: pd.DataFrame | None = None, identity: pd.DataFrame | None = None, artifact_root: Path | None = None) -> dict[str, Any]:
     """Train Experiment 4 for a year window and persist namespaced artifacts."""
-    if data is None or identity is None:
-        data, identity = build_training_dataset()
+    if data is None:
+        if TRAINING_DATA.exists():
+            data = pd.read_csv(TRAINING_DATA, low_memory=False)
+            identity = pd.read_csv(IDENTITY_AUDIT, low_memory=False) if IDENTITY_AUDIT.exists() else pd.DataFrame()
+        else:
+            data, identity = build_training_dataset()
+    elif identity is None:
+        identity = pd.DataFrame()
     data = add_lifecycle_stages(data.copy())
     data["completion_year"] = pd.to_numeric(data["completion_year"], errors="coerce")
     train, test = temporal_project_split(data, int(training_start), int(training_end), int(test_end))
@@ -156,6 +168,10 @@ def train_lifecycle_specialists(training_start: int, training_end: int, test_end
     destination = (artifact_root or EXPERIMENT_ROOT) / f"{training_start}_{training_end}"
     destination.mkdir(parents=True, exist_ok=True)
     global_bundle, global_metrics, global_rows = _train_variant(train, test, features, 26400)
+    # Comparator B: the same global model family with an explicit categorical
+    # lifecycle-stage feature derived only from the snapshot-time ratio.
+    aware_features = _valid_features(features + ["lifecycle_stage"], train)
+    aware_bundle, aware_metrics, aware_rows = _train_variant(train, test, aware_features, 26410)
     specialist_rows = []
     specialists: dict[str, Any] = {}
     for index, stage in enumerate(STAGES):
@@ -185,9 +201,23 @@ def train_lifecycle_specialists(training_start: int, training_end: int, test_end
         (stage_dir / "metadata.json").write_text(json.dumps({"stage": stage, "lifecycle_range": _serial_range(stage), "features": features, "selected_algorithms": {"cost": cost_name, "delay": delay_name}, "training_projects": train_projects, "validation_projects": valid_projects, "test_projects": test_projects}, indent=2))
         (stage_dir / "shap_importance.json").write_text(json.dumps({"cost": _importance(cost_model, stage_train, features), "delay": _importance(delay_model, stage_train, features)}, indent=2))
         specialists[stage] = {**base, "available": True, "testing_projects": test_projects, "selected_algorithms": {"cost": cost_name, "delay": delay_name}, "internal_validation": {"cost": cost_comparisons, "delay": delay_comparisons}, "metrics": {"cost": _metrics(predictions.actual_cost_overrun_percentage, predictions.predicted_cost_overrun.to_numpy(), predictions), "delay": _metrics(predictions.actual_delay_days, predictions.predicted_delay_days.to_numpy(), predictions)}}
-    routed = pd.concat(specialist_rows, ignore_index=True) if specialist_rows else pd.DataFrame(columns=list(test.columns) + ["predicted_cost_overrun", "predicted_delay_days"])
+    # Route every future-holdout row. Valid rows use exactly one specialist;
+    # missing/invalid stages or unavailable specialists retain the global
+    # prediction with an explicit fallback marker, preserving fair holdout size.
+    routed = global_rows.copy()
+    routed["specialist_model"] = "global_fallback"
+    routed["specialist_used"] = False
+    for predictions in specialist_rows:
+        for _, prediction in predictions.iterrows():
+            mask = routed.canonical_project_id.eq(prediction.canonical_project_id) & routed.snapshot_date.eq(prediction.snapshot_date)
+            routed.loc[mask, "predicted_cost_overrun"] = prediction.predicted_cost_overrun
+            routed.loc[mask, "predicted_delay_days"] = prediction.predicted_delay_days
+            routed.loc[mask, "specialist_model"] = prediction.specialist_model
+            routed.loc[mask, "specialist_used"] = True
     comparison = _comparison(global_rows, routed)
-    result = {"experiment": "lifecycle_specialists", "experiment_name": "lifecycle_specialists", "implementation": "independent_stage_models", "run_id": new_run_id(), "model_version": f"lifecycle-specialists-{training_start}-{training_end}", "training_period": [int(training_start), int(training_end)], "holdout_period": [int(training_end) + 1, int(test_end)], "created_at": datetime.now(timezone.utc).isoformat(), "features": features, "feature_schema_fingerprint": feature_schema_fingerprint(features), "dataset_fingerprint": frame_fingerprint(data), "training_project_ids_hash": frame_fingerprint(train[["canonical_project_id"]].drop_duplicates()), "source_commit": git_commit_sha(ROOT), "lifecycle_boundaries": {stage: _serial_range(stage) for stage in STAGES}, "sample_weighting_policy": "quarterly deduplication precedes per-project 1/n retained snapshot weights", "leakage_policy": "identity-verified as-of features only; targets/final outcomes excluded; project-disjoint temporal holdout", "global_baseline": {"metrics": global_metrics, "holdout_rows": int(len(global_rows)), "holdout_projects": int(global_rows.canonical_project_id.nunique())}, "specialist_overall": _overall(routed) if not routed.empty else None, "comparison": comparison, "specialists": specialists}
+    specialist_overall = _overall(routed) if not routed.empty else None
+    overall_comparison = {"cost_improvement_pct": improvement_percent(global_metrics["cost"].get("MAE"), specialist_overall["cost"].get("MAE") if specialist_overall else None), "delay_improvement_pct": improvement_percent(global_metrics["delay"].get("MAE"), specialist_overall["delay"].get("MAE") if specialist_overall else None)}
+    result = {"experiment": "lifecycle_specialists", "experiment_name": "lifecycle_specialists", "implementation": "independent_stage_models", "run_id": new_run_id(), "model_version": f"lifecycle-specialists-{training_start}-{training_end}", "training_period": [int(training_start), int(training_end)], "holdout_period": [int(training_end) + 1, int(test_end)], "created_at": datetime.now(timezone.utc).isoformat(), "features": features, "feature_schema_fingerprint": feature_schema_fingerprint(features), "dataset_fingerprint": frame_fingerprint(data), "training_project_ids_hash": frame_fingerprint(train[["canonical_project_id"]].drop_duplicates()), "source_commit": git_commit_sha(ROOT), "lifecycle_boundaries": {stage: _serial_range(stage) for stage in STAGES}, "sample_weighting_policy": "quarterly deduplication precedes per-project 1/n retained snapshot weights", "leakage_policy": "identity-verified as-of features only; targets/final outcomes excluded; project-disjoint temporal holdout", "global_baseline": {"metrics": global_metrics, "features": features, "holdout_rows": int(len(global_rows)), "holdout_projects": int(global_rows.canonical_project_id.nunique())}, "lifecycle_aware_global": {"metrics": aware_metrics, "features": aware_features, "holdout_rows": int(len(aware_rows)), "holdout_projects": int(aware_rows.canonical_project_id.nunique()), "policy": "One global cost and delay model with lifecycle_stage derived from duration_ratio at snapshot time."}, "specialist_overall": specialist_overall, "overall_comparison": overall_comparison, "comparison": comparison, "specialists": specialists}
     if not routed.empty:
         routed.to_csv(destination / "routed_predictions.csv", index=False)
     (destination / "metadata.json").write_text(json.dumps({key: result[key] for key in ("experiment", "run_id", "model_version", "training_period", "holdout_period", "features", "feature_schema_fingerprint", "dataset_fingerprint", "lifecycle_boundaries", "sample_weighting_policy", "leakage_policy", "source_commit")}, indent=2, allow_nan=False))

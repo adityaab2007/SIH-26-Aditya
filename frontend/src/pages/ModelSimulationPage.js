@@ -61,6 +61,19 @@ function predictionCard(prediction, actual = null) {
   ${actual ? `<section class="panel"><span class="kicker">Official outcome revealed after prediction</span><h2>Prediction vs actual</h2><div class="detail-financial"><div><span>AI cost overrun</span><strong>${fixed(prediction.predicted_cost_overrun)}%</strong></div><div><span>Actual cost overrun</span><strong>${fixed(actual.actual_cost_overrun)}%</strong></div><div><span>Absolute cost error</span><strong>${fixed(actual.cost_error_absolute_pp)} pp</strong></div><div><span>AI delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div><div><span>Actual delay</span><strong>${fixed(actual.actual_delay_days)} days</strong></div><div><span>Absolute delay error</span><strong>${fixed(actual.delay_error_absolute_days)} days</strong></div><div><span>AI / actual risk</span><strong>${escape(text(prediction.predicted_risk))} / ${escape(text(actual.actual_risk))}</strong></div><div><span>Recorded completion</span><strong>${escape(text(actual.completion_date))}</strong></div></div><div class="notice compact"><strong>Reveal audit:</strong> ${escape(actual.reveal_policy)} · run ${escape(actual.run_id || 'Not recorded')}</div>${source ? `<a class="secondary-btn" href="${escape(source)}" target="_blank" rel="noopener noreferrer">Open official PAIMANA source</a>` : ''}</section>` : '<div class="notice compact"><strong>Actual outcome is still hidden.</strong> Click Reveal Actual Outcome only after the judge has seen the AI prediction.</div>'}`;
 }
 
+function specialistPredictionCard(prediction, actual = null, convergence = null) {
+  if (!prediction) return '';
+  const cost = prediction.cost || {};
+  const delay = prediction.delay || {};
+  const global = prediction.global || {};
+  const specialistCostError = actual ? Math.abs(Number(cost.predicted_final_overrun_percentage) - Number(actual.actual_cost_overrun)) : null;
+  const specialistDelayError = actual ? Math.abs(Number(delay.predicted_final_delay_days) - Number(actual.actual_delay_days)) : null;
+  const globalCostError = actual && global.cost ? Math.abs(Number(global.cost.predicted_final_overrun_percentage) - Number(actual.actual_cost_overrun)) : null;
+  const globalDelayError = actual && global.delay ? Math.abs(Number(global.delay.predicted_final_delay_days) - Number(actual.actual_delay_days)) : null;
+  const closer = specialistCostError == null || globalCostError == null ? 'N/A' : (specialistCostError <= globalCostError ? 'Lifecycle specialist' : 'Global lifecycle model');
+  return `<section class="panel"><span class="kicker">Experiment 4 · one routed specialist</span><h2>Global vs lifecycle specialist</h2><div class="detail-financial"><div><span>Lifecycle stage</span><strong>${escape(text(prediction.lifecycle_stage))}</strong></div><div><span>Lifecycle percentage</span><strong>${fixed(prediction.lifecycle_percentage, 1)}%</strong></div><div><span>Global cost</span><strong>${fixed(global.cost?.predicted_final_overrun_percentage)}%</strong></div><div><span>Specialist cost</span><strong>${fixed(cost.predicted_final_overrun_percentage)}%</strong></div><div><span>Global delay</span><strong>${fixed(global.delay?.predicted_final_delay_days)} days</strong></div><div><span>Specialist delay</span><strong>${fixed(delay.predicted_final_delay_days)} days</strong></div><div><span>Cost algorithm</span><strong>${escape(text(cost.algorithm))}</strong></div><div><span>Delay algorithm</span><strong>${escape(text(delay.algorithm))}</strong></div></div>${prediction.fallback_to_global ? `<div class="notice compact"><strong>Global fallback:</strong> ${escape(prediction.fallback_reason || 'Specialist unavailable')}</div>` : ''}${actual ? `<div class="notice compact"><strong>Actual outcome revealed.</strong> Global cost error: ${fixed(globalCostError)} pp · specialist cost error: ${fixed(specialistCostError)} pp · global delay error: ${fixed(globalDelayError)} days · specialist delay error: ${fixed(specialistDelayError)} days. <strong>Closer on cost: ${escape(closer)}</strong></div>` : '<div class="notice compact"><strong>Actual outcome remains hidden</strong> until the existing Reveal Actual Outcome action.</div>'}${convergence ? `<h3>Forecast convergence from real snapshots</h3><div class="table-wrap"><table class="data-table compact-table"><thead><tr><th>Date</th><th>Lifecycle</th><th>Stage</th><th>Cost forecast</th><th>Delay forecast</th><th>Model</th></tr></thead><tbody>${(convergence.items || []).map((item) => `<tr><td>${escape(item.snapshot_date)}</td><td>${fixed(item.lifecycle_percentage, 1)}%</td><td>${escape(text(item.lifecycle_stage))}</td><td>${fixed(item.predicted_final_cost_overrun)}%</td><td>${fixed(item.predicted_final_delay)} days</td><td>${escape(text(item.specialist_model))}</td></tr>`).join('')}</tbody></table></div>` : ''}</section>`;
+}
+
 function trainingReceipt(registryRun, session = null, restored = false) {
   if (!registryRun) return 'No lifecycle model has been trained in this browser session yet.';
   const quality = registryRun.metrics?.metadata?.feature_quality || {};
@@ -134,12 +147,16 @@ export async function ModelSimulationPage(root) {
   let projectRows = [];
   let prediction = null;
   let actual = null;
+  let specialistPrediction = null;
+  let specialistWindow = null;
+  let convergence = null;
 
   specialistTrainButton.addEventListener('click', async () => {
     specialistTrainButton.disabled = true;
     specialistOutput.textContent = 'Training eight experiment-only cost/delay specialists…';
     try {
       const result = await api.lifecycleSpecialistsRetrain(Number(start.value), Number(end.value));
+      specialistWindow = `${Number(start.value)}_${Number(end.value)}`;
       const cost = result.specialist_overall?.cost?.MAE;
       const delay = result.specialist_overall?.delay?.MAE;
       specialistOutput.innerHTML = `<strong>Experiment 4 trained.</strong> Routed holdout cost MAE: ${fixed(cost)} pp · delay MAE: ${fixed(delay)} days. The global model remains the production default.`;
@@ -153,6 +170,8 @@ export async function ModelSimulationPage(root) {
   const resetPrediction = () => {
     prediction = null;
     actual = null;
+    specialistPrediction = null;
+    convergence = null;
     revealButton.disabled = true;
     output.innerHTML = '';
   };
@@ -191,7 +210,18 @@ export async function ModelSimulationPage(root) {
       if (session.run_id && prediction.run_id !== session.run_id) throw new Error('Prediction belongs to a different model run. Retrain this range.');
       if (session.dataset_fingerprint && prediction.dataset_fingerprint !== session.dataset_fingerprint) throw new Error('Prediction belongs to a different dataset snapshot. Retrain this range.');
       revealButton.disabled = false;
-      output.innerHTML = predictionCard(prediction);
+      const selectedProject = projectRows.find((row) => String(row.record_index) === String(project.value));
+      if (specialistWindow && selectedProject?.project_id) {
+        try {
+          specialistPrediction = await api.lifecycleSpecialistForecast(selectedProject.project_id, specialistWindow);
+          specialistPrediction.global = { cost: { predicted_final_overrun_percentage: prediction.predicted_cost_overrun }, delay: { predicted_final_delay_days: prediction.predicted_delay_days } };
+          convergence = await api.lifecycleSpecialistsConvergence(selectedProject.project_id, specialistWindow);
+        } catch (_) {
+          specialistPrediction = null;
+          convergence = null;
+        }
+      }
+      output.innerHTML = predictionCard(prediction) + specialistPredictionCard(specialistPrediction, null, convergence);
     } catch (error) {
       output.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
     } finally {
@@ -267,7 +297,7 @@ export async function ModelSimulationPage(root) {
       actual = await api.revealCustomSimulation(session.session_id, prediction.record_index);
       if (session.run_id && actual.run_id !== session.run_id) throw new Error('Reveal response belongs to a different model run.');
       if (session.dataset_fingerprint && actual.dataset_fingerprint !== session.dataset_fingerprint) throw new Error('Reveal response belongs to a different dataset snapshot.');
-      output.innerHTML = predictionCard(prediction, actual);
+      output.innerHTML = predictionCard(prediction, actual) + specialistPredictionCard(specialistPrediction, actual, convergence);
     } catch (error) {
       output.innerHTML += `<div class="error-state">${escape(error.message)}</div>`;
       revealButton.disabled = false;

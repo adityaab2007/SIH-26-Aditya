@@ -13,6 +13,7 @@ models/*.joblib
 models/monthly_lifecycle/**/*.pkl
 models/monthly_lifecycle/**/prediction_validation.csv
 models/lifecycle_specialists/**/*.pkl
+models/lifecycle_specialists/
 # Reproducible generated dataset outputs
 data/raw/*.csv
 data/processed/*.csv
