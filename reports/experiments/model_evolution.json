@@ -1,14 +1,19 @@
-[
-  {
-    "version": "v1",
-    "experiment": "baseline",
-    "cost_mae": 32.886
-  },
-  {
-    "version": "v2",
-    "experiment": "log_cost_target",
-    "cost_mae": 32.868,
-    "absolute_improvement": 0.018,
-    "percentage_improvement": 0.05
-  }
-]
+{
+  "status": "legacy_history",
+  "canonical_registry": "reports/experiments/registry.json",
+  "warning": "These older experiments used a different baseline/model path and must not be compared directly with the current monthly-lifecycle experiment harness.",
+  "entries": [
+    {
+      "version": "v1",
+      "experiment": "baseline",
+      "cost_mae": 32.886
+    },
+    {
+      "version": "v2",
+      "experiment": "log_cost_target",
+      "cost_mae": 32.868,
+      "absolute_improvement": 0.018,
+      "percentage_improvement": 0.05
+    }
+  ]
+}

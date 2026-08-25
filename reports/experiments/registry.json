@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "production_policy": {
+    "frontend_model_role": "production",
+    "experiments_are_never_auto_promoted": true,
+    "promotion_requires_explicit_acceptance": true
+  },
+  "experiments": [],
+  "legacy_history_source": "reports/experiments/model_evolution.json",
+  "note": "This registry is the canonical decision log for lifecycle experiments going forward. Individual experiment PRs add their own immutable evidence entries."
+}
