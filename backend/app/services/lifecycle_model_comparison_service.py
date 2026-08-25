@@ -10,12 +10,12 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 import math
-from pathlib import Path
 import uuid
 
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.base import clone
 
 from backend.app.ml.experiments.evaluator import paired_project_mae_comparison
 from backend.app.ml.experiments.framework import (
@@ -24,7 +24,7 @@ from backend.app.ml.experiments.framework import (
     new_experiment_manifest,
 )
 from backend.app.ml.experiments.registry import decision_from_improvement, record_experiment
-from backend.app.ml.monthly_training import _fit_pipeline, _regression_metrics, _regressors
+from backend.app.ml.monthly_training import _fit_pipeline, _regression_metrics
 from backend.app.ml.residual_overrun_experiment import (
     CURRENT_OVERRUN,
     FINAL_TARGET,
@@ -70,12 +70,14 @@ def _fit_exp03_against_production(
         raise ValueError("Experiment 3 cannot reuse the production feature contract: " + ", ".join(missing_features))
 
     algorithm = (metadata.get("selected_algorithms") or {}).get("cost") or (production_receipt.get("selected_algorithms") or {}).get("cost")
-    regressors = _regressors(27103)
-    if algorithm not in regressors:
-        raise ValueError(f"Experiment 3 cannot reproduce production cost algorithm '{algorithm}'.")
-
-    residual_model = _fit_pipeline(regressors[algorithm], train, features, RESIDUAL_TARGET)
     production_cost_model = production_bundle["cost"]
+    if not hasattr(production_cost_model, "named_steps") or "model" not in production_cost_model.named_steps:
+        raise ValueError("Fresh production cost artifact does not expose the fitted estimator contract.")
+
+    # Clone the exact estimator configuration selected by the production retrain.
+    # Only the target and retained common cohort differ for Experiment 3.
+    residual_estimator = clone(production_cost_model.named_steps["model"])
+    residual_model = _fit_pipeline(residual_estimator, train, features, RESIDUAL_TARGET)
     production_final = np.asarray(production_cost_model.predict(test[features]), dtype=float)
     residual_remaining = np.asarray(residual_model.predict(test[features]), dtype=float)
     experiment_final = reconstruct_final_overrun(test[CURRENT_OVERRUN], residual_remaining)
@@ -111,6 +113,13 @@ def _fit_exp03_against_production(
         weighting_policy="per-project weights renormalized after common-cohort filtering",
         baseline_name=f"production:{production_receipt.get('run_id')}",
     )
+    production_dataset_fingerprint = production_receipt.get("dataset_fingerprint") or metadata.get("dataset_fingerprint") or (metadata.get("provenance") or {}).get("dataset_fingerprint")
+    if not production_dataset_fingerprint or production_dataset_fingerprint != context.dataset_fingerprint:
+        raise RuntimeError("Refusing comparison because production and experiment were not built from the same prepared dataset fingerprint.")
+    production_feature_fingerprint = (metadata.get("provenance") or {}).get("feature_schema_fingerprint")
+    if production_feature_fingerprint and production_feature_fingerprint != context.feature_schema_fingerprint:
+        raise RuntimeError("Refusing comparison because Experiment 3 does not match the fresh production feature schema.")
+
     manifest = new_experiment_manifest(
         context=context,
         name="remaining_overrun_target",
@@ -123,6 +132,7 @@ def _fit_exp03_against_production(
         "production_run_id": production_receipt.get("run_id"),
         "production_model_version": production_receipt.get("model_version"),
         "comparison_mode": "fresh_production_vs_experiment_same_dataset",
+        "production_estimator_parameters_reused": True,
     })
 
     paired = paired_project_mae_comparison(
@@ -153,7 +163,7 @@ def _fit_exp03_against_production(
             "same_training_window": True,
             "same_test_window": True,
             "same_features": True,
-            "same_cost_algorithm_family": True,
+            "same_cost_estimator_parameters": True,
             "production_model_is_actual_fresh_retrain": True,
             "dataset_fingerprint": context.dataset_fingerprint,
             "training_fingerprint": context.training_fingerprint,
@@ -212,6 +222,63 @@ def _fit_exp03_against_production(
     return report, residual_model
 
 
+def _open_production_session_from_frozen_data(
+    *,
+    data: pd.DataFrame,
+    start_year: int,
+    end_year: int,
+    production_bundle: dict,
+    production_receipt: dict,
+) -> dict:
+    """Open the judge session from the exact dataframe used by retrain/compare."""
+    frame = data.copy()
+    frame["completion_year"] = pd.to_numeric(frame["completion_year"], errors="coerce")
+    frame["snapshot_date"] = pd.to_datetime(frame["snapshot_date"], errors="coerce")
+    if "completion_date" in frame:
+        frame["completion_date"] = pd.to_datetime(frame["completion_date"], errors="coerce")
+
+    metadata = production_bundle["metadata"]
+    features = list(metadata.get("features_used") or production_receipt.get("features_used") or [])
+    train_projects = set(frame.loc[frame.completion_year.between(start_year, end_year), "canonical_project_id"].dropna())
+    held_all = frame[frame.completion_year.gt(end_year)].copy()
+    overlap = train_projects & set(held_all.canonical_project_id.dropna())
+    if overlap:
+        raise ValueError(f"Project-group leakage across comparison judge split: {len(overlap)} project(s)")
+    if held_all.empty:
+        raise ValueError("No later lifecycle projects are available for a leakage-free comparison test.")
+
+    held_all = held_all.sort_values(["canonical_project_id", "snapshot_date"])
+    held_latest = held_all.drop_duplicates("canonical_project_id", keep="last").reset_index(drop=True)
+    held_latest["record_index"] = np.arange(len(held_latest), dtype=int)
+    history_counts = held_all.groupby("canonical_project_id").size().to_dict()
+
+    session_id = uuid.uuid4().hex[:16]
+    simulation._CUSTOM_SESSIONS[session_id] = {
+        "training_start": start_year,
+        "training_end": end_year,
+        "run_id": production_receipt.get("run_id"),
+        "dataset_fingerprint": production_receipt.get("dataset_fingerprint"),
+        "features": features,
+        "models": production_bundle,
+        "held_out": held_latest,
+        "history_counts": history_counts,
+        "predictions": {},
+    }
+    while len(simulation._CUSTOM_SESSIONS) > simulation._MAX_CUSTOM_SESSIONS:
+        simulation._CUSTOM_SESSIONS.pop(next(iter(simulation._CUSTOM_SESSIONS)), None)
+
+    return {
+        "session_id": session_id,
+        "run_id": production_receipt.get("run_id"),
+        "dataset_fingerprint": production_receipt.get("dataset_fingerprint"),
+        "model_version": production_receipt.get("model_version"),
+        "training_start": start_year,
+        "training_end": end_year,
+        "leakage_guard": f"Both comparison models use one frozen PAIMANA frame; only projects completed in {start_year}-{end_year} can contribute to fitting and all offered judge projects complete after {end_year}.",
+        "actual_outcomes_sent_to_browser": False,
+    }
+
+
 def retrain_and_compare(start_year: int, end_year: int, experiment_id: str = LATEST_EXPERIMENT_ID) -> dict:
     """Freshly retrain production and the latest experiment, then open one judge session."""
     if experiment_id != LATEST_EXPERIMENT_ID:
@@ -229,7 +296,13 @@ def retrain_and_compare(start_year: int, end_year: int, experiment_id: str = LAT
         production_bundle=production_bundle,
         production_receipt=production,
     )
-    production_session = simulation.train_custom(start_year, end_year, production.get("run_id"))
+    production_session = _open_production_session_from_frozen_data(
+        data=data,
+        start_year=start_year,
+        end_year=end_year,
+        production_bundle=production_bundle,
+        production_receipt=production,
+    )
     underlying = simulation._session(production_session["session_id"])
     held = underlying["held_out"]
     comparable = held[pd.to_numeric(held[CURRENT_OVERRUN], errors="coerce").notna()].copy()
