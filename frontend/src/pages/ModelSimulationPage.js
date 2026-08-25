@@ -147,6 +147,21 @@ export async function ModelSimulationPage(root) {
     output.innerHTML = '';
   };
 
+  const resetHeldOutState = (message = 'Retrain & Compare first') => {
+    session = null;
+    projectRows = [];
+    activeExperiment = null;
+    resetPrediction();
+    testYear.innerHTML = `<option>${escape(message)}</option>`;
+    testYear.disabled = true;
+    project.innerHTML = '<option>Select a test year first</option>';
+    project.disabled = true;
+    randomButton.disabled = true;
+    predictButton.disabled = true;
+    revealButton.disabled = true;
+    heldOutNote.innerHTML = '<strong>No fresh comparison session is active.</strong> Step 2 will unlock only after the requested production and challenger runs both finish successfully.';
+  };
+
   const loadProjects = async () => {
     if (!session || !testYear.value) return;
     resetPrediction();
@@ -161,20 +176,32 @@ export async function ModelSimulationPage(root) {
 
   if (activeExperimentId) {
     trainButton.addEventListener('click', async () => {
-      resetPrediction();
       overallNode.innerHTML = '';
       const startYear = Number(start.value);
       const endYear = Number(end.value);
       if (startYear > endYear) {
+        resetHeldOutState('Invalid training range');
         receipt.innerHTML = '<div class="error-state">Training start year cannot be after training end year.</div>';
         return;
       }
+
+      resetHeldOutState(`Training ${startYear}–${endYear}…`);
       trainButton.disabled = true;
-      receipt.innerHTML = `<div class="loading">Retraining production and ${escape(activeExperimentName || activeExperimentId)} on one frozen lifecycle dataset…</div>`;
+      receipt.innerHTML = `<div class="loading">Retraining production and ${escape(activeExperimentName || activeExperimentId)} for ${startYear}–${endYear} on one frozen lifecycle dataset. Step 2 has been cleared until this exact run finishes…</div>`;
       try {
         const result = await api.retrainAndCompare(startYear, endYear, activeExperimentId);
-        session = result.session;
-        activeExperiment = result.experiment;
+        const nextSession = result.session;
+        const nextExperiment = result.experiment;
+        if (!nextSession) throw new Error('Retrain & Compare returned no comparison session.');
+
+        const eligible = nextSession.eligible_test_years || [];
+        const invalidYear = eligible.find((item) => Number(item.year) <= endYear);
+        if (invalidYear) {
+          throw new Error(`Leakage guard rejected held-out year ${invalidYear.year}; a ${startYear}–${endYear} training run may only offer years after ${endYear}.`);
+        }
+
+        session = nextSession;
+        activeExperiment = nextExperiment;
         receipt.innerHTML = `<strong>Fresh comparison ready.</strong> Production run ${escape(result.production?.run_id || 'N/A')} · challenger run ${escape(activeExperiment?.run_id || 'N/A')} · dataset ${escape(shortFingerprint(result.production?.dataset_fingerprint))}.`;
         overallNode.innerHTML = overallCard(result.overall_comparison, activeExperiment);
         api.setActiveLifecycleRun({
@@ -189,19 +216,30 @@ export async function ModelSimulationPage(root) {
           experiment: activeExperiment,
           overall_comparison: result.overall_comparison,
         });
-        const eligible = session.eligible_test_years || [];
-        testYear.innerHTML = eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} projects</option>`).join('');
+        testYear.innerHTML = eligible.length
+          ? eligible.map((item) => `<option value="${item.year}">${item.year} · ${item.projects} projects</option>`).join('')
+          : '<option>No eligible future years</option>';
         testYear.disabled = !eligible.length;
         if (eligible.length) await loadProjects();
+        else heldOutNote.innerHTML = `<div class="error-state">The fresh comparison completed, but no common held-out projects exist after ${endYear}.</div>`;
       } catch (error) {
-        receipt.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
+        resetHeldOutState('Retrain & Compare failed');
+        overallNode.innerHTML = '';
+        receipt.innerHTML = `<div class="error-state">${escape(error.message)}</div><p class="muted">No earlier held-out year or project is being reused. Retry the requested range to create a fresh comparison session.</p>`;
       } finally {
         trainButton.disabled = false;
       }
     });
   }
 
-  testYear.addEventListener('change', () => loadProjects().catch((error) => { heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div>`; }));
+  testYear.addEventListener('change', () => loadProjects().catch((error) => {
+    projectRows = [];
+    project.innerHTML = '<option>No projects available</option>';
+    project.disabled = true;
+    predictButton.disabled = true;
+    randomButton.disabled = true;
+    heldOutNote.innerHTML = `<div class="error-state">${escape(error.message)}</div>`;
+  }));
   project.addEventListener('change', resetPrediction);
   predictButton.addEventListener('click', async () => {
     if (!session || project.disabled) return;
