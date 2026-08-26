@@ -31,6 +31,11 @@ def _comparison_result():
         "test_snapshots": 30,
         "unique_test_projects": 6,
         "features_used": ["approved_cost_cr", "expenditure_ratio", "sector"],
+        "cost_features_used": ["approved_cost_cr", "expenditure_ratio", "sector", "exp12_cost_growth_pct_12m"],
+        "delay_features_used": ["approved_cost_cr", "expenditure_ratio", "sector"],
+        "risk_features_used": ["approved_cost_cr", "expenditure_ratio", "sector"],
+        "production_cost_baseline": "exp12_trajectory_v3_cost_only",
+        "promoted_from_experiment": "exp_12",
         "feature_availability": audit,
         "selected_algorithms": {"cost": "xgboost", "delay": "lightgbm"},
         "leakage_policy": "future holdout excluded",
@@ -63,7 +68,7 @@ def _write_fake_artifacts(artifact_root, start, end):
             path.write_bytes(b"unit-test-artifact")
 
 
-def test_year_range_retrain_calls_monthly_lifecycle_trainer(tmp_path, monkeypatch):
+def test_year_range_retrain_calls_promoted_production_trainer(tmp_path, monkeypatch):
     data = pd.DataFrame({"completion_year": [2001, 2015, 2020, 2024]})
     identity = pd.DataFrame()
     isolated_root = tmp_path / "monthly_lifecycle"
@@ -76,7 +81,7 @@ def test_year_range_retrain_calls_monthly_lifecycle_trainer(tmp_path, monkeypatc
         _write_fake_artifacts(artifact_root, start, end)
         return _comparison_result()
 
-    monkeypatch.setattr(retraining, "train_window", fake_train_window)
+    monkeypatch.setattr(retraining, "train_window_with_promoted_cost", fake_train_window)
     result = retraining.retrain_lifecycle(2001, 2015)
 
     assert called["start"] == 2001
@@ -85,6 +90,10 @@ def test_year_range_retrain_calls_monthly_lifecycle_trainer(tmp_path, monkeypatc
     assert called["data"] is data
     assert str(called["artifact_root"]).startswith(str(isolated_root / ".staging"))
     assert result["model_family"] == "monthly_lifecycle"
+    assert result["production_cost_baseline"] == "exp12_trajectory_v3_cost_only"
+    assert result["promoted_from_experiment"] == "exp_12"
+    assert result["cost_features_used"][-1] == "exp12_cost_growth_pct_12m"
+    assert result["delay_features_used"] == ["approved_cost_cr", "expenditure_ratio", "sector"]
     assert result["selected_algorithms"] == {"cost": "xgboost", "delay": "lightgbm", "risk": "random_forest"}
     assert result["metrics"]["cost_model"]["MAE"] == 30.0
     assert result["baseline_comparison"]["cost_mae"] == 50.0
@@ -104,7 +113,7 @@ def test_failed_retrain_always_removes_training_marker(tmp_path, monkeypatch):
     def fail(*args, **kwargs):
         raise RuntimeError("simulated training failure")
 
-    monkeypatch.setattr(retraining, "train_window", fail)
+    monkeypatch.setattr(retraining, "train_window_with_promoted_cost", fail)
     with pytest.raises(RuntimeError, match="simulated training failure"):
         retraining.retrain_lifecycle(2001, 2015)
     assert not (isolated_root / "2001_2015" / ".training").exists()
