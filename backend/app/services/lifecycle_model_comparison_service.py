@@ -17,6 +17,7 @@ from backend.app.ml.experiments.adapters import (
     default_experiment_adapter,
     get_experiment_adapter,
 )
+from backend.app.ml.production_cost_baseline import enrich_supervised_for_production, target_feature_contract
 from backend.app.services import lifecycle_retraining_service as retraining
 from backend.app.services import lifecycle_simulation_service as simulation
 
@@ -59,14 +60,17 @@ def _open_production_session_from_frozen_data(
     production_bundle: dict,
     production_receipt: dict,
 ) -> dict:
-    frame = data.copy()
+    # The frozen supervised evidence is enriched only with as-of trajectory
+    # features. Outcomes and cohort membership are unchanged.
+    frame = enrich_supervised_for_production(data.copy())
     frame["completion_year"] = pd.to_numeric(frame["completion_year"], errors="coerce")
     frame["snapshot_date"] = pd.to_datetime(frame["snapshot_date"], errors="coerce")
     if "completion_date" in frame:
         frame["completion_date"] = pd.to_datetime(frame["completion_date"], errors="coerce")
 
     metadata = production_bundle["metadata"]
-    features = list(metadata.get("features_used") or production_receipt.get("features_used") or [])
+    feature_contract = target_feature_contract(metadata)
+    features = list(dict.fromkeys(feature_contract["cost"] + feature_contract["delay"] + feature_contract["risk"]))
     train_projects = set(frame.loc[frame.completion_year.between(start_year, end_year), "canonical_project_id"].dropna())
     held_all = frame[frame.completion_year.gt(end_year)].copy()
     overlap = train_projects & set(held_all.canonical_project_id.dropna())
@@ -87,6 +91,7 @@ def _open_production_session_from_frozen_data(
         "run_id": production_receipt.get("run_id"),
         "dataset_fingerprint": production_receipt.get("dataset_fingerprint"),
         "features": features,
+        "target_features": feature_contract,
         "models": production_bundle,
         "held_out": held_latest,
         "history_counts": history_counts,
@@ -102,6 +107,8 @@ def _open_production_session_from_frozen_data(
         "model_version": production_receipt.get("model_version"),
         "training_start": start_year,
         "training_end": end_year,
+        "production_cost_baseline": metadata.get("production_cost_baseline"),
+        "cost_features_used": feature_contract["cost"],
         "leakage_guard": (
             f"Production and challenger use one frozen PAIMANA frame; only projects completed in "
             f"{start_year}-{end_year} can contribute to fitting and every offered judge project completes after {end_year}."
@@ -172,6 +179,7 @@ def retrain_and_compare(start_year: int, end_year: int, experiment_id: str | Non
         "production_session_id": production_session["session_id"],
         "run_id": production.get("run_id"),
         "production_run_id": production.get("run_id"),
+        "production_cost_baseline": production.get("production_cost_baseline"),
         "experiment_id": adapter.experiment_id,
         "experiment_name": adapter.name,
         "experiment_run_id": experiment["run_id"],
