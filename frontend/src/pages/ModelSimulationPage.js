@@ -24,6 +24,22 @@ function overallCard(overall, experiment) {
   const costCi = pairedCost.improvement_95pct_ci || [];
   const delayCi = pairedDelay.improvement_95pct_ci || [];
   const stage = overall.stage_balanced || {};
+  const costOnly = experiment.scope === 'cost' || overall.delay_policy === 'production_retained';
+  const delaySummary = costOnly
+    ? `<div><span>Delay model</span><strong>Production retained</strong></div>
+       <div><span>Production delay MAE</span><strong>${fixed(overall.production_delay_mae)} days</strong></div>`
+    : `<div><span>Production delay MAE</span><strong>${fixed(overall.production_delay_mae)} days</strong></div>
+       <div><span>Challenger delay MAE</span><strong>${fixed(overall.experiment_delay_mae)} days</strong></div>
+       <div><span>Delay improvement</span><strong>${escape(improvementLabel(overall.delay_improvement_percentage))}</strong></div>
+       <div><span>Delay MAE reduction</span><strong>${fixed(overall.absolute_delay_mae_improvement_days)} days</strong></div>`;
+  const delayEvidence = costOnly
+    ? `<div><span>Delay experiment status</span><strong>Rejected; production unchanged</strong></div>`
+    : `<div><span>Delay bootstrap chance better</span><strong>${missing(pairedDelay.probability_candidate_better) ? 'N/A' : `${fixed(Number(pairedDelay.probability_candidate_better) * 100, 1)}%`}</strong></div>
+       <div><span>Delay improvement 95% CI</span><strong>${delayCi.length === 2 ? `${fixed(delayCi[0])}% to ${fixed(delayCi[1])}%` : 'N/A'}</strong></div>`;
+  const delayStage = costOnly
+    ? ''
+    : `<div><span>Stage-balanced production delay MAE</span><strong>${fixed(stage.production_delay_mae)} days</strong></div>
+       <div><span>Stage-balanced challenger delay MAE</span><strong>${fixed(stage.experiment_delay_mae)} days</strong></div>`;
   return `<section class="panel">
     <div class="panel-head"><div><span class="kicker">Fresh same-cohort comparison</span><h2>Production lifecycle vs ${escape(experiment.experiment_name || experiment.experiment_id)}</h2></div></div>
     <div class="detail-financial">
@@ -31,22 +47,17 @@ function overallCard(overall, experiment) {
       <div><span>Challenger cost MAE</span><strong>${fixed(overall.experiment_cost_mae)} pp</strong></div>
       <div><span>Cost improvement</span><strong>${escape(improvementLabel(overall.improvement_percentage))}</strong></div>
       <div><span>Cost MAE reduction</span><strong>${fixed(overall.absolute_mae_improvement_pp)} pp</strong></div>
-      <div><span>Production delay MAE</span><strong>${fixed(overall.production_delay_mae)} days</strong></div>
-      <div><span>Challenger delay MAE</span><strong>${fixed(overall.experiment_delay_mae)} days</strong></div>
-      <div><span>Delay improvement</span><strong>${escape(improvementLabel(overall.delay_improvement_percentage))}</strong></div>
-      <div><span>Delay MAE reduction</span><strong>${fixed(overall.absolute_delay_mae_improvement_days)} days</strong></div>
+      ${delaySummary}
       <div><span>Comparable test projects</span><strong>${missing(overall.comparison_test_projects) ? 'N/A' : overall.comparison_test_projects}</strong></div>
       <div><span>Comparable test snapshots</span><strong>${missing(overall.comparison_test_snapshots) ? 'N/A' : overall.comparison_test_snapshots}</strong></div>
       <div><span>Cost bootstrap chance better</span><strong>${missing(pairedCost.probability_candidate_better) ? 'N/A' : `${fixed(Number(pairedCost.probability_candidate_better) * 100, 1)}%`}</strong></div>
-      <div><span>Delay bootstrap chance better</span><strong>${missing(pairedDelay.probability_candidate_better) ? 'N/A' : `${fixed(Number(pairedDelay.probability_candidate_better) * 100, 1)}%`}</strong></div>
+      ${delayEvidence}
       <div><span>Cost improvement 95% CI</span><strong>${costCi.length === 2 ? `${fixed(costCi[0])}% to ${fixed(costCi[1])}%` : 'N/A'}</strong></div>
-      <div><span>Delay improvement 95% CI</span><strong>${delayCi.length === 2 ? `${fixed(delayCi[0])}% to ${fixed(delayCi[1])}%` : 'N/A'}</strong></div>
       <div><span>Stage-balanced production cost MAE</span><strong>${fixed(stage.production_cost_mae)} pp</strong></div>
       <div><span>Stage-balanced challenger cost MAE</span><strong>${fixed(stage.experiment_cost_mae)} pp</strong></div>
-      <div><span>Stage-balanced production delay MAE</span><strong>${fixed(stage.production_delay_mae)} days</strong></div>
-      <div><span>Stage-balanced challenger delay MAE</span><strong>${fixed(stage.experiment_delay_mae)} days</strong></div>
+      ${delayStage}
     </div>
-    <div class="notice compact"><strong>Isolation:</strong> the challenger remains an experiment and is never auto-promoted to production.</div>
+    <div class="notice compact"><strong>Isolation:</strong> the challenger remains an experiment and is never auto-promoted to production.${costOnly ? ' Experiment 12 changes cost only; delay stays on the production model.' : ''}</div>
   </section>`;
 }
 
@@ -54,6 +65,7 @@ function predictionCard(prediction, actual = null) {
   const comparison = prediction.comparison || {};
   const challenger = comparison.experiment || {};
   const reveal = actual?.comparison || null;
+  const costOnly = challenger.scope === 'cost' || challenger.delay_policy === 'production_retained';
   const optionalResidual = !missing(challenger.predicted_remaining_cost_overrun)
     ? `<div><span>Predicted remaining overrun</span><strong>${fixed(challenger.predicted_remaining_cost_overrun)}%</strong></div>`
     : '';
@@ -67,6 +79,16 @@ function predictionCard(prediction, actual = null) {
     ? `<div><span>Challenger predicted delay</span><strong>${fixed(challenger.predicted_delay_days)} days</strong></div>
        <div><span>Delay prediction difference</span><strong>${fixed(comparison.delay_prediction_difference_days)} days</strong></div>`
     : '';
+  const delayPolicy = costOnly
+    ? `<div><span>Delay policy</span><strong>Production model retained</strong></div>`
+    : challengerDelay;
+  const revealDelay = costOnly
+    ? `<div><span>Actual final delay</span><strong>${fixed(actual?.actual_delay_days)} days</strong></div>
+       <div><span>Production delay error</span><strong>${fixed(reveal?.production_delay_error_absolute_days)} days</strong></div>`
+    : `<div><span>Actual final delay</span><strong>${fixed(actual?.actual_delay_days)} days</strong></div>
+       <div><span>Production delay error</span><strong>${fixed(reveal?.production_delay_error_absolute_days)} days</strong></div>
+       <div><span>Challenger delay error</span><strong>${fixed(reveal?.experiment_delay_error_absolute_days)} days</strong></div>
+       <div><span>Challenger delay improvement</span><strong>${escape(improvementLabel(reveal?.individual_delay_error_improvement_percentage))}</strong></div>`;
 
   return `<section class="panel">
     <span class="kicker">Same held-out project · both predictions before reveal</span>
@@ -79,7 +101,7 @@ function predictionCard(prediction, actual = null) {
       <div><span>Challenger</span><strong>${escape(challenger.experiment_name || challenger.experiment_id || 'Experiment')}</strong></div>
       ${optionalAnchor}${optionalResidual}${trajectoryCoverage}
       <div><span>Production predicted delay</span><strong>${fixed(prediction.predicted_delay_days)} days</strong></div>
-      ${challengerDelay}
+      ${delayPolicy}
       <div><span>Production predicted risk</span><strong>${escape(prediction.predicted_risk || 'N/A')}</strong></div>
     </div>
     <div class="notice compact"><strong>Leakage guard:</strong> the actual final outcome has not been sent to the browser yet.</div>
@@ -91,12 +113,9 @@ function predictionCard(prediction, actual = null) {
       <div><span>Production cost error</span><strong>${fixed(reveal.production_cost_error_absolute_pp)} pp</strong></div>
       <div><span>Challenger cost error</span><strong>${fixed(reveal.experiment_cost_error_absolute_pp)} pp</strong></div>
       <div><span>Challenger cost improvement</span><strong>${escape(improvementLabel(reveal.individual_error_improvement_percentage))}</strong></div>
-      <div><span>Actual final delay</span><strong>${fixed(actual.actual_delay_days)} days</strong></div>
-      <div><span>Production delay error</span><strong>${fixed(reveal.production_delay_error_absolute_days)} days</strong></div>
-      <div><span>Challenger delay error</span><strong>${fixed(reveal.experiment_delay_error_absolute_days)} days</strong></div>
-      <div><span>Challenger delay improvement</span><strong>${escape(improvementLabel(reveal.individual_delay_error_improvement_percentage))}</strong></div>
+      ${revealDelay}
     </div>
-    <div class="notice compact"><strong>Cost verdict:</strong> ${reveal.experiment_better_cost_for_project ?? reveal.experiment_better_for_project ? 'The challenger was closer.' : 'Production was at least as close.'} ${missing(reveal.experiment_better_delay_for_project) ? '' : `<strong>Delay verdict:</strong> ${reveal.experiment_better_delay_for_project ? 'The challenger was closer.' : 'Production was at least as close.'}`}</div>
+    <div class="notice compact"><strong>Cost verdict:</strong> ${reveal.experiment_better_cost_for_project ?? reveal.experiment_better_for_project ? 'The challenger was closer.' : 'Production was at least as close.'} ${costOnly ? '<strong>Delay:</strong> Production model retained.' : (missing(reveal.experiment_better_delay_for_project) ? '' : `<strong>Delay verdict:</strong> ${reveal.experiment_better_delay_for_project ? 'The challenger was closer.' : 'Production was at least as close.'}`)}</div>
   </section>` : ''}`;
 }
 
