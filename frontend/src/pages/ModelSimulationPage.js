@@ -84,7 +84,7 @@ function predictionCard(prediction, actual = null) {
     : challengerDelay;
   const revealDelay = costOnly
     ? `<div><span>Actual final delay</span><strong>${fixed(actual?.actual_delay_days)} days</strong></div>
-       <div><span>Production delay error</span><strong>${fixed(reveal?.production_delay_error_absolute_days)} days</strong></div>`
+       <div><span>Production delay error</span><strong>${fixed(actual?.delay_error_absolute_days)} days</strong></div>`
     : `<div><span>Actual final delay</span><strong>${fixed(actual?.actual_delay_days)} days</strong></div>
        <div><span>Production delay error</span><strong>${fixed(reveal?.production_delay_error_absolute_days)} days</strong></div>
        <div><span>Challenger delay error</span><strong>${fixed(reveal?.experiment_delay_error_absolute_days)} days</strong></div>
