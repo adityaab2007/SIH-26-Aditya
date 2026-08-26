@@ -1,9 +1,9 @@
-"""Fast audit-only production-vs-Exp12 cost/delay comparison.
+"""Fast audit-only production-vs-Exp12 cost comparison.
 
-This reproduces production's lifecycle feature audit, model selection, seeds,
-weights and temporal split, but intentionally skips risk fitting, SHAP,
-production ablations and artifact publication. It is for experiment evidence
-only; the website continues to use the full Retrain & Compare service.
+This reproduces production's lifecycle feature audit, cost model selection,
+seeds, weights and temporal split, but intentionally skips risk fitting, SHAP,
+production ablations and artifact publication. Production delay is trained only
+as retained-production context; Experiment 12 does not alter it.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from backend.app.ml.monthly_lifecycle import (
 )
 from backend.app.ml.monthly_training import _select_regressor, temporal_project_split
 from backend.app.ml.experiments.trajectory_exp12 import _safe
-from backend.app.ml.experiments.trajectory_exp12_v2 import fit_experiment
+from backend.app.ml.experiments.trajectory_exp12_cost import fit_experiment
 
 
 def production_cost_delay(data: pd.DataFrame, start: int, end: int, test_end: int) -> tuple[dict, dict]:
@@ -54,8 +54,8 @@ def production_cost_delay(data: pd.DataFrame, start: int, end: int, test_end: in
         "dataset_fingerprint": "ephemeral-fast-audit",
         "features_used": features,
         "selected_algorithms": {"cost": cost_name, "delay": delay_name},
+        "internal_algorithm_comparisons": {"cost": cost_cmp, "delay": delay_cmp},
     }
-    receipt["internal_algorithm_comparisons"] = {"cost": cost_cmp, "delay": delay_cmp}
     return bundle, receipt
 
 
@@ -84,7 +84,7 @@ def main() -> None:
     payload = {
         "window": f"{args.start}_{args.end}",
         "test_end": test_end,
-        "audit_mode": "exact production cost-delay training; skips risk/SHAP/ablations only",
+        "audit_mode": "exact production cost training; production delay retained unchanged; skips risk/SHAP/ablations only",
         "production_selected_algorithms": receipt["selected_algorithms"],
         "production_internal_algorithm_comparisons": receipt["internal_algorithm_comparisons"],
         "production_feature_count": len(receipt["features_used"]),
@@ -102,19 +102,17 @@ def main() -> None:
         "production_cost_mae": overall.get("production_cost_mae"),
         "experiment_cost_mae": overall.get("experiment_cost_mae"),
         "cost_improvement_percentage": overall.get("improvement_percentage"),
-        "production_delay_mae": overall.get("production_delay_mae"),
-        "experiment_delay_mae": overall.get("experiment_delay_mae"),
-        "delay_improvement_percentage": overall.get("delay_improvement_percentage"),
+        "production_delay_mae_retained": overall.get("production_delay_mae"),
+        "delay_policy": overall.get("delay_policy"),
+        "delay_experiment_status": overall.get("delay_experiment_status"),
         "comparison_test_projects": overall.get("comparison_test_projects"),
         "comparison_test_snapshots": overall.get("comparison_test_snapshots"),
         "paired_project_cost_comparison": overall.get("paired_project_cost_comparison"),
-        "paired_project_delay_comparison": overall.get("paired_project_delay_comparison"),
         "stage_balanced": overall.get("stage_balanced"),
         "internal_feature_selection": overall.get("internal_feature_selection"),
         "production_selected_algorithms": receipt["selected_algorithms"],
         "experiment_selected_feature_groups": experiment.get("selected_feature_groups"),
         "cost_added_features": experiment.get("cost_added_features"),
-        "delay_added_features": experiment.get("delay_added_features"),
     }
     print("EXP12_FAST_COMPARISON=" + json.dumps(_safe(summary), sort_keys=True, allow_nan=False))
 
