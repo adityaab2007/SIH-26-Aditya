@@ -1,7 +1,7 @@
-"""Retrain & Compare adapter for Experiment 12."""
+"""Retrain & Compare adapter for Experiment 12 cost-only challenger."""
 from __future__ import annotations
 
-from backend.app.ml.experiments.trajectory_exp12_v2 import (
+from backend.app.ml.experiments.trajectory_exp12_cost import (
     EXPERIMENT_ID,
     EXPERIMENT_NAME,
     EXPERIMENT_SCOPE,
