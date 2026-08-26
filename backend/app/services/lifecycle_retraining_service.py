@@ -15,7 +15,11 @@ import uuid
 import pandas as pd
 
 from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, SNAPSHOTS_GZ, build_training_dataset
-from backend.app.ml.monthly_training import MODEL_ROOT, train_window
+from backend.app.ml.monthly_training import MODEL_ROOT
+from backend.app.ml.production_cost_baseline import (
+    target_feature_contract,
+    train_window_with_promoted_cost,
+)
 from backend.app.ml.provenance import artifact_fingerprints, file_sha256
 from backend.app.services import monthly_prediction_service
 
@@ -83,6 +87,7 @@ def _write_run_manifest(start_year: int, end_year: int, result: dict, target: Pa
     target = target or (MODEL_ROOT / f"{start_year}_{end_year}")
     metadata = result.get("metadata") or {}
     lifecycle_metrics = (result.get("lifecycle") or {}).get("metrics") or {}
+    feature_contract = target_feature_contract(metadata)
     missing = [name for name in _REQUIRED_ARTIFACTS if not (target / name).exists()]
     if missing:
         raise RuntimeError(f"Refusing to publish incomplete lifecycle run; missing artifacts: {', '.join(missing)}")
@@ -106,7 +111,10 @@ def _write_run_manifest(start_year: int, end_year: int, result: dict, target: Pa
         "window": f"{start_year}_{end_year}",
         "training_period": metadata.get("training_period") or [start_year, end_year],
         "testing_period": metadata.get("testing_period") or [],
-        "feature_count": len(metadata.get("features_used") or []),
+        "feature_count": len(feature_contract["cost"]),
+        "feature_count_by_target": {name: len(features) for name, features in feature_contract.items()},
+        "production_cost_baseline": metadata.get("production_cost_baseline"),
+        "promoted_from_experiment": metadata.get("promoted_from_experiment"),
         "metrics": {
             "cost_mae": (lifecycle_metrics.get("cost") or {}).get("MAE"),
             "delay_mae": (lifecycle_metrics.get("delay") or {}).get("MAE"),
@@ -164,7 +172,14 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
     staging_root.mkdir(parents=True, exist_ok=False)
 
     try:
-        result = train_window(start_year, end_year, max_year, data=data, identity=identity, artifact_root=staging_root)
+        result = train_window_with_promoted_cost(
+            start_year,
+            end_year,
+            max_year,
+            data=data,
+            identity=identity,
+            artifact_root=staging_root,
+        )
         staged_target = staging_root / window
         _stamp_production_role(result, staged_target)
         _write_run_manifest(start_year, end_year, result, staged_target)
@@ -180,6 +195,7 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
     feature_audit = metadata.get("feature_availability", {})
     selected = metadata.get("selected_algorithms", {})
     provenance = metadata.get("provenance", {})
+    feature_contract = target_feature_contract(metadata)
 
     monthly_prediction_service._bundle.cache_clear()
 
@@ -198,7 +214,13 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
         "testing_samples": metadata["test_snapshots"],
         "testing_projects": metadata["unique_test_projects"],
         "features_used": metadata["features_used"],
-        "feature_count": len(metadata["features_used"]),
+        "cost_features_used": feature_contract["cost"],
+        "delay_features_used": feature_contract["delay"],
+        "risk_features_used": feature_contract["risk"],
+        "feature_count": len(feature_contract["cost"]),
+        "feature_count_by_target": {name: len(features) for name, features in feature_contract.items()},
+        "production_cost_baseline": metadata.get("production_cost_baseline"),
+        "promoted_from_experiment": metadata.get("promoted_from_experiment"),
         "selected_algorithms": {
             "cost": selected.get("cost"),
             "delay": selected.get("delay"),
@@ -212,8 +234,11 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
             "delay_model": lifecycle_metrics["delay"],
             "risk_model": lifecycle_metrics["risk"],
             "metadata": {
-                "feature_count": len(metadata["features_used"]),
+                "feature_count": len(feature_contract["cost"]),
+                "feature_count_by_target": {name: len(features) for name, features in feature_contract.items()},
                 "features_used": metadata["features_used"],
+                "cost_features_used": feature_contract["cost"],
+                "production_cost_baseline": metadata.get("production_cost_baseline"),
                 "feature_quality": {
                     "data_quality_score": feature_audit.get("data_quality_score"),
                     "removed_invalid_feature_count": feature_audit.get("removed_invalid_feature_count", len(feature_audit.get("removed_features", []))),
@@ -234,5 +259,5 @@ def retrain_lifecycle(start_year: int, end_year: int) -> dict:
         "lifecycle_stages": lifecycle.get("lifecycle_stages", {}),
         "stage_distribution": lifecycle.get("stage_distribution", {}),
         "balanced_stage_summary": lifecycle.get("balanced_stage_summary", {}),
-        "leakage_guard": "Future holdout projects are excluded from selection/fitting; direct features are same-snapshot, trajectory features use current/earlier snapshots, and priors require prior completion.",
+        "leakage_guard": "Future holdout projects are excluded from selection/fitting; direct features are same-snapshot, promoted cost trajectory features use current/earlier snapshots with feature-group selection inside the training window, and priors require prior completion.",
     }
