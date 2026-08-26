@@ -32,6 +32,7 @@ from backend.app.ml.monthly_training import (
     _balanced_stage_summary,
     _fit_pipeline,
     _importance,
+    _json_safe,
     _regression_metrics,
     _regressors,
     _stage_metrics,
@@ -280,6 +281,11 @@ def train_window_with_promoted_cost(
         "risk_retained": True,
     }
 
+    # The internal selector can carry NumPy scalar years/metrics. Production
+    # artifacts must be JSON-safe before publication so a successful training
+    # run cannot fail at the final metadata write.
+    result = _json_safe(result)
+    metadata = result["metadata"]
     metadata_path = target / "metadata.json"
     metadata_path.write_text(json.dumps(metadata, indent=2, allow_nan=False))
     evaluation_path = target / "evaluation_results.json"
