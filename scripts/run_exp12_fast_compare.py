@@ -21,6 +21,7 @@ from backend.app.ml.monthly_lifecycle import (
     build_training_dataset,
 )
 from backend.app.ml.monthly_training import _select_regressor, temporal_project_split
+from backend.app.ml.experiments.trajectory_exp12 import _safe
 from backend.app.ml.experiments.trajectory_exp12_v2 import fit_experiment
 
 
@@ -91,9 +92,10 @@ def main() -> None:
         "experiment": experiment,
         "overall_comparison": overall,
     }
+    safe_payload = _safe(payload)
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, allow_nan=False) + "\n")
+    path.write_text(json.dumps(safe_payload, indent=2, allow_nan=False) + "\n")
     summary = {
         "window": payload["window"],
         "test_end": test_end,
@@ -114,7 +116,7 @@ def main() -> None:
         "cost_added_features": experiment.get("cost_added_features"),
         "delay_added_features": experiment.get("delay_added_features"),
     }
-    print("EXP12_FAST_COMPARISON=" + json.dumps(summary, sort_keys=True))
+    print("EXP12_FAST_COMPARISON=" + json.dumps(_safe(summary), sort_keys=True, allow_nan=False))
 
 
 if __name__ == "__main__":
