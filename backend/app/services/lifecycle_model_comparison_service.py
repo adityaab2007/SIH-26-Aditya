@@ -32,6 +32,14 @@ def _float(value) -> float | None:
     return result if math.isfinite(result) else None
 
 
+def _improvement_percentage(baseline_error: float, candidate_error: float) -> float | None:
+    if baseline_error > 0:
+        return (baseline_error - candidate_error) / baseline_error * 100.0
+    if candidate_error == 0:
+        return 0.0
+    return None
+
+
 def experiment_catalog() -> dict:
     items = available_experiments()
     active = default_experiment_adapter()
@@ -224,17 +232,30 @@ def predict_comparison(session_id: str, record_index: int) -> dict:
         "experiment_name": adapter.name,
         "scope": adapter.scope,
     })
+
     candidate_cost = _float(experiment_payload.get("predicted_cost_overrun"))
     production_cost = _float(production.get("predicted_cost_overrun"))
     if candidate_cost is None or production_cost is None:
         raise ValueError("Cost-comparison adapters must return predicted_cost_overrun.")
+
+    candidate_delay = _float(experiment_payload.get("predicted_delay_days"))
+    production_delay = _float(production.get("predicted_delay_days"))
     session["candidate_predictions"][record_index] = experiment_payload
-    production["comparison"] = {
-        "production": {"predicted_cost_overrun": production_cost, "run_id": session["production_run_id"]},
+
+    comparison = {
+        "production": {
+            "predicted_cost_overrun": production_cost,
+            "predicted_delay_days": production_delay,
+            "run_id": session["production_run_id"],
+        },
         "experiment": experiment_payload,
         "prediction_difference_pp": round(candidate_cost - production_cost, 4),
         "actual_outcome_sent_to_browser": False,
     }
+    if candidate_delay is not None and production_delay is not None:
+        comparison["delay_prediction_difference_days"] = round(candidate_delay - production_delay, 4)
+
+    production["comparison"] = comparison
     production["comparison_session_id"] = session_id
     return production
 
@@ -245,28 +266,44 @@ def reveal_comparison(session_id: str, record_index: int) -> dict:
     candidate = session["candidate_predictions"].get(record_index)
     if candidate is None:
         raise ValueError("Generate both predictions before revealing the actual outcome.")
+
     actual = simulation.reveal_custom(session["production_session_id"], record_index)
     actual_cost = _float(actual.get("actual_cost_overrun"))
-    production_error = _float(actual.get("cost_error_absolute_pp"))
+    production_cost_error = _float(actual.get("cost_error_absolute_pp"))
     candidate_cost = _float(candidate.get("predicted_cost_overrun"))
-    if actual_cost is None or production_error is None or candidate_cost is None:
+    if actual_cost is None or production_cost_error is None or candidate_cost is None:
         raise ValueError("Comparison reveal requires a cost prediction and official actual cost overrun.")
-    experiment_error = abs(candidate_cost - actual_cost)
-    improvement = None
-    if production_error > 0:
-        improvement = (production_error - experiment_error) / production_error * 100.0
-    elif experiment_error == 0:
-        improvement = 0.0
-    actual["comparison"] = {
-        "production_cost_error_absolute_pp": round(production_error, 4),
-        "experiment_cost_error_absolute_pp": round(experiment_error, 4),
-        "individual_error_improvement_percentage": round(improvement, 3) if improvement is not None else None,
-        "experiment_better_for_project": experiment_error < production_error,
+
+    experiment_cost_error = abs(candidate_cost - actual_cost)
+    cost_improvement = _improvement_percentage(production_cost_error, experiment_cost_error)
+    payload = {
+        "production_cost_error_absolute_pp": round(production_cost_error, 4),
+        "experiment_cost_error_absolute_pp": round(experiment_cost_error, 4),
+        "individual_error_improvement_percentage": round(cost_improvement, 3) if cost_improvement is not None else None,
+        "experiment_better_for_project": experiment_cost_error < production_cost_error,
+        "experiment_better_cost_for_project": experiment_cost_error < production_cost_error,
         "production_predicted_cost_overrun": _production_prediction(session, record_index),
         "experiment_predicted_cost_overrun": candidate_cost,
         "experiment_id": session["adapter_id"],
         "experiment_run_id": session["experiment_run_id"],
     }
+
+    actual_delay = _float(actual.get("actual_delay_days"))
+    production_delay_error = _float(actual.get("delay_error_absolute_days"))
+    candidate_delay = _float(candidate.get("predicted_delay_days"))
+    if actual_delay is not None and production_delay_error is not None and candidate_delay is not None:
+        experiment_delay_error = abs(candidate_delay - actual_delay)
+        delay_improvement = _improvement_percentage(production_delay_error, experiment_delay_error)
+        payload.update({
+            "production_delay_error_absolute_days": round(production_delay_error, 4),
+            "experiment_delay_error_absolute_days": round(experiment_delay_error, 4),
+            "individual_delay_error_improvement_percentage": round(delay_improvement, 3) if delay_improvement is not None else None,
+            "experiment_better_delay_for_project": experiment_delay_error < production_delay_error,
+            "production_predicted_delay_days": _production_delay_prediction(session, record_index),
+            "experiment_predicted_delay_days": candidate_delay,
+        })
+
+    actual["comparison"] = payload
     actual["comparison_session_id"] = session_id
     return actual
 
@@ -277,4 +314,13 @@ def _production_prediction(session: dict, record_index: int) -> float:
     value = _float(prediction.get("predicted_cost_overrun"))
     if value is None:
         raise ValueError("Production prediction is unavailable for comparison reveal.")
+    return value
+
+
+def _production_delay_prediction(session: dict, record_index: int) -> float:
+    underlying = simulation._session(session["production_session_id"])
+    prediction = underlying["predictions"].get(int(record_index)) or {}
+    value = _float(prediction.get("predicted_delay_days"))
+    if value is None:
+        raise ValueError("Production delay prediction is unavailable for comparison reveal.")
     return value

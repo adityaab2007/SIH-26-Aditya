@@ -1,0 +1,46 @@
+name: Experiment 12 fast cost audit
+
+on:
+  push:
+    branches: [exp-12]
+    paths:
+      - '.github/workflows/exp12-fast-audit.yml'
+      - 'scripts/run_exp12_fast_compare.py'
+      - 'backend/app/ml/experiments/trajectory_exp12.py'
+      - 'backend/app/ml/experiments/trajectory_exp12_v2.py'
+      - 'backend/app/ml/experiments/trajectory_exp12_cost.py'
+      - 'backend/app/ml/experiments/adapter_exp12.py'
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 2001
+            end: 2019
+          - start: 2001
+            end: 2021
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Run exact cost comparison audit
+        run: |
+          PYTHONPATH=. python scripts/run_exp12_fast_compare.py \
+            --start ${{ matrix.start }} \
+            --end ${{ matrix.end }} \
+            --output audit_outputs/exp12_fast_${{ matrix.start }}_${{ matrix.end }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp12-fast-${{ matrix.start }}-${{ matrix.end }}
+          path: audit_outputs/exp12_fast_${{ matrix.start }}_${{ matrix.end }}.json
+          if-no-files-found: warn
