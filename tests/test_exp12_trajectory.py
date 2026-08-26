@@ -3,9 +3,11 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pandas as pd
+import pytest
 
-from backend.app.ml.experiments.adapters import get_experiment_adapter
+from backend.app.ml.experiments.adapters import available_experiments, get_experiment_adapter
 from backend.app.ml.experiments.trajectory_exp12 import EXP12_FEATURES, engineer_history, enrich_rows
+from backend.app.ml.production_cost_baseline import PRODUCTION_COST_BASELINE, target_feature_contract
 from backend.app.services import lifecycle_model_comparison_service as comparison
 
 
@@ -48,12 +50,22 @@ def test_exp12_enrichment_preserves_exact_supervised_rows():
     assert enriched.exp12_slippage_velocity_3m.notna().all()
 
 
-def test_exp12_is_registered_as_sequence_12_cost_only_challenger():
-    adapter = get_experiment_adapter("exp_12")
-    assert adapter.sequence == 12
-    assert adapter.scope == "cost"
-    assert adapter.name == "Trajectory-enhanced cost forecasting"
-    assert adapter.module.__name__.endswith("adapter_exp12")
+def test_exp12_is_promoted_and_no_longer_registered_as_a_challenger():
+    assert PRODUCTION_COST_BASELINE == "exp12_trajectory_v3_cost_only"
+    assert all(item["experiment_id"] != "exp_12" for item in available_experiments())
+    with pytest.raises(ValueError):
+        get_experiment_adapter("exp_12")
+
+
+def test_target_feature_contract_keeps_delay_and_risk_on_existing_production_features():
+    metadata = {
+        "features_used": ["base_a", "base_b"],
+        "cost_features_used": ["base_a", "base_b", "exp12_cost_growth_pct_12m"],
+    }
+    contract = target_feature_contract(metadata)
+    assert contract["cost"][-1] == "exp12_cost_growth_pct_12m"
+    assert contract["delay"] == ["base_a", "base_b"]
+    assert contract["risk"] == ["base_a", "base_b"]
 
 
 class _CostDelayAdapter:

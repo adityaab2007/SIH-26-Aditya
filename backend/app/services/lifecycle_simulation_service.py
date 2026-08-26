@@ -13,6 +13,7 @@ import pandas as pd
 
 from backend.app.ml.monthly_lifecycle import TRAJECTORIES, build_training_dataset
 from backend.app.ml.monthly_training import MODEL_ROOT
+from backend.app.ml.production_cost_baseline import enrich_supervised_for_production, target_feature_contract
 from backend.app.services.lifecycle_retraining_service import retrain_lifecycle
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -42,7 +43,7 @@ def _value(value: Any):
 @lru_cache(maxsize=1)
 def _dataset() -> pd.DataFrame:
     data, _ = build_training_dataset()
-    data = data.copy()
+    data = enrich_supervised_for_production(data.copy())
     data["completion_year"] = pd.to_numeric(data["completion_year"], errors="coerce")
     data["snapshot_date"] = pd.to_datetime(data["snapshot_date"], errors="coerce")
     if "completion_date" in data:
@@ -142,7 +143,8 @@ def train_custom(start_year: int, end_year: int, run_id: str | None = None) -> d
     provenance = metadata.get("provenance") or {}
     artifact_run_id = metadata.get("run_id") or provenance.get("run_id")
     dataset_fingerprint = metadata.get("dataset_fingerprint") or provenance.get("dataset_fingerprint")
-    features = list(metadata["features_used"])
+    feature_contract = target_feature_contract(metadata)
+    all_features = list(dict.fromkeys(feature_contract["cost"] + feature_contract["delay"] + feature_contract["risk"]))
 
     train_projects = set(data.loc[data.completion_year.between(start_year, end_year), "canonical_project_id"].dropna())
     held_all = data[data.completion_year.gt(end_year)].copy()
@@ -163,7 +165,8 @@ def train_custom(start_year: int, end_year: int, run_id: str | None = None) -> d
         "training_end": end_year,
         "run_id": artifact_run_id,
         "dataset_fingerprint": dataset_fingerprint,
-        "features": features,
+        "features": all_features,
+        "target_features": feature_contract,
         "models": bundle,
         "held_out": held_latest,
         "history_counts": history_counts,
@@ -183,8 +186,13 @@ def train_custom(start_year: int, end_year: int, run_id: str | None = None) -> d
         "training_end": end_year,
         "training_samples": int(metadata["training_snapshots"]),
         "training_projects": int(metadata["unique_training_projects"]),
-        "features_used": features,
-        "feature_count": len(features),
+        "features_used": all_features,
+        "cost_features_used": feature_contract["cost"],
+        "delay_features_used": feature_contract["delay"],
+        "risk_features_used": feature_contract["risk"],
+        "feature_count": len(feature_contract["cost"]),
+        "feature_count_by_target": {name: len(features) for name, features in feature_contract.items()},
+        "production_cost_baseline": metadata.get("production_cost_baseline"),
         "selected_algorithms": {**metadata.get("selected_algorithms", {}), "risk": "random_forest"},
         "data_source": "Official PAIMANA/MoSPI monthly lifecycle snapshots",
         "eligible_test_years": [{"year": int(year), "projects": int(count)} for year, count in year_counts.items()],
@@ -239,22 +247,32 @@ def _session_row(session: dict, record_index: int) -> pd.Series:
 def predict_custom(session_id: str, record_index: int) -> dict:
     session = _session(session_id)
     row = _session_row(session, record_index)
-    features = session["features"]
-    X = row.to_frame().T[features]
+    feature_contract = session.get("target_features") or {
+        "cost": session["features"],
+        "delay": session["features"],
+        "risk": session["features"],
+    }
+    cost_features = feature_contract["cost"]
+    delay_features = feature_contract["delay"]
+    risk_features = feature_contract["risk"]
+    cost_X = row.to_frame().T.reindex(columns=cost_features)
+    delay_X = row.to_frame().T.reindex(columns=delay_features)
+    risk_X = row.to_frame().T.reindex(columns=risk_features)
     cost_model = session["models"]["cost"]
     delay_model = session["models"]["delay"]
     risk_model = session["models"]["risk"]
 
-    predicted_cost = float(cost_model.predict(X)[0])
-    predicted_delay = max(0.0, float(delay_model.predict(X)[0]))
-    predicted_risk = str(risk_model.predict(X)[0])
+    predicted_cost = float(cost_model.predict(cost_X)[0])
+    predicted_delay = max(0.0, float(delay_model.predict(delay_X)[0]))
+    predicted_risk = str(risk_model.predict(risk_X)[0])
     probability = 1.0
     if hasattr(risk_model, "predict_proba"):
-        probability = float(np.asarray(risk_model.predict_proba(X), dtype=float)[0].max())
+        probability = float(np.asarray(risk_model.predict_proba(risk_X), dtype=float)[0].max())
 
     project_id = _value(row.get("project_id")) or _value(row.get("canonical_project_id")) or "Not published"
-    inputs = {name: _value(row.get(name)) for name in features}
-    factors = _shap_factors_for_model(cost_model, row, features)
+    all_features = list(dict.fromkeys(cost_features + delay_features + risk_features))
+    inputs = {name: _value(row.get(name)) for name in all_features}
+    factors = _shap_factors_for_model(cost_model, row, cost_features)
     prediction = {
         "predicted_cost_overrun": round(predicted_cost, 4),
         "predicted_delay_days": round(predicted_delay, 4),
@@ -272,6 +290,9 @@ def predict_custom(session_id: str, record_index: int) -> dict:
         "history_snapshots": int(session["history_counts"].get(row.get("canonical_project_id"), 1)),
         **prediction,
         "model_inputs": inputs,
+        "cost_features_used": cost_features,
+        "delay_features_used": delay_features,
+        "production_cost_baseline": session["models"]["metadata"].get("production_cost_baseline"),
         "shap_explanation": factors,
         "confidence_calibration_status": "not_calibrated_for_live_lifecycle_retrain",
         "model_confidence_percentage": None,
@@ -282,6 +303,7 @@ def predict_custom(session_id: str, record_index: int) -> dict:
             "project_excluded_from_training": True,
             "actual_outcomes_sent_to_browser": False,
             "training_end_year": session["training_end"],
+            "production_cost_baseline": session["models"]["metadata"].get("production_cost_baseline"),
         },
     }
 

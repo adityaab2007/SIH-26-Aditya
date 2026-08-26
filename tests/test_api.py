@@ -172,7 +172,7 @@ def test_lifecycle_catalog_does_not_label_legacy_years_as_lifecycle(monkeypatch)
 
 def test_judge_controlled_backtest_hides_actual_until_reveal():
     trained = client.post("/api/model-simulations/custom/train", json={"start_year": 2001, "end_year": 2015})
-    assert trained.status_code == 200
+    assert trained.status_code == 200, trained.text
     training = trained.json()
     assert training["model_family"] == "monthly_lifecycle"
     assert training["training_samples"] > 0
