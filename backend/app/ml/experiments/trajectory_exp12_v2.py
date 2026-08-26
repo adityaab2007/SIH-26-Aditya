@@ -356,7 +356,7 @@ def fit_experiment(*, data, training_start, training_end, test_end, production_b
     )
     manifest = new_experiment_manifest(
         context=context, name=EXPERIMENT_NAME,
-        changed_dimension="scale-normalized target-specific trajectory feature set",
+        changed_dimension="feature_set",
         hypothesis="Scale-aware past-only trajectories with target-specific internal feature-group selection reduce future cost and delay MAE."
     )
     manifest.update({
