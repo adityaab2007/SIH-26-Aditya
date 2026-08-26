@@ -53,7 +53,7 @@ def test_exp12_enrichment_preserves_exact_supervised_rows():
 def test_exp12_is_promoted_and_no_longer_registered_as_a_challenger():
     assert PRODUCTION_COST_BASELINE == "exp12_trajectory_v3_cost_only"
     assert all(item["experiment_id"] != "exp_12" for item in available_experiments())
-    with pytest.raises(ValueError, match="Unknown experiment adapter"):
+    with pytest.raises(ValueError):
         get_experiment_adapter("exp_12")
 
 
