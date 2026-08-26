@@ -48,11 +48,12 @@ def test_exp12_enrichment_preserves_exact_supervised_rows():
     assert enriched.exp12_slippage_velocity_3m.notna().all()
 
 
-def test_exp12_is_registered_as_sequence_12_challenger():
+def test_exp12_is_registered_as_sequence_12_cost_only_challenger():
     adapter = get_experiment_adapter("exp_12")
     assert adapter.sequence == 12
-    assert adapter.scope == "cost_delay"
-    assert adapter.name == "Trajectory-enhanced lifecycle forecasting"
+    assert adapter.scope == "cost"
+    assert adapter.name == "Trajectory-enhanced cost forecasting"
+    assert adapter.module.__name__.endswith("adapter_exp12")
 
 
 class _CostDelayAdapter:
