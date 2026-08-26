@@ -82,6 +82,18 @@ A completed experiment may be `ACCEPTED` or `REJECTED`, but comparison status al
 
 When an experiment is definitively rejected, its active `adapter_expXX.py` should be removed from the comparison harness so it no longer occupies the challenger slot. Its isolated implementation, immutable run evidence, manifests, fingerprints, and historical Git commits may remain for reproducibility. With no installed adapter, Model Simulation correctly reports that no challenger is installed; the next experiment PR can add its own higher-sequence adapter and become the challenger without modifying the generic harness.
 
+## Starting the next experiment
+
+1. Always create the experiment branch from current `main`.
+2. Keep the implementation isolated and add `backend/app/ml/experiments/adapter_expXX.py`; do not rewrite the generic comparison infrastructure.
+3. Keep production unchanged while developing the challenger.
+4. Compare the challenger with current production on the same data and comparable project cohort, at minimum for 2001–2019 and 2001–2021.
+5. Record the dataset fingerprint, production run ID, experiment run ID, comparable project count, MAE values, and percent improvement.
+6. A green CI run means the pipeline completed; it does not establish scientific acceptance.
+7. Promote only through a separate deliberate production PR.
+
+When an experiment is rejected, remove its active adapter, preserve enough evidence to explain the decision, and leave the generic harness ready for the next isolated experiment.
+
 ## Heavy experiment execution
 
 Normal PR CI should run syntax/build/tests. Heavy experiments can use `.github/workflows/experiment.yml` with a restricted callable under:
