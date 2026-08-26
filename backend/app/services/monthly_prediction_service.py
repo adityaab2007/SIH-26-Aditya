@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, SNAPSHOTS_GZ, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
+from backend.app.ml.production_cost_baseline import enrich_history_for_production, target_feature_contract
 from backend.app.ml.provenance import file_sha256
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -86,23 +87,29 @@ def _inference_frame() -> pd.DataFrame:
     if TRAJECTORIES.exists():
         frame = pd.read_csv(TRAJECTORIES, dtype={"project_id": "string"}, low_memory=False)
         frame["snapshot_date"] = pd.to_datetime(frame.snapshot_date, errors="coerce")
-        return frame
+        return enrich_history_for_production(frame)
     snapshots = load_monthly_snapshots()
     outcomes = pd.read_csv(OUTCOMES, dtype={"project_id": "string"}, low_memory=False)
     resolved, _ = resolve_identities(snapshots, outcomes)
-    return engineer_as_of_features(resolved, outcomes)
+    frame = engineer_as_of_features(resolved, outcomes)
+    return enrich_history_for_production(frame)
 
 
 def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
     code = str(code).strip().upper(); frame = _inference_frame(); rows = frame[frame.project_id.astype("string").str.upper().eq(code)].sort_values("snapshot_date")
     if rows.empty:
         raise KeyError(code)
-    latest = rows.iloc[-1]; bundle = _bundle(window); features = bundle["metadata"]["features_used"]
-    X = latest.to_frame().T[features]; cost = float(bundle["cost"].predict(X)[0]); delay = max(0.0, float(bundle["delay"].predict(X)[0])); risk = str(bundle["risk"].predict(X)[0])
+    latest = rows.iloc[-1]; bundle = _bundle(window); feature_contract = target_feature_contract(bundle["metadata"])
+    cost_features = feature_contract["cost"]; delay_features = feature_contract["delay"]; risk_features = feature_contract["risk"]
+    cost_X = latest.to_frame().T.reindex(columns=cost_features)
+    delay_X = latest.to_frame().T.reindex(columns=delay_features)
+    risk_X = latest.to_frame().T.reindex(columns=risk_features)
+    cost = float(bundle["cost"].predict(cost_X)[0]); delay = max(0.0, float(bundle["delay"].predict(delay_X)[0])); risk = str(bundle["risk"].predict(risk_X)[0])
     importance = bundle["importance"]
     global_factors = [{"feature": item["feature"], "importance": item["importance"]} for item in importance.get("cost", {}).get("features", [])[:8]]
-    local_factors = _shap_factors_for_model(bundle["cost"], latest, features)
-    inputs = {name: (None if pd.isna(latest.get(name)) else latest.get(name)) for name in features}
+    local_factors = _shap_factors_for_model(bundle["cost"], latest, cost_features)
+    all_features = list(dict.fromkeys(cost_features + delay_features + risk_features))
+    inputs = {name: (None if pd.isna(latest.get(name)) else latest.get(name)) for name in all_features}
     for key, value in list(inputs.items()):
         if isinstance(value, (np.integer, np.floating)):
             inputs[key] = value.item()
@@ -119,6 +126,11 @@ def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
         "predicted_delay_days": round(delay, 1),
         "risk_level": risk,
         "model_inputs": inputs,
+        "cost_features_used": cost_features,
+        "delay_features_used": delay_features,
+        "risk_features_used": risk_features,
+        "production_cost_baseline": bundle["metadata"].get("production_cost_baseline"),
+        "promoted_from_experiment": bundle["metadata"].get("promoted_from_experiment"),
         "shap_explanation": local_factors,
         "global_feature_importance": global_factors,
         "explanation_scope": "shap_explanation is project-specific for the displayed snapshot; global_feature_importance is aggregate training-sample importance.",
@@ -127,7 +139,7 @@ def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
             "dataset_fingerprint": bundle["metadata"].get("dataset_fingerprint") or provenance.get("dataset_fingerprint"),
             "verified": bool(bundle.get("manifest") and bundle["manifest"].get("status") == "complete"),
         },
-        "model_scope": "Official PAIMANA monthly lifecycle model; trajectory features use this project only through the displayed snapshot date.",
+        "model_scope": "Official PAIMANA monthly lifecycle production model; cost uses the promoted Exp 12 leakage-safe trajectory baseline while delay/risk retain their existing production contracts.",
     }
 
 
