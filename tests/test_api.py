@@ -88,8 +88,8 @@ def test_explicit_lifecycle_validation_uses_selected_lifecycle_artifacts(tmp_pat
     }
     (model_root / "evaluation_results.json").write_text(json.dumps(artifact))
     (model_root / "prediction_validation.csv").write_text(
-        "canonical_project_id,project_name,completion_year,lifecycle_stage,actual_cost_overrun_percentage,actual_delay_days,predicted_cost_overrun,predicted_delay_days,predicted_risk,actual_risk,cost_error,delay_error\n"
-        "LIFE-001,Lifecycle holdout,2023,late,18.0,120.0,15.0,100.0,HIGH,CRITICAL,-3.0,-20.0\n"
+        "canonical_project_id,project_name,completion_year,lifecycle_stage,actual_cost_overrun_percentage,actual_delay_days,predicted_cost_overrun,actual_cost_overrun,cost_error,predicted_delay_days,actual_delay_days,delay_error\n"
+        "LIFE-001,Lifecycle holdout,2023,late,18.0,120.0,15.0,18.0,-3.0,100.0,120.0,-20.0\n"
     )
     # A sentinel legacy report proves explicit lifecycle selection never falls back.
     (tmp_path / "validation_report.json").write_text(json.dumps({"cost_model": {"MAE": 2.332}}))
@@ -172,7 +172,7 @@ def test_lifecycle_catalog_does_not_label_legacy_years_as_lifecycle(monkeypatch)
 
 def test_judge_controlled_backtest_hides_actual_until_reveal():
     trained = client.post("/api/model-simulations/custom/train", json={"start_year": 2001, "end_year": 2015})
-    assert trained.status_code == 200
+    assert trained.status_code == 200, trained.text
     training = trained.json()
     assert training["model_family"] == "monthly_lifecycle"
     assert training["training_samples"] > 0
