@@ -1,0 +1,65 @@
+name: Verify production Exp12 cost cohort
+
+on:
+  push:
+    branches:
+      - fix/production-exp12-comparable-cohort
+    paths:
+      - 'backend/app/ml/production_cost_baseline.py'
+      - 'tests/test_production_cost_evaluation_contract.py'
+      - '.github/workflows/verify-production-exp12-cohort.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        end_year: [2019, 2021]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Verify exact production cost evaluation contract
+        env:
+          END_YEAR: ${{ matrix.end_year }}
+        run: |
+          PYTHONPATH=. python - <<'PY'
+          import json
+          import os
+          import tempfile
+          from pathlib import Path
+
+          from backend.app.ml.production_cost_baseline import train_window_with_promoted_cost
+          from backend.app.services.lifecycle_retraining_service import _training_data
+
+          end_year = int(os.environ['END_YEAR'])
+          data, identity, _, max_year = _training_data()
+          with tempfile.TemporaryDirectory() as tmp:
+              result = train_window_with_promoted_cost(
+                  2001,
+                  end_year,
+                  max_year,
+                  data=data,
+                  identity=identity,
+                  artifact_root=Path(tmp),
+              )
+
+          lifecycle = result['lifecycle']
+          payload = {
+              'training_window': f'2001-{end_year}',
+              'testing_end': max_year,
+              'production_cost_mae': lifecycle['metrics']['cost']['MAE'],
+              'production_delay_mae': lifecycle['metrics']['delay']['MAE'],
+              'cost_evaluation_contract': lifecycle['cost_evaluation_contract'],
+              'production_cost_baseline': lifecycle['production_cost_baseline'],
+              'cost_trajectory_feature_group': lifecycle['cost_trajectory_feature_group'],
+          }
+          print('PRODUCTION_EXP12_COHORT=' + json.dumps(payload, sort_keys=True))
+          PY
