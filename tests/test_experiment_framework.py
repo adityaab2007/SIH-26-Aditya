@@ -143,17 +143,13 @@ def test_judge_facing_model_simulation_uses_controlled_compare_orchestration():
     assert "/api/model-simulations/custom/retrain-compare" in api_source
 
 
-def test_empty_adapter_catalog_leaves_the_generic_comparison_harness_ready():
-    assert available_experiments() == []
-    assert default_experiment_adapter() is None
-    with pytest.raises(ValueError, match="No experiment comparison adapter is installed"):
-        get_experiment_adapter()
-    assert experiment_catalog() == {
-        "items": [],
-        "count": 0,
-        "active_experiment_id": None,
-        "active_experiment_name": None,
-    }
+def test_recency_adapter_is_discoverable_and_generic_harness_remains_explicit():
+    experiments = available_experiments()
+    assert any(item["experiment_id"] == "exp_13" for item in experiments)
+    adapter = get_experiment_adapter("exp_13")
+    assert adapter.sequence == 13
+    assert adapter.scope == "cost_delay"
+    assert experiment_catalog()["active_experiment_id"] == "exp_13"
 
 
 def test_model_simulation_no_challenger_state_is_generic_and_disabled():
