@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 from backend.app.services.lifecycle_model_comparison_service import retrain_and_compare
@@ -26,9 +27,11 @@ def _safe(value):
     try:
         import numpy as np
         if isinstance(value, (np.integer, np.floating)):
-            return value.item()
+            value = value.item()
     except ImportError:
         pass
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
     return value
 
 
@@ -75,7 +78,7 @@ def main() -> None:
     else:
         overall_verdict = "MIXED / NEEDS REVIEW"
 
-    summary = {
+    summary = _safe({
         "experiment_id": "exp_13",
         "experiment_name": "Recency-Weighted Project Training",
         "experiment_scope": "cost_delay",
@@ -88,7 +91,7 @@ def main() -> None:
         "windows": results,
         "overall_verdict": overall_verdict,
         "promotion_allowed": False,
-    }
+    })
     (output / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
     print(f"OVERALL VERDICT: {overall_verdict}")
 
