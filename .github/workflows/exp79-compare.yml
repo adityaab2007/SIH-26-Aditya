@@ -1,0 +1,37 @@
+name: Experiment 79 production comparison
+on:
+  pull_request:
+    paths:
+      - 'backend/app/ml/experiments/cost_residual_challenger_common.py'
+      - 'backend/app/ml/experiments/adapter_exp79.py'
+      - 'scripts/run_exp79_compare.py'
+      - 'tests/test_exp79_contract.py'
+      - '.github/workflows/exp79-compare.yml'
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Validate sources
+        run: python -m compileall -q backend scripts tests
+      - name: Focused Experiment 79 tests
+        env: {PYTHONPATH: .}
+        run: pytest -q tests/test_exp79_contract.py
+      - name: Compare production and Experiment 79 on 2001-2019 and 2001-2021
+        env: {PYTHONPATH: .}
+        run: python scripts/run_exp79_compare.py
+      - name: Upload Experiment 79 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-exp79-results
+          path: audit_outputs/exp79/
+          if-no-files-found: error
