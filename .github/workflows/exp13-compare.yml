@@ -1,0 +1,38 @@
+name: Experiment 13 clean comparison
+
+on:
+  pull_request:
+    paths:
+      - 'backend/app/ml/experiments/adapter_exp13.py'
+      - 'scripts/run_exp13_compare.py'
+      - 'backend/app/ml/experiments/evaluator.py'
+      - 'backend/app/ml/experiments/framework.py'
+      - 'backend/app/services/lifecycle_model_comparison_service.py'
+      - '.github/workflows/exp13-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Validate sources
+        run: python -m compileall -q backend scripts tests
+      - name: Run 2001-2019 and 2001-2021 production-vs-experiment comparison
+        env:
+          PYTHONPATH: .
+        run: python scripts/run_exp13_compare.py
+      - name: Upload Experiment 13 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-exp13-results
+          path: audit_outputs/exp13/
+          if-no-files-found: error
