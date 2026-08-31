@@ -143,7 +143,11 @@ def test_judge_facing_model_simulation_uses_controlled_compare_orchestration():
     assert "/api/model-simulations/custom/retrain-compare" in api_source
 
 
-def test_empty_adapter_catalog_leaves_the_generic_comparison_harness_ready():
+def test_empty_adapter_catalog_leaves_the_generic_comparison_harness_ready(monkeypatch):
+    # The repository can legitimately contain production/experiment adapters.
+    # Explicitly simulate the no-adapter state so this test verifies the
+    # generic comparison fallback rather than depending on global repo contents.
+    monkeypatch.setattr("backend.app.ml.experiments.adapters.pkgutil.iter_modules", lambda _path: [])
     assert available_experiments() == []
     assert default_experiment_adapter() is None
     with pytest.raises(ValueError, match="No experiment comparison adapter is installed"):
