@@ -32,26 +32,10 @@ def _cohorts():
 
 def test_context_freezes_comparison_evidence_and_experiment_paths_are_run_scoped():
     full, train, test = _cohorts()
-    context = build_experiment_context(
-        experiment_id="exp_next",
-        full_data=full,
-        train=train,
-        test=test,
-        features=["x"],
-        training_start=2001,
-        training_end=2015,
-        testing_end=2025,
-        weighting_policy="per-project-post-sampling",
-    )
+    context = build_experiment_context(experiment_id="exp_next", full_data=full, train=train, test=test, features=["x"], training_start=2001, training_end=2015, testing_end=2025, weighting_policy="per-project-post-sampling")
     assert context.testing_start == 2016
     assert context.training_fingerprint != context.test_fingerprint
-    manifest = new_experiment_manifest(
-        context=context,
-        name="candidate hypothesis",
-        changed_dimension="algorithm",
-        hypothesis="change one algorithm only",
-        run_id="run-123",
-    )
+    manifest = new_experiment_manifest(context=context, name="candidate hypothesis", changed_dimension="algorithm", hypothesis="change one algorithm only", run_id="run-123")
     assert manifest["model_role"] == "experiment"
     assert manifest["promotion_allowed"] is False
     path = experiment_run_directory("exp_next", context.window, manifest["run_id"])
@@ -59,12 +43,7 @@ def test_context_freezes_comparison_evidence_and_experiment_paths_are_run_scoped
 
 
 def test_comparison_contract_rejects_changed_test_or_weighting_context():
-    baseline = {
-        "training_fingerprint": "train-a",
-        "test_fingerprint": "test-a",
-        "feature_schema_fingerprint": "features-a",
-        "weighting_policy": "per-project",
-    }
+    baseline = {"training_fingerprint": "train-a", "test_fingerprint": "test-a", "feature_schema_fingerprint": "features-a", "weighting_policy": "per-project"}
     candidate = dict(baseline)
     assert_same_comparison_context(baseline, candidate)
     candidate["test_fingerprint"] = "test-b"
@@ -82,13 +61,7 @@ def test_promotion_is_explicit_and_never_implied_by_training():
 
 def test_registry_is_atomic_canonical_and_deduplicates_run_id(tmp_path: Path):
     path = tmp_path / "registry.json"
-    entry = {
-        "experiment_id": "exp_next",
-        "name": "candidate",
-        "run_id": "run-1",
-        "status": "COMPLETED",
-        "decision": "PENDING",
-    }
+    entry = {"experiment_id": "exp_next", "name": "candidate", "run_id": "run-1", "status": "COMPLETED", "decision": "PENDING"}
     record_experiment(entry, path=path)
     record_experiment({**entry, "decision": "REJECTED"}, path=path)
     payload = load_registry(path)
@@ -101,16 +74,8 @@ def test_registry_is_atomic_canonical_and_deduplicates_run_id(tmp_path: Path):
 def test_production_registry_excludes_explicit_experiment_role(tmp_path: Path):
     run = tmp_path / "monthly_lifecycle" / "2001_2015"
     run.mkdir(parents=True)
-    (run / "evaluation_results.json").write_text(json.dumps({
-        "metadata": {
-            "model_role": "experiment",
-            "training_period": [2001, 2015],
-            "testing_period": [2016, 2025],
-        },
-        "lifecycle": {"metrics": {}},
-    }))
-    registry = lifecycle_runs(tmp_path)
-    assert registry == {"items": [], "count": 0}
+    (run / "evaluation_results.json").write_text(json.dumps({"metadata": {"model_role": "experiment", "training_period": [2001, 2015], "testing_period": [2016, 2025]}, "lifecycle": {"metrics": {}}}))
+    assert lifecycle_runs(tmp_path) == {"items": [], "count": 0}
 
 
 def test_production_retrain_stamp_marks_both_persisted_truth_sources(tmp_path: Path):
@@ -130,10 +95,6 @@ def test_judge_facing_model_simulation_uses_controlled_compare_orchestration():
     simulation = (root / "frontend" / "src" / "pages" / "ModelSimulationPage.js").read_text()
     accuracy = (root / "frontend" / "src" / "pages" / "PredictionAccuracyPage.js").read_text()
     api_source = (root / "frontend" / "src" / "services" / "api.js").read_text()
-
-    # Prediction Accuracy remains production-only. Model Simulation may compare,
-    # but it must use the controlled server-side retrain-and-compare endpoint
-    # rather than invoking an experiment directly from the browser.
     assert "residualOverrunExperiment(" not in simulation
     assert "residualOverrunExperiment(" not in accuracy
     assert "api.retrainAndCompare(" in simulation
@@ -143,23 +104,23 @@ def test_judge_facing_model_simulation_uses_controlled_compare_orchestration():
     assert "/api/model-simulations/custom/retrain-compare" in api_source
 
 
-def test_empty_adapter_catalog_leaves_the_generic_comparison_harness_ready():
-    assert available_experiments() == []
-    assert default_experiment_adapter() is None
-    with pytest.raises(ValueError, match="No experiment comparison adapter is installed"):
-        get_experiment_adapter()
-    assert experiment_catalog() == {
-        "items": [],
-        "count": 0,
-        "active_experiment_id": None,
-        "active_experiment_name": None,
-    }
+def test_registered_adapter_keeps_the_generic_comparison_harness_ready():
+    items = available_experiments()
+    assert items
+    active = default_experiment_adapter()
+    assert active is not None
+    assert active.experiment_id == items[-1]["experiment_id"]
+    assert get_experiment_adapter(active.experiment_id).experiment_id == active.experiment_id
+    catalog = experiment_catalog()
+    assert catalog["items"] == items
+    assert catalog["count"] == len(items)
+    assert catalog["active_experiment_id"] == active.experiment_id
+    assert catalog["active_experiment_name"] == active.name
 
 
 def test_model_simulation_no_challenger_state_is_generic_and_disabled():
     root = Path(__file__).resolve().parents[1]
     simulation = (root / "frontend" / "src" / "pages" / "ModelSimulationPage.js").read_text()
-
     assert "No challenger installed." in simulation
     assert "install an experiment adapter" in simulation
     assert "id=\"custom-train\" ${activeExperimentId ? '' : 'disabled'}" in simulation
