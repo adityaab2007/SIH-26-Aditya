@@ -6,9 +6,10 @@ import json
 import tempfile
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
-from backend.app.ml.monthly_lifecycle import build_training_dataset
+from backend.app.ml.monthly_lifecycle import assign_project_balanced_weights, build_training_dataset
 from backend.app.ml.production_u1_delay_baseline import train_window_with_promoted_cost_and_delay
 
 EXPECTED = {
@@ -36,9 +37,18 @@ def main() -> None:
     data = data.copy()
     data["completion_year"] = pd.to_numeric(data["completion_year"], errors="coerce")
     with tempfile.TemporaryDirectory(prefix=f"u1-delay-production-{a.end}-") as td:
+        artifact_root = Path(td)
         result = train_window_with_promoted_cost_and_delay(
-            a.start, a.end, a.test_end, data=data, identity=identity, artifact_root=Path(td)
+            a.start, a.end, a.test_end, data=data, identity=identity, artifact_root=artifact_root
         )
+        validation = pd.read_csv(artifact_root / f"{a.start}_{a.end}" / "prediction_validation.csv")
+        comparable = validation[validation["cost_evaluation_eligible"].astype(bool)].copy()
+        comparable = assign_project_balanced_weights(comparable)
+        live_abs_error = np.abs(
+            pd.to_numeric(comparable["predicted_delay_days"], errors="coerce").to_numpy(float)
+            - pd.to_numeric(comparable["actual_delay_days"], errors="coerce").to_numpy(float)
+        )
+        live_delay_mae = float(np.average(live_abs_error, weights=comparable["sample_weight"].to_numpy(float)))
 
     metrics = result["lifecycle"]["metrics"]
     promo = result["promotion"]
@@ -49,6 +59,7 @@ def main() -> None:
         "cost_mae": metrics["cost"]["MAE"],
         "base_delay_mae": promo["previous_delay_mae"],
         "u1_delay_mae": metrics["delay"]["MAE"],
+        "persisted_inference_delay_mae": live_delay_mae,
         "delay_improvement_percentage": promo["delay_improvement_percentage"],
         "comparison_test_projects": contract["test_projects"],
         "comparison_test_snapshots": contract["test_snapshots"],
@@ -66,6 +77,11 @@ def main() -> None:
         raise RuntimeError(f"Exp61 Delay comparator changed: {payload['base_delay_mae']} vs expected {expected['base_delay']}")
     if not _close(payload["u1_delay_mae"], expected["u1_delay"]):
         raise RuntimeError(f"U1 Delay did not reproduce: {payload['u1_delay_mae']} vs expected {expected['u1_delay']}")
+    if not _close(payload["persisted_inference_delay_mae"], payload["u1_delay_mae"]):
+        raise RuntimeError(
+            "Persisted/live U1 Delay inference does not match the verified in-memory production prediction: "
+            f"{payload['persisted_inference_delay_mae']} vs {payload['u1_delay_mae']}"
+        )
     if payload["delay_improvement_percentage"] <= 0:
         raise RuntimeError("U1 Delay production promotion did not improve Delay")
     if payload["cost_retained"] is not True or payload["risk_retained"] is not True:
@@ -80,6 +96,7 @@ def main() -> None:
     print(f"{prefix}_COST_MAE={payload['cost_mae']}")
     print(f"{prefix}_BASE_DELAY_MAE={payload['base_delay_mae']}")
     print(f"{prefix}_DELAY_MAE={payload['u1_delay_mae']}")
+    print(f"{prefix}_PERSISTED_INFERENCE_DELAY_MAE={payload['persisted_inference_delay_mae']}")
     print(f"{prefix}_DELAY_IMPROVEMENT_PERCENT={payload['delay_improvement_percentage']}")
     print(f"{prefix}_PROJECTS={payload['comparison_test_projects']}")
     print(f"{prefix}_SNAPSHOTS={payload['comparison_test_snapshots']}")
