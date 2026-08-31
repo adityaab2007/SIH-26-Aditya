@@ -11,6 +11,7 @@ import pandas as pd
 
 from backend.app.ml.monthly_lifecycle import OUTCOMES, SNAPSHOTS, SNAPSHOTS_GZ, TRAJECTORIES, engineer_as_of_features, load_monthly_snapshots, resolve_identities
 from backend.app.ml.production_cost_baseline import enrich_history_for_production, target_feature_contract
+from backend.app.ml.production_delay_baseline import DEFAULT_PRODUCTION_WINDOW, enrich_history_for_delay_production
 from backend.app.ml.provenance import file_sha256
 from backend.app.services.simulation_service import _shap_factors_for_model
 
@@ -35,8 +36,6 @@ def _current_source_hashes() -> dict[str, str | None]:
 
 def _validate_bundle_provenance(window: str, metadata: dict, manifest: dict) -> None:
     if not manifest:
-        # Older committed runs remain readable for backwards compatibility, but
-        # callers can see provenance.verified=false in the response.
         return
     if manifest.get("status") != "complete":
         raise RuntimeError(
@@ -87,15 +86,17 @@ def _inference_frame() -> pd.DataFrame:
     if TRAJECTORIES.exists():
         frame = pd.read_csv(TRAJECTORIES, dtype={"project_id": "string"}, low_memory=False)
         frame["snapshot_date"] = pd.to_datetime(frame.snapshot_date, errors="coerce")
-        return enrich_history_for_production(frame)
+        frame = enrich_history_for_production(frame)
+        return enrich_history_for_delay_production(frame)
     snapshots = load_monthly_snapshots()
     outcomes = pd.read_csv(OUTCOMES, dtype={"project_id": "string"}, low_memory=False)
     resolved, _ = resolve_identities(snapshots, outcomes)
     frame = engineer_as_of_features(resolved, outcomes)
-    return enrich_history_for_production(frame)
+    frame = enrich_history_for_production(frame)
+    return enrich_history_for_delay_production(frame)
 
 
-def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
+def lifecycle_project_forecast(code: str, window: str = DEFAULT_PRODUCTION_WINDOW) -> dict:
     code = str(code).strip().upper(); frame = _inference_frame(); rows = frame[frame.project_id.astype("string").str.upper().eq(code)].sort_values("snapshot_date")
     if rows.empty:
         raise KeyError(code)
@@ -107,7 +108,9 @@ def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
     cost = float(bundle["cost"].predict(cost_X)[0]); delay = max(0.0, float(bundle["delay"].predict(delay_X)[0])); risk = str(bundle["risk"].predict(risk_X)[0])
     importance = bundle["importance"]
     global_factors = [{"feature": item["feature"], "importance": item["importance"]} for item in importance.get("cost", {}).get("features", [])[:8]]
-    local_factors = _shap_factors_for_model(bundle["cost"], latest, cost_features)
+    explain_model = getattr(bundle["cost"], "model", bundle["cost"])
+    explain_features = list(getattr(bundle["cost"], "features", cost_features))
+    local_factors = _shap_factors_for_model(explain_model, latest, explain_features)
     all_features = list(dict.fromkeys(cost_features + delay_features + risk_features))
     inputs = {name: (None if pd.isna(latest.get(name)) else latest.get(name)) for name in all_features}
     for key, value in list(inputs.items()):
@@ -116,6 +119,8 @@ def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
         elif isinstance(value, pd.Timestamp):
             inputs[key] = value.strftime("%Y-%m-%d")
     provenance = bundle["metadata"].get("provenance") or {}
+    cost_baseline = bundle["metadata"].get("production_cost_baseline")
+    delay_baseline = bundle["metadata"].get("production_delay_baseline")
     return {
         "project_id": code,
         "project_name": latest.project_name,
@@ -129,21 +134,23 @@ def lifecycle_project_forecast(code: str, window: str = "2015_2021") -> dict:
         "cost_features_used": cost_features,
         "delay_features_used": delay_features,
         "risk_features_used": risk_features,
-        "production_cost_baseline": bundle["metadata"].get("production_cost_baseline"),
+        "production_cost_baseline": cost_baseline,
+        "production_delay_baseline": delay_baseline,
         "promoted_from_experiment": bundle["metadata"].get("promoted_from_experiment"),
+        "promoted_delay_from_experiment": bundle["metadata"].get("promoted_delay_from_experiment"),
         "shap_explanation": local_factors,
         "global_feature_importance": global_factors,
-        "explanation_scope": "shap_explanation is project-specific for the displayed snapshot; global_feature_importance is aggregate training-sample importance.",
+        "explanation_scope": "shap_explanation is project-specific for the displayed Cost snapshot; global_feature_importance is aggregate Cost training-sample importance.",
         "provenance": {
             "run_id": bundle["metadata"].get("run_id") or provenance.get("run_id"),
             "dataset_fingerprint": bundle["metadata"].get("dataset_fingerprint") or provenance.get("dataset_fingerprint"),
             "verified": bool(bundle.get("manifest") and bundle["manifest"].get("status") == "complete"),
         },
-        "model_scope": "Official PAIMANA monthly lifecycle production model; cost uses the promoted Exp 12 leakage-safe trajectory baseline while delay/risk retain their existing production contracts.",
+        "model_scope": f"Official PAIMANA monthly lifecycle production model; Cost baseline={cost_baseline}; Delay baseline={delay_baseline}; Risk retains the existing production contract.",
     }
 
 
-def forecast_evolution(project_id: str, window: str = "2015_2021") -> dict:
+def forecast_evolution(project_id: str, window: str = DEFAULT_PRODUCTION_WINDOW) -> dict:
     path = MODEL_ROOT / window / "prediction_validation.csv"
     if not path.exists():
         raise FileNotFoundError(f"Validation rows for {window} are unavailable")

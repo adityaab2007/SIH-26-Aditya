@@ -1,15 +1,21 @@
 """Production cost baseline promoted from verified Experiment 12.
 
 Experiment 12 demonstrated repeatable future-project cost-MAE reductions while
-its delay variant did not generalize.  Production therefore adopts only the
-trajectory-enhanced cost path.  Delay and risk retain the existing lifecycle
+its delay variant did not generalize. Production therefore adopts only the
+trajectory-enhanced cost path. Delay and risk retain the existing lifecycle
 feature contract and fitted models.
 
 The promotion deliberately preserves Experiment 12's scientific contract:
 algorithm selection happens on the existing production feature set, trajectory
 feature-group selection happens only inside the training period, and the final
-cost model is then refit on the full training period.  Future holdout outcomes
+cost model is then refit on the full training period. Future holdout outcomes
 are never used for feature selection.
+
+Production cost evaluation also preserves the verified Experiment 12 comparison
+contract: only holdout snapshots with at least two official observations in the
+trailing 12 months are included in the headline cost metric, and project-balanced
+weights are recalculated after that filter. Delay/risk evaluation and inference
+remain available on the full eligible holdout.
 """
 from __future__ import annotations
 
@@ -26,7 +32,7 @@ from backend.app.ml.experiments.trajectory_exp12_v2 import (
     engineer_history,
     enrich_rows,
 )
-from backend.app.ml.monthly_lifecycle import TRAJECTORIES
+from backend.app.ml.monthly_lifecycle import TRAJECTORIES, assign_project_balanced_weights
 from backend.app.ml.monthly_training import (
     MODEL_ROOT,
     _balanced_stage_summary,
@@ -44,6 +50,8 @@ from backend.app.ml.provenance import artifact_fingerprints, feature_schema_fing
 PROMOTED_EXPERIMENT_ID = "exp_12"
 PRODUCTION_COST_BASELINE = "exp12_trajectory_v3_cost_only"
 PRODUCTION_COST_SEED = 26203
+PRODUCTION_COST_MIN_HISTORY = 2
+PRODUCTION_COST_EVALUATION_COHORT = "exp12_comparable_trailing_12m_history"
 
 _FINGERPRINTED_ARTIFACTS = [
     "cost_model.pkl",
@@ -80,6 +88,28 @@ def enrich_history_for_production(frame: pd.DataFrame) -> pd.DataFrame:
     return engineer_history(frame)
 
 
+def _production_cost_evaluation_rows(test: pd.DataFrame) -> pd.DataFrame:
+    """Return the exact verified Exp12 comparable cohort for production Cost MAE.
+
+    Experiment 12 required at least two official observations in the trailing
+    12 months and then recalculated project-balanced weights on the remaining
+    rows. Keeping this transformation in production prevents the headline Cost
+    MAE from silently switching to a broader cohort after promotion.
+    """
+    if "exp12_history_12m" not in test.columns:
+        raise ValueError(
+            "Production Exp12 cost evaluation requires exp12_history_12m."
+        )
+
+    history = pd.to_numeric(test["exp12_history_12m"], errors="coerce").fillna(0)
+    comparable = test[history.ge(PRODUCTION_COST_MIN_HISTORY)].copy()
+    if comparable["canonical_project_id"].nunique() < 2:
+        raise ValueError(
+            "Production Exp12 cost evaluation has too few comparable future projects."
+        )
+    return assign_project_balanced_weights(comparable)
+
+
 def _prediction_rows(
     test: pd.DataFrame,
     *,
@@ -89,16 +119,18 @@ def _prediction_rows(
     delay_features: list[str],
     risk_model,
     risk_features: list[str],
-) -> tuple[dict, pd.DataFrame]:
+) -> tuple[dict, pd.DataFrame, dict]:
     predicted_cost = cost_model.predict(test[cost_features])
     predicted_delay = np.maximum(0, delay_model.predict(test[delay_features]))
     predicted_risk = risk_model.predict(test[risk_features])
 
+    cost_eval = _production_cost_evaluation_rows(test)
+    cost_eval_prediction = cost_model.predict(cost_eval[cost_features])
     cost_metrics = _regression_metrics(
-        test.actual_cost_overrun_percentage,
-        predicted_cost,
-        test.sample_weight,
-        test.canonical_project_id,
+        cost_eval.actual_cost_overrun_percentage,
+        cost_eval_prediction,
+        cost_eval.sample_weight,
+        cost_eval.canonical_project_id,
     )
 
     rows = test[
@@ -112,14 +144,30 @@ def _prediction_rows(
             "actual_delay_days",
             "actual_risk",
             "sample_weight",
+            "exp12_history_12m",
         ]
     ].copy()
+    rows["cost_evaluation_eligible"] = (
+        pd.to_numeric(rows["exp12_history_12m"], errors="coerce")
+        .fillna(0)
+        .ge(PRODUCTION_COST_MIN_HISTORY)
+    )
     rows["predicted_cost_overrun"] = predicted_cost
     rows["predicted_delay_days"] = predicted_delay
     rows["predicted_risk"] = predicted_risk
     rows["cost_error"] = rows.predicted_cost_overrun - rows.actual_cost_overrun_percentage
     rows["delay_error"] = rows.predicted_delay_days - rows.actual_delay_days
-    return cost_metrics, rows
+
+    cost_evaluation_contract = {
+        "cohort": PRODUCTION_COST_EVALUATION_COHORT,
+        "minimum_trailing_12m_observations": PRODUCTION_COST_MIN_HISTORY,
+        "weighting_policy": "project-balanced after Exp12 comparable-cohort filter",
+        "test_projects": int(cost_eval.canonical_project_id.nunique()),
+        "test_snapshots": int(len(cost_eval)),
+        "full_holdout_projects": int(test.canonical_project_id.nunique()),
+        "full_holdout_snapshots": int(len(test)),
+    }
+    return cost_metrics, rows, cost_evaluation_contract
 
 
 def train_window_with_promoted_cost(
@@ -133,7 +181,7 @@ def train_window_with_promoted_cost(
     """Train production with Exp 12 as the cost baseline only.
 
     The existing lifecycle trainer is run first so delay/risk, model selection,
-    audits, ablations and provenance remain unchanged.  We then replace only the
+    audits, ablations and provenance remain unchanged. We then replace only the
     cost artifact with the verified Exp 12 trajectory path and rewrite the cost
     evaluation/provenance fields to match the promoted artifact.
     """
@@ -186,7 +234,7 @@ def train_window_with_promoted_cost(
 
     delay_model = joblib.load(target / "delay_model.pkl")
     risk_model = joblib.load(target / "risk_model.pkl")
-    cost_metrics, validation_rows = _prediction_rows(
+    cost_metrics, validation_rows, cost_evaluation_contract = _prediction_rows(
         test,
         cost_model=cost_model,
         cost_features=cost_features,
@@ -214,6 +262,8 @@ def train_window_with_promoted_cost(
     )
     importance_path.write_text(json.dumps(importance, indent=2))
 
+    # Stage diagnostics remain full-holdout diagnostics so Delay/Risk behavior is
+    # unchanged. The headline Cost MAE above uses the explicit Exp12 cohort.
     lifecycle_stages = _stage_metrics(validation_rows)
     balanced_stage = _balanced_stage_summary(lifecycle_stages)
 
@@ -232,6 +282,8 @@ def train_window_with_promoted_cost(
     metadata["cost_trajectory_features"] = cost_added
     metadata["trajectory_feature_availability"] = trajectory_audit
     metadata["internal_cost_trajectory_feature_comparisons"] = feature_comparisons
+    metadata["cost_evaluation_contract"] = cost_evaluation_contract
+    metadata["lifecycle_stage_metrics_scope"] = "full_holdout_diagnostic"
     metadata["delay_policy"] = "existing_production_retained"
     metadata["risk_policy"] = "existing_production_retained"
     metadata["leakage_policy"] = (
@@ -239,7 +291,9 @@ def train_window_with_promoted_cost(
         "use only current/earlier snapshots; cost feature-group selection uses only an "
         "internal historical validation block inside the training period; historical "
         "priors require completion_date < snapshot_date; the future holdout is excluded "
-        "from all selection."
+        "from all selection. Headline production Cost MAE uses only the verified Exp12 "
+        "comparable cohort (>=2 trailing-12-month official observations), with project "
+        "weights recalculated after filtering."
     )
     metadata.setdefault("lifecycle_metrics", {})["cost"] = cost_metrics
     metadata["lifecycle_stage_metrics"] = lifecycle_stages
@@ -270,6 +324,7 @@ def train_window_with_promoted_cost(
     lifecycle["production_cost_baseline"] = PRODUCTION_COST_BASELINE
     lifecycle["cost_trajectory_feature_group"] = cost_group
     lifecycle["cost_trajectory_features"] = cost_added
+    lifecycle["cost_evaluation_contract"] = cost_evaluation_contract
     result["lifecycle"] = lifecycle
     result["promotion"] = {
         "experiment_id": PROMOTED_EXPERIMENT_ID,
@@ -277,6 +332,7 @@ def train_window_with_promoted_cost(
         "production_cost_baseline": PRODUCTION_COST_BASELINE,
         "selected_feature_group": cost_group,
         "added_features": cost_added,
+        "cost_evaluation_contract": cost_evaluation_contract,
         "delay_retained": True,
         "risk_retained": True,
     }
