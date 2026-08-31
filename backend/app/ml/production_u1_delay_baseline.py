@@ -141,23 +141,68 @@ def _delay_oof_frame(train: pd.DataFrame, base_delay_model) -> pd.DataFrame:
     return pd.concat(chunks, ignore_index=True)
 
 
+def _u1_prior_enrich(frame: pd.DataFrame, prior_state: dict) -> pd.DataFrame:
+    """Rebuild U1's Exp58 booster inputs exactly as its experiment score frame did.
+
+    U1 was trained/scored on ``normalize_taxonomy(_prepare(...))`` rows carrying
+    Exp58 future priors. The Exp61 base model has a separate internal enrichment
+    path for its own prediction. Reusing that path for U1's *booster features*
+    can change normalized taxonomy keys and therefore the residual correction.
+    This helper keeps the Exp61 base prediction untouched while reconstructing
+    only the two U1 prior covariates from U1's normalized taxonomy contract.
+    """
+    work = normalize_taxonomy(frame.copy())
+    result = np.full(len(work), float(prior_state["global"]), dtype=float)
+    support = np.zeros(len(work), dtype=float)
+    unresolved = np.ones(len(work), dtype=bool)
+    for keys, mapping in prior_state.get("levels", []):
+        keys = tuple(keys)
+        for pos, (_, row) in enumerate(work.iterrows()):
+            if not unresolved[pos]:
+                continue
+            key = tuple(str(row[k]) for k in keys)
+            item = mapping.get(key)
+            if item is not None:
+                result[pos], support[pos] = float(item[0]), float(item[1])
+                unresolved[pos] = False
+    work["exp58_delay_hier_prior"] = result
+    work["exp58_group_support"] = support
+    return work
+
+
 class U1DelayResidualProductionModel:
     """Exp61 Delay anchor plus the frozen U1 bounded residual correction."""
 
-    def __init__(self, *, base_model, booster, booster_features, medians, correction_cap, input_features):
+    def __init__(
+        self,
+        *,
+        base_model,
+        booster,
+        booster_features,
+        medians,
+        correction_cap,
+        input_features,
+        booster_prior_state,
+    ):
         self.base_model = base_model
         self.booster = booster
         self.booster_features = list(booster_features)
         self.medians = {str(k): float(v) for k, v in medians.items()}
         self.correction_cap = float(correction_cap)
         self.features = list(input_features)
+        self.booster_prior_state = booster_prior_state
         self.model_features = list(getattr(base_model, "model_features", []))
         self.weights = dict(getattr(base_model, "weights", {}))
         self.calibration = getattr(base_model, "calibration", None)
         self.fallback_model = getattr(base_model, "fallback_model", None)
 
     def _booster_frame(self, frame: pd.DataFrame, production_prediction: np.ndarray) -> pd.DataFrame:
-        work = self.base_model._enrich(frame.copy()) if hasattr(self.base_model, "_enrich") else frame.copy()
+        if self.booster_prior_state:
+            work = _u1_prior_enrich(frame, self.booster_prior_state)
+        elif hasattr(self.base_model, "_enrich"):
+            work = self.base_model._enrich(frame.copy())
+        else:
+            work = frame.copy()
         work["production_prediction"] = production_prediction
         columns = {}
         for col in self.booster_features:
@@ -219,7 +264,7 @@ def train_window_with_promoted_cost_and_delay(
 
     prepared = normalize_taxonomy(_prepare(data))
     train, test = temporal_project_split(prepared, training_start, training_end, test_end)
-    prior_train, prior_test, _ = _build_temporal_delay_priors(train, test)
+    prior_train, prior_test, prior_state = _build_temporal_delay_priors(train, test)
     shared_eval = _compare(prior_test)
 
     production_delay = np.maximum(0.0, np.asarray(base_delay_model.predict(shared_eval), dtype=float))
@@ -235,7 +280,15 @@ def train_window_with_promoted_cost_and_delay(
         medians=medians,
         correction_cap=cap,
         input_features=delay_input_features,
+        booster_prior_state=prior_state,
     )
+
+    # Guard the exact production contract immediately: a serialized/live wrapper
+    # must reproduce the U1 score-frame prediction before any artifact is written.
+    contract_delay = delay_model.predict(shared_eval.reindex(columns=delay_input_features))
+    if not np.allclose(contract_delay, promoted_delay, rtol=0.0, atol=1e-9):
+        max_abs = float(np.max(np.abs(contract_delay - promoted_delay)))
+        raise AssertionError(f"U1 production wrapper diverged from U1 experiment score path; max abs={max_abs}")
 
     production_cost = np.asarray(cost_model.predict(shared_eval), dtype=float)
     cost_metrics = _metric(shared_eval, "actual_cost_overrun_percentage", production_cost)
@@ -291,6 +344,7 @@ def train_window_with_promoted_cost_and_delay(
         "training_medians": medians,
         "correction_cap_abs_residual_q90": cap,
         "oof_rows": int(len(oof)),
+        "booster_prior_source": "normalized_taxonomy_frozen_training_prior_state",
         "base_prediction_replaced": False,
         "holdout_used_for_fit_or_selection": False,
     }
@@ -303,7 +357,8 @@ def train_window_with_promoted_cost_and_delay(
     metadata["leakage_policy"] = (
         str(metadata.get("leakage_policy") or "")
         + " U1 Delay residual booster is fitted only to rolling OOF residuals from training years; "
-          "its correction cap and imputations are training-only. Future holdout outcomes are never used."
+          "its correction cap, imputations, and future hierarchical prior inputs are frozen from training-only state. "
+          "Future holdout outcomes are never used."
     ).strip()
 
     lifecycle = dict(result.get("lifecycle") or {})
