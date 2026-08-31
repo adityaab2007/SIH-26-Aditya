@@ -1,0 +1,60 @@
+name: U1 Delay production verification
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/production_u1_delay_baseline.py'
+      - 'backend/app/services/lifecycle_retraining_service_u1.py'
+      - 'backend/app/routes/models.py'
+      - 'scripts/run_u1_delay_production_fresh.py'
+      - 'tests/test_production_u1_delay.py'
+      - '.github/workflows/u1-delay-production-verify.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/production_u1_delay_baseline.py'
+      - 'backend/app/services/lifecycle_retraining_service_u1.py'
+      - 'backend/app/routes/models.py'
+      - 'scripts/run_u1_delay_production_fresh.py'
+      - 'tests/test_production_u1_delay.py'
+      - '.github/workflows/u1-delay-production-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        end: [2019, 2021]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Syntax and focused tests
+        run: |
+          python -m py_compile \
+            backend/app/ml/production_u1_delay_baseline.py \
+            backend/app/services/lifecycle_retraining_service_u1.py \
+            backend/app/routes/models.py \
+            scripts/run_u1_delay_production_fresh.py
+          PYTHONPATH=. pytest -q tests/test_production_u1_delay.py
+      - name: Fresh U1 Delay production retrain and evaluation
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+        run: >-
+          python scripts/run_u1_delay_production_fresh.py
+          --start 2001
+          --end ${{ matrix.end }}
+          --test-end 2025
+          --output audit_outputs/u1_delay_production_2001_${{ matrix.end }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: u1-delay-production-2001-${{ matrix.end }}
+          path: audit_outputs/u1_delay_production_2001_${{ matrix.end }}.json
+          if-no-files-found: error
