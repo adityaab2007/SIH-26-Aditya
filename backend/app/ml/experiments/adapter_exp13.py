@@ -55,16 +55,36 @@ def _json_safe(value: Any):
     return value
 
 
+def _unwrap_pipeline(model):
+    current = model
+    seen: set[int] = set()
+    while not hasattr(current, "named_steps"):
+        marker = id(current)
+        if marker in seen:
+            raise ValueError("Cycle while unwrapping production model.")
+        seen.add(marker)
+        next_model = None
+        for attribute in ("model", "base_model", "estimator", "pipeline"):
+            candidate = getattr(current, attribute, None)
+            if candidate is not None and candidate is not current:
+                next_model = candidate
+                break
+        if next_model is None:
+            raise ValueError(f"Unable to unwrap production model {type(current).__name__}.")
+        current = next_model
+    return current
+
+
 def _algorithm(bundle: dict, receipt: dict, target: str) -> str:
     name = ((bundle.get("metadata") or {}).get("selected_algorithms") or {}).get(target)
     name = name or (receipt.get("selected_algorithms") or {}).get(target)
     if name in _regressors(1):
         return name
-    model = bundle[target].named_steps["model"]
+    model = _unwrap_pipeline(bundle[target]).named_steps["model"]
     lowered = type(model).__name__.lower()
-    if "lgbm" in lowered:
+    if "lgbm" in lowered or "lightgbm" in lowered:
         return "lightgbm"
-    if "xgb" in lowered:
+    if "xgb" in lowered or "xgboost" in lowered:
         return "xgboost"
     if "extra" in lowered:
         return "extra_trees"
