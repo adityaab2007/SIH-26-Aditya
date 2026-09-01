@@ -1,17 +1,10 @@
 """Compatibility layer for Cost-only Exp75-79 on current compound production models.
 
-The experiment hypotheses stay unchanged. This layer only fixes how feature
-matrices are handed to persisted production wrappers: production inference uses
-DataFrame.reindex(columns=...) so wrapper-owned engineered features may be
-absent from the raw frozen frame without raising KeyError. Delay remains an
-exact production control for these Cost-only challengers.
-
-Pandas nullable dtypes can carry the pd.NA singleton into sklearn imputers,
-where equality-based missing-value checks raise ``TypeError: boolean value of
-NA is ambiguous``. Experiment-side model feature matrices are therefore
-normalized from pd.NA to ordinary np.nan before fitting or prediction. This is
-only a representation fix; values, cohorts, weights, targets, temporal splits,
-and challenger policies are unchanged.
+This module preserves each Cost experiment's hypothesis while making the
+comparison harness consume the exact current production preparation contract.
+The frozen frame is enriched through the canonical Exp34 path-feature pipeline,
+the comparison cohort uses the production Cost cohort plus deterministic Exp35
+calibration gate, and Delay remains an exact production control.
 """
 from __future__ import annotations
 
@@ -21,6 +14,8 @@ import numpy as np
 import pandas as pd
 
 from backend.app.ml.experiments import cost_residual_challenger_common as legacy
+from backend.app.ml.experiments.nextgen_common import _compare as production_comparison_cohort
+from backend.app.ml.experiments.nextgen_common import _prepare as prepare_current_production_frame
 
 ChallengerConfig = legacy.ChallengerConfig
 
@@ -31,8 +26,7 @@ def _normalize_feature_missing(frame: pd.DataFrame, features: list[str]) -> pd.D
     for column in dict.fromkeys(features):
         if column not in result.columns:
             continue
-        series = result[column]
-        object_series = series.astype(object)
+        object_series = result[column].astype(object)
         if object_series.map(lambda value: value is pd.NA).any():
             result[column] = object_series.where(object_series.notna(), np.nan)
     return result
@@ -40,6 +34,14 @@ def _normalize_feature_missing(frame: pd.DataFrame, features: list[str]) -> pd.D
 
 def _X(frame: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     return _normalize_feature_missing(frame.reindex(columns=list(features)), list(features))
+
+
+def _require_features(frame: pd.DataFrame, features: list[str], label: str) -> None:
+    missing = [feature for feature in features if feature not in frame.columns]
+    if missing:
+        raise ValueError(
+            f"{label} is missing current production features: {', '.join(missing)}"
+        )
 
 
 def fit_challenger(
@@ -52,22 +54,25 @@ def fit_challenger(
     production_bundle: dict,
     production_receipt: dict,
 ) -> dict:
-    frame = legacy.enrich_supervised_for_production(data.copy())
-    frame["completion_year"] = pd.to_numeric(frame.completion_year, errors="coerce")
-    train, test = legacy.temporal_project_split(
+    # Current production is Exp34 -> Exp35 -> Exp61. Reuse the canonical
+    # preparation instead of reindexing absent production features to NaN.
+    frame = prepare_current_production_frame(data)
+    train, raw_test = legacy.temporal_project_split(
         frame, int(training_start), int(training_end), int(test_end)
     )
-    test = legacy._project_balanced(test)
+    test = production_comparison_cohort(raw_test)
 
     contract = legacy.target_feature_contract(production_bundle.get("metadata") or {})
     cost_features = list(contract.get("cost") or production_receipt.get("features_used") or [])
     delay_features = list(contract.get("delay") or production_receipt.get("features_used") or [])
     if not cost_features or not delay_features:
         raise ValueError("Production target feature contract unavailable.")
+
+    _require_features(train, cost_features, "training frame")
+    _require_features(test, cost_features, "comparison Cost frame")
+    _require_features(test, delay_features, "comparison Delay frame")
     algorithm = legacy._algorithm(production_bundle, production_receipt)
 
-    # Keep experiment inputs identical while converting nullable pd.NA sentinels
-    # to the np.nan representation expected by sklearn's SimpleImputer.
     train = _normalize_feature_missing(train, cost_features)
     test = _normalize_feature_missing(test, list(dict.fromkeys(cost_features + delay_features)))
 
@@ -110,7 +115,6 @@ def fit_challenger(
         experiment_cost = production_cost + correction
         serializable_policy = policy
 
-    # Cost-only contract: Delay is copied exactly from current production.
     experiment_delay = production_delay.copy()
     test["production_cost"] = production_cost
     test["experiment_cost"] = experiment_cost
@@ -162,7 +166,7 @@ def fit_challenger(
         "cost_only_delay_predictions_identical": bool(
             np.array_equal(production_delay, experiment_delay)
         ),
-        "production_wrapper_feature_policy": "reindex_to_persisted_contract_and_normalize_pd_na",
+        "production_wrapper_feature_policy": "canonical_current_production_prepare_and_compare",
         "verdict": legacy._verdict(cost_imp, delay_imp),
     }
     experiment = {
