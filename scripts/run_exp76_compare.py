@@ -1,8 +1,10 @@
+"""Run Experiment 76 against fresh production baselines for required windows."""
 import json
 import math
 from pathlib import Path
 
-from backend.app.services.lifecycle_model_comparison_service import retrain_and_compare
+from backend.app.ml.experiments import adapter_exp76
+from backend.app.ml.experiments.batch_compare import run_batch_comparison
 
 WINDOWS = ((2001, 2019), (2001, 2021))
 REQUIRED = (
@@ -38,7 +40,7 @@ def main():
     results = {}
     for start, end in WINDOWS:
         key = f"{start}_{end}"
-        payload = retrain_and_compare(start, end, "exp_76")
+        payload = run_batch_comparison(adapter_exp76, start, end)
         overall = payload.get("overall_comparison") or {}
         missing = [k for k in REQUIRED if overall.get(k) is None]
         if missing:
