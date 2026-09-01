@@ -1,0 +1,45 @@
+name: Exp134 nonlinear saturation and tail geometry
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/internal_signal_challengers.py'
+      - 'backend/app/ml/experiments/exp134_tail_geometry.py'
+      - '.github/workflows/exp134-compare.yml'
+  workflow_dispatch:
+jobs:
+  exp134:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and causal feature tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/internal_signal_challengers.py backend/app/ml/experiments/exp134_tail_geometry.py
+          PYTHONPATH=. python -m backend.app.ml.experiments.exp134_tail_geometry --self-test
+      - name: Fresh production vs Exp134 on both future windows
+        env: {PYTHONPATH: '${{ github.workspace }}'}
+        run: python -m backend.app.ml.experiments.exp134_tail_geometry --output-dir models/monthly_lifecycle/experiments/exp134/ci
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp134_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp134_final_report.json')); print('COST:',p['cost_verdict']); print('DELAY:',p['delay_verdict'])
+          for w in p['windows']:
+              print(w['window'],'cost',w['cost']['base_mae'],'->',w['cost']['experiment_mae'],w['cost']['improvement_pct'])
+              print(w['window'],'delay',w['delay']['base_mae'],'->',w['delay']['experiment_mae'],w['delay']['improvement_pct'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp134-scientific-evidence
+          path: |
+            reports/exp134_final_report.json
+            models/monthly_lifecycle/experiments/exp134/ci/
+          if-no-files-found: error
