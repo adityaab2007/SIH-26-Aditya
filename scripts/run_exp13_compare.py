@@ -5,7 +5,8 @@ import json
 import math
 from pathlib import Path
 
-from backend.app.services.lifecycle_model_comparison_service import retrain_and_compare
+from backend.app.ml.experiments import adapter_exp13
+from backend.app.ml.experiments.batch_compare import run_batch_comparison
 
 WINDOWS = ((2001, 2019), (2001, 2021))
 REQUIRED_METRICS = (
@@ -50,7 +51,7 @@ def main() -> None:
 
     for start, end in WINDOWS:
         window = f"{start}_{end}"
-        result = retrain_and_compare(start, end, "exp_13")
+        result = run_batch_comparison(adapter_exp13, start, end)
         payload = _safe({
             "experiment_id": "exp_13",
             "experiment_name": "Recency-Weighted Project Training",
@@ -62,11 +63,9 @@ def main() -> None:
         (output / f"{window}.json").write_text(json.dumps(payload, indent=2, allow_nan=False) + "\n")
         results[window] = payload
         print(
-            f"{start}-{end}: "
-            f"cost {overall['production_cost_mae']} -> {overall['experiment_cost_mae']} "
-            f"({overall['cost_improvement_percentage']}%); "
-            f"delay {overall['production_delay_mae']} -> {overall['experiment_delay_mae']} "
-            f"({overall['delay_improvement_percentage']}%); "
+            f"{start}-{end}: cost {overall['production_cost_mae']} -> {overall['experiment_cost_mae']} "
+            f"({overall['cost_improvement_percentage']}%); delay {overall['production_delay_mae']} -> "
+            f"{overall['experiment_delay_mae']} ({overall['delay_improvement_percentage']}%); "
             f"verdict={overall['verdict']}"
         )
 
@@ -82,12 +81,6 @@ def main() -> None:
         "experiment_id": "exp_13",
         "experiment_name": "Recency-Weighted Project Training",
         "experiment_scope": "cost_delay",
-        "comparison_contract": {
-            "windows": ["2001_2019", "2001_2021"],
-            "fresh_production_baseline": True,
-            "same_held_out_cohort": True,
-            "metrics": list(REQUIRED_METRICS),
-        },
         "windows": results,
         "overall_verdict": overall_verdict,
         "promotion_allowed": False,
