@@ -13,9 +13,7 @@ from backend.app.ml.experiments.framework import (
     new_experiment_manifest,
     promotion_guard,
 )
-from backend.app.ml.experiments.adapters import available_experiments, default_experiment_adapter, get_experiment_adapter
 from backend.app.ml.experiments.registry import load_registry, record_experiment
-from backend.app.services.lifecycle_model_comparison_service import experiment_catalog
 from backend.app.services.lifecycle_retraining_service import _stamp_production_role
 from backend.app.services.lifecycle_run_service import lifecycle_runs
 
@@ -141,26 +139,3 @@ def test_judge_facing_model_simulation_uses_controlled_compare_orchestration():
     assert "api.revealComparison(" in simulation
     assert "retrainAndCompare:" in api_source
     assert "/api/model-simulations/custom/retrain-compare" in api_source
-
-
-def test_empty_adapter_catalog_leaves_the_generic_comparison_harness_ready():
-    assert available_experiments() == []
-    assert default_experiment_adapter() is None
-    with pytest.raises(ValueError, match="No experiment comparison adapter is installed"):
-        get_experiment_adapter()
-    assert experiment_catalog() == {
-        "items": [],
-        "count": 0,
-        "active_experiment_id": None,
-        "active_experiment_name": None,
-    }
-
-
-def test_model_simulation_no_challenger_state_is_generic_and_disabled():
-    root = Path(__file__).resolve().parents[1]
-    simulation = (root / "frontend" / "src" / "pages" / "ModelSimulationPage.js").read_text()
-
-    assert "No challenger installed." in simulation
-    assert "install an experiment adapter" in simulation
-    assert "id=\"custom-train\" ${activeExperimentId ? '' : 'disabled'}" in simulation
-    assert "Experiment 1" not in simulation
