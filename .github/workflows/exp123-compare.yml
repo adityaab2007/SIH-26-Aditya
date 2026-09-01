@@ -11,8 +11,13 @@ on:
 
 jobs:
   exp123:
+    name: exp123 (${{ matrix.training_end }})
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        training_end: [2019, 2021]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,10 +29,13 @@ jobs:
         run: |
           python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/exp123_event_sequence_motifs.py
           PYTHONPATH=. pytest -q tests/test_exp123_event_sequence_motifs.py
-      - name: Fresh production vs Exp123 on both future windows
+      - name: Fresh production vs Exp123
         env:
           PYTHONPATH: '${{ github.workspace }}'
-        run: python -m backend.app.ml.experiments.exp123_event_sequence_motifs --output-dir models/monthly_lifecycle/experiments/exp123/ci
+        run: |
+          python -m backend.app.ml.experiments.exp123_event_sequence_motifs \
+            --training-end ${{ matrix.training_end }} \
+            --output-dir models/monthly_lifecycle/experiments/exp123/ci/${{ matrix.training_end }}
       - name: Scientific verdict
         if: always()
         run: |
@@ -45,8 +53,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: exp123-scientific-evidence
+          name: exp123-scientific-evidence-${{ matrix.training_end }}
           path: |
             reports/exp123_final_report.*
-            models/monthly_lifecycle/experiments/exp123/ci/
+            models/monthly_lifecycle/experiments/exp123/ci/${{ matrix.training_end }}/
           if-no-files-found: error
