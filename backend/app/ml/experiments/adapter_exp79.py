@@ -1,7 +1,7 @@
 """Experiment 79: production uncertainty shrinkage."""
 from __future__ import annotations
 
-from backend.app.ml.experiments.cost_residual_challenger_common import ChallengerConfig, fit_challenger, filter_rows, predict_row
+from backend.app.ml.experiments.cost_residual_challenger_compat import ChallengerConfig, fit_challenger, filter_rows, predict_row
 
 EXPERIMENT_ID = "exp_79"
 EXPERIMENT_SEQUENCE = 79
