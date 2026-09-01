@@ -1,0 +1,52 @@
+name: Exp123 execution sequence motifs
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/exp123_event_sequence_motifs.py'
+      - 'tests/test_exp123_event_sequence_motifs.py'
+      - '.github/workflows/exp123-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  exp123:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and leakage tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/exp123_event_sequence_motifs.py
+          PYTHONPATH=. pytest -q tests/test_exp123_event_sequence_motifs.py
+      - name: Fresh production vs Exp123 on both future windows
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+        run: python -m backend.app.ml.experiments.exp123_event_sequence_motifs --output-dir models/monthly_lifecycle/experiments/exp123/ci
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp123_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp123_final_report.json'))
+          print('COST:', p['cost_verdict'])
+          print('DELAY:', p['delay_verdict'])
+          for w in p['windows']:
+              print(w['window'], 'cost', w['cost']['base_mae'], '->', w['cost']['experiment_mae'], w['cost']['improvement_pct'])
+              print(w['window'], 'delay', w['delay']['base_mae'], '->', w['delay']['experiment_mae'], w['delay']['improvement_pct'])
+          print('EXECUTION VALID — scientific regression is not a CI failure')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp123-scientific-evidence
+          path: |
+            reports/exp123_final_report.*
+            models/monthly_lifecycle/experiments/exp123/ci/
+          if-no-files-found: error
