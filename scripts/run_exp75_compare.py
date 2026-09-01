@@ -1,12 +1,13 @@
 """Run Experiment 75 against fresh production baselines for required windows."""
 import json
 import math
+import os
 from pathlib import Path
 
 from backend.app.ml.experiments import adapter_exp75
 from backend.app.ml.experiments.batch_compare import run_batch_comparison
 
-WINDOWS = ((2001, 2019), (2001, 2021))
+DEFAULT_WINDOWS = ((2001, 2019), (2001, 2021))
 REQUIRED = (
     "production_cost_mae",
     "experiment_cost_mae",
@@ -16,6 +17,20 @@ REQUIRED = (
     "delay_improvement_percentage",
     "verdict",
 )
+
+
+def _selected_windows():
+    raw = os.environ.get("EXPERIMENT_WINDOW", "").strip()
+    if not raw:
+        return DEFAULT_WINDOWS
+    normalized = raw.replace("_", "-")
+    parts = normalized.split("-")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid EXPERIMENT_WINDOW={raw!r}; expected 2001-2019 or 2001-2021")
+    window = (int(parts[0]), int(parts[1]))
+    if window not in DEFAULT_WINDOWS:
+        raise ValueError(f"Unsupported experiment window: {window}")
+    return (window,)
 
 
 def _safe(value):
@@ -38,7 +53,7 @@ def main():
     out = Path("audit_outputs/exp75")
     out.mkdir(parents=True, exist_ok=True)
     results = {}
-    for start, end in WINDOWS:
+    for start, end in _selected_windows():
         key = f"{start}_{end}"
         payload = run_batch_comparison(adapter_exp75, start, end)
         overall = payload.get("overall_comparison") or {}

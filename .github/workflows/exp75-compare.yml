@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'backend/app/ml/experiments/cost_residual_challenger_common.py'
+      - 'backend/app/ml/experiments/cost_residual_challenger_compat.py'
       - 'backend/app/ml/experiments/adapter_exp75.py'
       - 'scripts/run_exp75_compare.py'
       - 'tests/test_exp75_contract.py'
@@ -10,6 +11,11 @@ on:
   workflow_dispatch:
 jobs:
   compare:
+    name: compare (${{ matrix.window }})
+    strategy:
+      fail-fast: false
+      matrix:
+        window: ['2001-2019', '2001-2021']
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -25,13 +31,15 @@ jobs:
       - name: Focused Experiment 75 tests
         env: {PYTHONPATH: .}
         run: pytest -q tests/test_exp75_contract.py
-      - name: Compare production and Experiment 75 on 2001-2019 and 2001-2021
-        env: {PYTHONPATH: .}
+      - name: Compare production and Experiment 75 on ${{ matrix.window }}
+        env:
+          PYTHONPATH: .
+          EXPERIMENT_WINDOW: ${{ matrix.window }}
         run: python scripts/run_exp75_compare.py
       - name: Upload Experiment 75 evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: experiment-exp75-results
+          name: experiment-exp75-results-${{ matrix.window }}
           path: audit_outputs/exp75/
           if-no-files-found: error
