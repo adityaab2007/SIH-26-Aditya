@@ -13,6 +13,11 @@ on:
 
 jobs:
   compare:
+    name: compare (${{ matrix.window }})
+    strategy:
+      fail-fast: false
+      matrix:
+        window: ['2001-2019', '2001-2021']
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -25,14 +30,15 @@ jobs:
         run: pip install -r requirements-dev.txt
       - name: Validate sources
         run: python -m compileall -q backend scripts tests
-      - name: Run 2001-2019 and 2001-2021 production-vs-experiment comparison
+      - name: Run ${{ matrix.window }} production-vs-experiment comparison
         env:
           PYTHONPATH: .
+          EXPERIMENT_WINDOW: ${{ matrix.window }}
         run: python scripts/run_exp13_compare.py
       - name: Upload Experiment 13 evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: experiment-exp13-results
+          name: experiment-exp13-results-${{ matrix.window }}
           path: audit_outputs/exp13/
           if-no-files-found: error

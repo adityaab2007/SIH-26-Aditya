@@ -1,14 +1,15 @@
-"""Run Experiment 13 against fresh production baselines for both required windows."""
+"""Run Experiment 13 against fresh production baselines for required windows."""
 from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 
 from backend.app.ml.experiments import adapter_exp13
 from backend.app.ml.experiments.batch_compare import run_batch_comparison
 
-WINDOWS = ((2001, 2019), (2001, 2021))
+DEFAULT_WINDOWS = ((2001, 2019), (2001, 2021))
 REQUIRED_METRICS = (
     "production_cost_mae",
     "experiment_cost_mae",
@@ -18,6 +19,20 @@ REQUIRED_METRICS = (
     "delay_improvement_percentage",
     "verdict",
 )
+
+
+def _selected_windows():
+    raw = os.environ.get("EXPERIMENT_WINDOW", "").strip()
+    if not raw:
+        return DEFAULT_WINDOWS
+    normalized = raw.replace("_", "-")
+    parts = normalized.split("-")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid EXPERIMENT_WINDOW={raw!r}; expected 2001-2019 or 2001-2021")
+    window = (int(parts[0]), int(parts[1]))
+    if window not in DEFAULT_WINDOWS:
+        raise ValueError(f"Unsupported experiment window: {window}")
+    return (window,)
 
 
 def _safe(value):
@@ -49,7 +64,7 @@ def main() -> None:
     output.mkdir(parents=True, exist_ok=True)
     results = {}
 
-    for start, end in WINDOWS:
+    for start, end in _selected_windows():
         window = f"{start}_{end}"
         result = run_batch_comparison(adapter_exp13, start, end)
         payload = _safe({
@@ -86,7 +101,7 @@ def main() -> None:
         "promotion_allowed": False,
     })
     (output / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
-    print(f"OVERALL VERDICT: {overall_verdict}")
+    print(f"WINDOW VERDICT: {overall_verdict}")
 
 
 if __name__ == "__main__":
