@@ -19,10 +19,12 @@ import pandas as pd
 
 from backend.app.ml.experiments.evaluator import paired_project_mae_comparison
 from backend.app.ml.experiments.framework import build_experiment_context, experiment_run_directory, new_experiment_manifest
+from backend.app.ml.experiments.nextgen_common import _compare as production_comparison_cohort
+from backend.app.ml.experiments.nextgen_common import _prepare as prepare_current_production_frame
 from backend.app.ml.experiments.registry import record_experiment
 from backend.app.ml.monthly_lifecycle import assign_project_balanced_weights
 from backend.app.ml.monthly_training import _fit_pipeline, _regression_metrics, _regressors, temporal_project_split
-from backend.app.ml.production_cost_baseline import enrich_supervised_for_production, target_feature_contract
+from backend.app.ml.production_cost_baseline import target_feature_contract
 
 EXPERIMENT_ID = "exp_13"
 EXPERIMENT_SEQUENCE = 13
@@ -155,7 +157,9 @@ def _window_verdict(cost_improvement: float | None, delay_improvement: float | N
 
 
 def fit_against_production(*, data, training_start, training_end, test_end, production_bundle, production_receipt, history=None):
-    frozen = enrich_supervised_for_production(data.copy()); frozen["completion_year"] = pd.to_numeric(frozen.completion_year, errors="coerce"); frozen["snapshot_date"] = pd.to_datetime(frozen.snapshot_date, errors="coerce")
+    # Use the exact current-production enrichment chain (including Exp34 causal
+    # path features) instead of the older base-only supervised preparation.
+    frozen = prepare_current_production_frame(data)
     base_train, base_test = temporal_project_split(frozen, int(training_start), int(training_end), int(test_end))
     contract = {k: list(v or production_receipt.get("features_used") or []) for k, v in target_feature_contract(production_bundle.get("metadata") or {}).items()}
     if any(not features for features in contract.values()): raise ValueError("Production target feature contract is unavailable.")
@@ -164,7 +168,10 @@ def fit_against_production(*, data, training_start, training_end, test_end, prod
     cost_half_life, cost_validation = _candidate_validation(base_train, contract["cost"], "actual_cost_overrun_percentage", cost_algorithm, RANDOM_SEEDS["cost"])
     cost_model = _fit_weighted(base_train, contract["cost"], "actual_cost_overrun_percentage", cost_algorithm, int(training_end), cost_half_life, RANDOM_SEEDS["cost"])
 
-    test = assign_project_balanced_weights(base_test)
+    # Reuse the canonical current-production comparison cohort. This applies the
+    # production Cost cohort filter, deterministic Exp35 calibration gate, and
+    # project-balanced test weights before invoking the Exp61 Delay wrapper.
+    test = production_comparison_cohort(base_test)
     test["production_cost"] = np.asarray(production_bundle["cost"].predict(_X(test, contract["cost"])), dtype=float)
     test["experiment_cost"] = np.asarray(cost_model.predict(_X(test, contract["cost"])), dtype=float)
     test["production_delay"] = np.maximum(0.0, np.asarray(production_bundle["delay"].predict(_X(test, contract["delay"])), dtype=float))
@@ -180,9 +187,9 @@ def fit_against_production(*, data, training_start, training_end, test_end, prod
     overall = {"production_cost_mae": production_cost["MAE"], "experiment_cost_mae": experiment_cost["MAE"], "absolute_cost_improvement_pp": round(production_cost["MAE"]-experiment_cost["MAE"],4), "cost_improvement_percentage": round(cost_improvement,4) if cost_improvement is not None else None, "production_delay_mae": production_delay["MAE"], "experiment_delay_mae": experiment_delay["MAE"], "absolute_delay_improvement_days": round(production_delay["MAE"]-experiment_delay["MAE"],4), "delay_improvement_percentage": round(delay_improvement,4) if delay_improvement is not None else None, "comparison_test_projects": int(test.canonical_project_id.nunique()), "comparison_test_snapshots": int(len(test)), "paired_project_cost_comparison": paired_cost, "paired_project_delay_comparison": paired_delay, "selected_cost_half_life": cost_half_life, "selected_delay_half_life": None, "candidate_internal_validation": {"cost": cost_validation, "delay": [{"mode":"production_control","reason":"current production Delay is a compound Exp61 wrapper"}]}, "age_weight_diagnostics": {"cost": _weight_diagnostics(base_train, int(training_end), cost_half_life), "delay": {"selected_half_life": None, "mode":"production_control"}}, "delay_predictions_identical_to_production": bool(np.array_equal(test["production_delay"].to_numpy(), test["experiment_delay"].to_numpy())), "verdict": _window_verdict(cost_improvement, delay_improvement)}
 
     all_features = list(dict.fromkeys(contract["cost"] + contract["delay"] + contract["risk"]))
-    context = build_experiment_context(experiment_id=EXPERIMENT_ID, full_data=frozen, train=base_train, test=base_test, features=all_features, training_start=training_start, training_end=training_end, testing_end=test_end, weighting_policy="Cost: normalized project-level exponential recency influence; Delay: exact production control")
+    context = build_experiment_context(experiment_id=EXPERIMENT_ID, full_data=frozen, train=base_train, test=test, features=all_features, training_start=training_start, training_end=training_end, testing_end=test_end, weighting_policy="Cost: normalized project-level exponential recency influence; Delay: exact production control")
     manifest = new_experiment_manifest(context=context, name=EXPERIMENT_NAME, changed_dimension="weighting", hypothesis="More recent completed projects may better represent future Cost relationships while current compound production Delay remains fixed as a control.")
-    manifest.update({"scope":EXPERIMENT_SCOPE,"production_run_id":production_receipt.get("run_id"),"selected_algorithms":{"cost":cost_algorithm,"delay":"production_control"},"candidate_half_lives":list(CANDIDATE_HALF_LIVES),"selected_half_lives":{"cost":cost_half_life,"delay":None},"candidate_internal_validation":overall["candidate_internal_validation"],"random_seeds":RANDOM_SEEDS,"delay_mode":"production_control_current_compound_wrapper","leakage_policy":"Cost weights use only training completion year and cutoff; Delay is copied from fresh production; future holdout never influences selection.","evaluation_weighting_policy":"Production and experiment use identical project-balanced test weights."})
+    manifest.update({"scope":EXPERIMENT_SCOPE,"production_run_id":production_receipt.get("run_id"),"selected_algorithms":{"cost":cost_algorithm,"delay":"production_control"},"candidate_half_lives":list(CANDIDATE_HALF_LIVES),"selected_half_lives":{"cost":cost_half_life,"delay":None},"candidate_internal_validation":overall["candidate_internal_validation"],"random_seeds":RANDOM_SEEDS,"delay_mode":"production_control_current_compound_wrapper","leakage_policy":"Cost weights use only training completion year and cutoff; Delay is copied from fresh production; future holdout never influences selection.","evaluation_weighting_policy":"Production and experiment use identical project-balanced test weights on the canonical current-production comparison cohort."})
     run_dir = experiment_run_directory(EXPERIMENT_ID, context.window, manifest["run_id"]); run_dir.mkdir(parents=True, exist_ok=False)
     joblib.dump(cost_model, run_dir / "cost_model.pkl"); (run_dir / "manifest.json").write_text(json.dumps(_json_safe(manifest), indent=2, allow_nan=False)+"\n"); (run_dir / "evaluation_results.json").write_text(json.dumps(_json_safe(overall), indent=2, allow_nan=False)+"\n")
     record_experiment({"experiment_id":EXPERIMENT_ID,"name":EXPERIMENT_NAME,"run_id":manifest["run_id"],"status":"COMPLETED","decision":"PENDING","model_role":"experiment","promotion_allowed":False,"scope":EXPERIMENT_SCOPE,"window":context.window,"created_at":manifest["created_at"],"production_run_id":production_receipt.get("run_id"),"cost_improvement_percentage":overall["cost_improvement_percentage"],"delay_improvement_percentage":overall["delay_improvement_percentage"],"verdict":overall["verdict"]})
