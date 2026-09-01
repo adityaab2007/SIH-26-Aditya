@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "experiment": "exp120",
+  "source_institution": "Office of the Economic Adviser, DPIIT, Government of India",
+  "official_index_page": "https://eaindustry.nic.in/download_data_1112.asp",
+  "monthly_file_url_template": "https://eaindustry.nic.in/indx_download_1112/monthly_index_YYYYMM.xls",
+  "linking_factor_2004_05_to_2011_12": "https://eaindustry.nic.in/linking_factor1112.asp",
+  "linking_factor_2011_12_to_2022_23": "https://eaindustry.nic.in/linking_factor2223.asp",
+  "retrieved_date": "2026-09-01",
+  "base_series": "2011-12=100",
+  "cleaned_file": "wpi_monthly.csv",
+  "cleaned_file_committed": false,
+  "required_cleaned_columns": [
+    "date",
+    "all_commodities",
+    "manufactured_products",
+    "fuel_power",
+    "steel",
+    "cement"
+  ],
+  "official_major_group_linking_factors": {
+    "all_commodities_2004_05_to_2011_12": 1.561,
+    "fuel_power_2004_05_to_2011_12": 1.690,
+    "manufactured_products_2004_05_to_2011_12": 1.395
+  },
+  "transformations": [
+    "Only official OEA observations are permitted.",
+    "Monthly index levels are converted to causal trailing growth/volatility features at model time.",
+    "No index observation dated after the PAIMANA snapshot may be joined.",
+    "Incompatible base-year index levels must not be concatenated without an official linking factor.",
+    "No lower-level steel or cement linking factor is invented when an official factor is unavailable."
+  ],
+  "known_limitations": [
+    "The repository intentionally does not commit a hand-transcribed WPI table.",
+    "The experiment remains INS UFFICIENT VERIFIED EXTERNAL DATA until prepare_exp120_wpi.py is run against official OEA files and a reviewed compact wpi_monthly.csv is supplied.",
+    "OEA monthly files may be revised; checksums should be recorded by the preparation script for the exact retrieved files."
+  ]
+}
