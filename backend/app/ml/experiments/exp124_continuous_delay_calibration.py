@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 import tempfile
 
@@ -19,6 +20,7 @@ from sklearn.linear_model import QuantileRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import SplineTransformer, StandardScaler
 
+from backend.app.ml import production_exp35_baseline as exp35_production
 from backend.app.ml.monthly_lifecycle import build_training_dataset
 from backend.app.ml.experiments.prediction_ledger import build_prediction_ledger, write_prediction_ledger
 from backend.app.ml.experiments.scientific_challenger_utils import (
@@ -31,6 +33,7 @@ ROOT = Path(__file__).resolve().parents[4]
 EXP_ID = "exp124"
 BASE_INPUTS = ["duration_ratio", "elapsed_duration_days", "planned_duration_days", "physical_progress", "progress_deviation", "schedule_slippage_days"]
 SCALES = (0.0, 0.25, 0.50, 0.75, 1.0)
+_AFT_CAPACITY_ERROR = re.compile(r"^Only (\d+) projects have AFT evidence; cannot form the requested (\d+)-project calibration cohort\.$")
 
 
 def _design(frame: pd.DataFrame) -> pd.DataFrame:
@@ -101,6 +104,62 @@ def _binned_diagnostics(frame: pd.DataFrame, baseline, challenger) -> dict:
     return out
 
 
+def _rolling_oof_with_adaptive_aft_gate(
+    data: pd.DataFrame,
+    identity: pd.DataFrame,
+    *,
+    training_start: int,
+    training_end: int,
+    root: Path,
+) -> pd.DataFrame:
+    """Run strict forward OOF while adapting only the Exp35 audit gate to fold capacity.
+
+    The fixed 688-project AFT calibration cohort is valid for the verified
+    production holdout, but early one-year OOF folds can contain fewer projects
+    with AFT evidence. For those folds only, use every available AFT-evidence
+    project (minimum 20). The production selector is restored immediately, so
+    final production evaluation and tracked artifacts remain unchanged.
+    """
+    original_selector = exp35_production._select_aft_calibration_projects
+    reductions: list[tuple[int, int]] = []
+
+    def adaptive_selector(frame: pd.DataFrame, limit: int = exp35_production.VERIFIED_AFT_CALIBRATION_PROJECTS):
+        try:
+            return original_selector(frame, limit=limit)
+        except RuntimeError as exc:
+            match = _AFT_CAPACITY_ERROR.match(str(exc))
+            if not match:
+                raise
+            available = int(match.group(1))
+            requested = int(match.group(2))
+            if available < 20:
+                raise RuntimeError(
+                    f"Only {available} projects have AFT evidence in this forward OOF fold; "
+                    "Exp124 requires at least 20 for an experiment-local adaptive calibration gate."
+                ) from exc
+            reductions.append((requested, available))
+            return original_selector(frame, limit=available)
+
+    exp35_production._select_aft_calibration_projects = adaptive_selector
+    try:
+        oof = rolling_production_oof(
+            data,
+            identity,
+            training_start=training_start,
+            training_end=training_end,
+            root=root,
+        )
+    finally:
+        exp35_production._select_aft_calibration_projects = original_selector
+
+    if reductions:
+        print(
+            "EXP124_OOF_AFT_GATE_ADAPTATIONS="
+            + json.dumps([{"requested": req, "available": avail} for req, avail in reductions])
+        )
+    return oof
+
+
 def run(output_dir: Path) -> dict:
     print_base_contract(); before = production_hashes()
     data, identity = build_training_dataset(); data = data.copy(); data["snapshot_date"] = pd.to_datetime(data["snapshot_date"], errors="coerce")
@@ -109,7 +168,7 @@ def run(output_dir: Path) -> dict:
         with tempfile.TemporaryDirectory(prefix=f"exp124-{end}-") as td:
             td = Path(td)
             prod = fresh_production_window(data, identity, training_start=start, training_end=end, test_end=test_end, artifact_root=td / "baseline")
-            oof = attach_features(rolling_production_oof(data, identity, training_start=start, training_end=end, root=td / "oof"), data, BASE_INPUTS)
+            oof = attach_features(_rolling_oof_with_adaptive_aft_gate(data, identity, training_start=start, training_end=end, root=td / "oof"), data, BASE_INPUTS)
             score = attach_features(prod.comparable, data, BASE_INPUTS)
             candidate, model, calibration = fit_calibrator(oof, score); baseline = score["predicted_delay_days"].to_numpy(float)
             assert_same_keys(prod.comparable, score)
