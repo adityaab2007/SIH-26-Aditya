@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 from collections import Counter
 from pathlib import Path
 import tempfile
@@ -12,6 +13,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from backend.app.ml import production_exp35_baseline as exp35_production
 from backend.app.ml.monthly_lifecycle import build_training_dataset
 from backend.app.ml.experiments.prediction_ledger import build_prediction_ledger, write_prediction_ledger
 from backend.app.ml.experiments.scientific_challenger_utils import (
@@ -27,6 +29,7 @@ DETERIORATION = {"C+", "S+", "P0", "E-", "R0"}
 RECOVERY = {"C-", "S-", "P+", "E+"}
 RAW = ["revised_cost_cr", "cost_escalation_percentage", "schedule_slippage_days", "physical_progress", "expenditure_ratio"]
 BASE_SEQ_FEATURES = ["exp123_deterioration_streak", "exp123_recovery_streak", "exp123_event_entropy", "exp123_transition_entropy", "exp123_event_count_6", "exp123_months_since_deterioration"] + [f"exp123_latest_{token.replace('+','up').replace('-','down')}" for token in ["C+","C-","S+","S-","P0","P+","E-","E+","R0"]]
+_AFT_CAPACITY_ERROR = re.compile(r"^Only (\d+) projects have AFT evidence; cannot form the requested (\d+)-project calibration cohort\.$")
 
 
 def _q(values: pd.Series, q: float, floor: float) -> float:
@@ -99,17 +102,77 @@ def add_motif_features(frame: pd.DataFrame, motifs: list[str], prefix: str):
     return out,features
 
 
+def _rolling_oof_with_adaptive_aft_gate(
+    data: pd.DataFrame,
+    identity: pd.DataFrame,
+    *,
+    training_start: int,
+    training_end: int,
+    root: Path,
+) -> pd.DataFrame:
+    """Run strict forward OOF while adapting only the audit gate to fold capacity.
+
+    Exp35's fixed 688-project AFT gate is an audit contract for the verified
+    production holdout. Early one-year OOF folds can contain fewer than 688
+    AFT-evidence projects. For those folds only, use every available AFT-evidence
+    project (minimum 20) so the same production architecture can be evaluated
+    without consulting future folds or outcomes. The selector is restored
+    immediately, so the final production baseline remains untouched.
+    """
+    original_selector = exp35_production._select_aft_calibration_projects
+    reductions: list[tuple[int, int]] = []
+
+    def adaptive_selector(frame: pd.DataFrame, limit: int = exp35_production.VERIFIED_AFT_CALIBRATION_PROJECTS):
+        try:
+            return original_selector(frame, limit=limit)
+        except RuntimeError as exc:
+            match = _AFT_CAPACITY_ERROR.match(str(exc))
+            if not match:
+                raise
+            available = int(match.group(1))
+            requested = int(match.group(2))
+            if available < 20:
+                raise RuntimeError(
+                    f"Only {available} projects have AFT evidence in this forward OOF fold; "
+                    "Exp123 requires at least 20 for an experiment-local adaptive calibration gate."
+                ) from exc
+            reductions.append((requested, available))
+            return original_selector(frame, limit=available)
+
+    exp35_production._select_aft_calibration_projects = adaptive_selector
+    try:
+        oof = rolling_production_oof(
+            data,
+            identity,
+            training_start=training_start,
+            training_end=training_end,
+            root=root,
+        )
+    finally:
+        exp35_production._select_aft_calibration_projects = original_selector
+
+    if reductions:
+        print(
+            "EXP123_OOF_AFT_GATE_ADAPTATIONS="
+            + json.dumps([{"requested": req, "available": avail} for req, avail in reductions])
+        )
+    return oof
+
+
 def _target_result(score,baseline,candidate,actual,end):
     b=weighted_mae(score,actual,baseline); c=weighted_mae(score,actual,candidate)
     return {"base_mae":b,"experiment_mae":c,"improvement_pct":(b-c)/b*100.0 if b else 0.0,"bootstrap":paired_project_bootstrap(score,actual=actual,baseline=baseline,challenger=candidate,samples=5000,seed=12300+end+(1 if actual.endswith('days') else 0)),"lifecycle":lifecycle_metrics(score,actual=actual,baseline=baseline,challenger=candidate)}
 
 
-def run(output_dir: Path) -> dict:
+def run(output_dir: Path, training_end: int | None = None) -> dict:
     print_base_contract(); before=production_hashes(); data,identity=build_training_dataset(); data=data.copy(); data["snapshot_date"]=pd.to_datetime(data["snapshot_date"],errors="coerce"); windows=[]
-    for start,end,test_end in WINDOWS:
+    selected_windows=[w for w in WINDOWS if training_end is None or w[1] == training_end]
+    if not selected_windows:
+        raise ValueError(f"Unsupported Exp123 training_end={training_end}; expected one of {[w[1] for w in WINDOWS]}")
+    for start,end,test_end in selected_windows:
         thresholds=learn_event_thresholds(data,end); seq=build_sequence_features(data,thresholds)
         with tempfile.TemporaryDirectory(prefix=f"exp123-{end}-") as td:
-            td=Path(td); prod=fresh_production_window(data,identity,training_start=start,training_end=end,test_end=test_end,artifact_root=td/"baseline"); oof=rolling_production_oof(data,identity,training_start=start,training_end=end,root=td/"oof")
+            td=Path(td); prod=fresh_production_window(data,identity,training_start=start,training_end=end,test_end=test_end,artifact_root=td/"baseline"); oof=_rolling_oof_with_adaptive_aft_gate(data,identity,training_start=start,training_end=end,root=td/"oof")
             cols=BASE_SEQ_FEATURES+["exp123_latest_motif2","exp123_latest_motif3","exp123_sequence_tail","exp123_available"]
             oof=attach_features(oof,seq,cols); score=attach_features(prod.comparable,seq,cols); assert_same_keys(prod.comparable,score)
             cost_motifs=select_motifs(oof,"actual_cost_overrun_percentage","predicted_cost_overrun"); delay_motifs=select_motifs(oof,"actual_delay_days","predicted_delay_days")
@@ -130,6 +193,10 @@ def run(output_dir: Path) -> dict:
 
 
 def main():
-    p=argparse.ArgumentParser(); p.add_argument("--output-dir",default="models/monthly_lifecycle/experiments/exp123/ci"); a=p.parse_args(); run(ROOT/a.output_dir)
+    p=argparse.ArgumentParser()
+    p.add_argument("--output-dir",default="models/monthly_lifecycle/experiments/exp123/ci")
+    p.add_argument("--training-end",type=int,choices=[2019,2021],default=None)
+    a=p.parse_args()
+    run(ROOT/a.output_dir, training_end=a.training_end)
 
 if __name__=="__main__": main()
