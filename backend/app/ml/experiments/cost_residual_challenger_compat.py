@@ -5,6 +5,13 @@ matrices are handed to persisted production wrappers: production inference uses
 DataFrame.reindex(columns=...) so wrapper-owned engineered features may be
 absent from the raw frozen frame without raising KeyError. Delay remains an
 exact production control for these Cost-only challengers.
+
+Pandas nullable dtypes can carry the pd.NA singleton into sklearn imputers,
+where equality-based missing-value checks raise ``TypeError: boolean value of
+NA is ambiguous``. Experiment-side model feature matrices are therefore
+normalized from pd.NA to ordinary np.nan before fitting or prediction. This is
+only a representation fix; values, cohorts, weights, targets, temporal splits,
+and challenger policies are unchanged.
 """
 from __future__ import annotations
 
@@ -18,8 +25,21 @@ from backend.app.ml.experiments import cost_residual_challenger_common as legacy
 ChallengerConfig = legacy.ChallengerConfig
 
 
+def _normalize_feature_missing(frame: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+    """Convert only literal pd.NA values in model features to sklearn-safe np.nan."""
+    result = frame.copy()
+    for column in dict.fromkeys(features):
+        if column not in result.columns:
+            continue
+        series = result[column]
+        object_series = series.astype(object)
+        if object_series.map(lambda value: value is pd.NA).any():
+            result[column] = object_series.where(object_series.notna(), np.nan)
+    return result
+
+
 def _X(frame: pd.DataFrame, features: list[str]) -> pd.DataFrame:
-    return frame.reindex(columns=list(features))
+    return _normalize_feature_missing(frame.reindex(columns=list(features)), list(features))
 
 
 def fit_challenger(
@@ -45,6 +65,11 @@ def fit_challenger(
     if not cost_features or not delay_features:
         raise ValueError("Production target feature contract unavailable.")
     algorithm = legacy._algorithm(production_bundle, production_receipt)
+
+    # Keep experiment inputs identical while converting nullable pd.NA sentinels
+    # to the np.nan representation expected by sklearn's SimpleImputer.
+    train = _normalize_feature_missing(train, cost_features)
+    test = _normalize_feature_missing(test, list(dict.fromkeys(cost_features + delay_features)))
 
     production_cost = np.asarray(
         production_bundle["cost"].predict(_X(test, cost_features)), dtype=float
@@ -137,7 +162,7 @@ def fit_challenger(
         "cost_only_delay_predictions_identical": bool(
             np.array_equal(production_delay, experiment_delay)
         ),
-        "production_wrapper_feature_policy": "reindex_to_persisted_contract",
+        "production_wrapper_feature_policy": "reindex_to_persisted_contract_and_normalize_pd_na",
         "verdict": legacy._verdict(cost_imp, delay_imp),
     }
     experiment = {
