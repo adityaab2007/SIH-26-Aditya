@@ -1,0 +1,49 @@
+name: Exp124 continuous Delay calibration
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/exp124_continuous_delay_calibration.py'
+      - 'tests/test_exp124_continuous_delay_calibration.py'
+      - '.github/workflows/exp124-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  exp124:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and leakage tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/exp124_continuous_delay_calibration.py
+          PYTHONPATH=. pytest -q tests/test_exp124_continuous_delay_calibration.py
+      - name: Fresh production vs Exp124 on both future windows
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+        run: python -m backend.app.ml.experiments.exp124_continuous_delay_calibration --output-dir models/monthly_lifecycle/experiments/exp124/ci
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp124_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp124_final_report.json'))
+          print('EXECUTION VALID — ' + ('PROMOTION CANDIDATE' if p['verdict'] in {'STRONG PROMOTION CANDIDATE','PROMISING'} else 'DO NOT PROMOTE'))
+          for w in p['windows']:
+              print(w['window'], 'base_delay_mae=', w['base_mae'], 'exp124_delay_mae=', w['experiment_mae'], 'improvement_pct=', w['improvement_pct'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp124-scientific-evidence
+          path: |
+            reports/exp124_final_report.*
+            models/monthly_lifecycle/experiments/exp124/ci/
+          if-no-files-found: error
