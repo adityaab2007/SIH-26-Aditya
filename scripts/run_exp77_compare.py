@@ -1,11 +1,21 @@
+"""Run Experiment 77 against fresh production baselines for required windows."""
 import json
 import math
 from pathlib import Path
 
-from backend.app.services.lifecycle_model_comparison_service import retrain_and_compare
+from backend.app.ml.experiments import adapter_exp77
+from backend.app.ml.experiments.batch_compare import run_batch_comparison
 
 WINDOWS = ((2001, 2019), (2001, 2021))
-REQUIRED = ("production_cost_mae", "experiment_cost_mae", "cost_improvement_percentage", "production_delay_mae", "experiment_delay_mae", "delay_improvement_percentage", "verdict")
+REQUIRED = (
+    "production_cost_mae",
+    "experiment_cost_mae",
+    "cost_improvement_percentage",
+    "production_delay_mae",
+    "experiment_delay_mae",
+    "delay_improvement_percentage",
+    "verdict",
+)
 
 
 def _safe(value):
@@ -30,15 +40,22 @@ def main():
     results = {}
     for start, end in WINDOWS:
         key = f"{start}_{end}"
-        payload = retrain_and_compare(start, end, "exp_77")
+        payload = run_batch_comparison(adapter_exp77, start, end)
         overall = payload.get("overall_comparison") or {}
         missing = [k for k in REQUIRED if overall.get(k) is None]
         if missing:
             raise RuntimeError(f"{key} incomplete: {missing}")
-        (out / f"{key}.json").write_text(json.dumps(_safe(payload), indent=2, default=str, allow_nan=False) + "\n")
+        safe_payload = _safe(payload)
+        (out / f"{key}.json").write_text(json.dumps(safe_payload, indent=2, allow_nan=False) + "\n")
         results[key] = _safe(overall)
-        print(f"{key}: cost {overall['production_cost_mae']} -> {overall['experiment_cost_mae']} ({overall['cost_improvement_percentage']}%); delay {overall['production_delay_mae']} -> {overall['experiment_delay_mae']} ({overall['delay_improvement_percentage']}%); verdict={overall['verdict']}")
-    (out / "summary.json").write_text(json.dumps(_safe({"experiment_id": "exp_77", "windows": results, "promotion_allowed": False}), indent=2, allow_nan=False) + "\n")
+        print(
+            f"{key}: cost {overall['production_cost_mae']} -> {overall['experiment_cost_mae']} "
+            f"({overall['cost_improvement_percentage']}%); delay {overall['production_delay_mae']} -> "
+            f"{overall['experiment_delay_mae']} ({overall['delay_improvement_percentage']}%); "
+            f"verdict={overall['verdict']}"
+        )
+    summary = _safe({"experiment_id": "exp_77", "windows": results, "promotion_allowed": False})
+    (out / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
 
 
 if __name__ == "__main__":
