@@ -41,6 +41,22 @@ def _json_safe(value: Any):
     return value
 
 
+def _normalize_feature_missing(frame: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+    """Convert literal pd.NA values in model features to sklearn-safe np.nan."""
+    result = frame.copy()
+    for column in dict.fromkeys(features):
+        if column not in result.columns:
+            continue
+        object_series = result[column].astype(object)
+        if object_series.map(lambda value: value is pd.NA).any():
+            result[column] = object_series.where(object_series.notna(), np.nan)
+    return result
+
+
+def _X(frame: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+    return _normalize_feature_missing(frame.reindex(columns=list(features)), list(features))
+
+
 def _unwrap_pipeline(model):
     current = model; seen: set[int] = set()
     while not hasattr(current, "named_steps"):
@@ -104,6 +120,7 @@ recency_snapshot_weights = apply_project_recency_weights
 
 def _fit_weighted(train: pd.DataFrame, features: list[str], target: str, algorithm: str, end_year: int, half_life: int | None, seed: int):
     weighted, _ = apply_project_recency_weights(train, end_year, half_life)
+    weighted = _normalize_feature_missing(weighted, features)
     return _fit_pipeline(_regressors(seed)[algorithm], weighted, features, target)
 
 
@@ -114,7 +131,7 @@ def _candidate_validation(train: pd.DataFrame, features: list[str], target: str,
     validation = assign_project_balanced_weights(validation); scores = []
     for half_life in CANDIDATE_HALF_LIVES:
         model = _fit_weighted(fitting, features, target, algorithm, validation_year - 1, half_life, seed)
-        predicted = model.predict(validation.reindex(columns=features))
+        predicted = model.predict(_X(validation, features))
         metrics = _regression_metrics(validation[target], predicted, validation.sample_weight, validation.canonical_project_id)
         scores.append({"half_life": half_life, "cost_mae": metrics["MAE"], "RMSE": metrics["RMSE"], "validation_year": validation_year, "validation_projects": int(validation.canonical_project_id.nunique()), "validation_snapshots": int(len(validation))})
     winner = min(scores, key=lambda row: (row["cost_mae"], row["RMSE"], CANDIDATE_HALF_LIVES.index(row["half_life"])))
@@ -148,9 +165,9 @@ def fit_against_production(*, data, training_start, training_end, test_end, prod
     cost_model = _fit_weighted(base_train, contract["cost"], "actual_cost_overrun_percentage", cost_algorithm, int(training_end), cost_half_life, RANDOM_SEEDS["cost"])
 
     test = assign_project_balanced_weights(base_test)
-    test["production_cost"] = np.asarray(production_bundle["cost"].predict(test.reindex(columns=contract["cost"])), dtype=float)
-    test["experiment_cost"] = np.asarray(cost_model.predict(test.reindex(columns=contract["cost"])), dtype=float)
-    test["production_delay"] = np.maximum(0.0, np.asarray(production_bundle["delay"].predict(test.reindex(columns=contract["delay"])), dtype=float))
+    test["production_cost"] = np.asarray(production_bundle["cost"].predict(_X(test, contract["cost"])), dtype=float)
+    test["experiment_cost"] = np.asarray(cost_model.predict(_X(test, contract["cost"])), dtype=float)
+    test["production_delay"] = np.maximum(0.0, np.asarray(production_bundle["delay"].predict(_X(test, contract["delay"])), dtype=float))
     test["experiment_delay"] = test["production_delay"].to_numpy(dtype=float).copy()
 
     production_cost = _metric(test, "actual_cost_overrun_percentage", "production_cost"); experiment_cost = _metric(test, "actual_cost_overrun_percentage", "experiment_cost")
@@ -186,5 +203,5 @@ def filter_comparable_rows(frame: pd.DataFrame, state: dict) -> pd.DataFrame:
 
 def predict_project(row: pd.Series, state: dict) -> dict:
     cost_features=state["features"]["cost"]; delay_features=state["features"]["delay"]; one=row.to_frame().T
-    cost=float(state["cost_model"].predict(one.reindex(columns=cost_features))[0]); delay=max(0.0,float(state["production_delay_model"].predict(one.reindex(columns=delay_features))[0]))
+    cost=float(state["cost_model"].predict(_X(one, cost_features))[0]); delay=max(0.0,float(state["production_delay_model"].predict(_X(one, delay_features))[0]))
     return {"predicted_cost_overrun":round(cost,4),"predicted_delay_days":round(delay,4),"selected_cost_half_life":state.get("selected_cost_half_life"),"selected_delay_half_life":None,"delay_mode":"production_control"}
