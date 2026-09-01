@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "experiment": "exp121",
+  "source_institution": "India Meteorological Department (IMD), Ministry of Earth Sciences, Government of India",
+  "official_catalog": "https://data.gov.in/catalog/rainfall-india",
+  "official_resource": "https://www.data.gov.in/resource/sub-divisional-monthly-rainfall-1901-2017",
+  "imd_current_subdivision_rainfall": "https://mausam.imd.gov.in/imd_latest/contents/index_rainfall_subdiv.php",
+  "retrieved_date": "2026-09-01",
+  "catalog_historical_coverage": "1901-2017",
+  "catalog_geographic_resolution": "meteorological subdivision",
+  "cleaned_file": "rainfall_monthly.csv",
+  "cleaned_file_committed": false,
+  "required_cleaned_columns": [
+    "period",
+    "geography_type",
+    "geography_name",
+    "rainfall_mm",
+    "normal_mm"
+  ],
+  "transformations": [
+    "The OGD annual wide table is converted to one monthly row per meteorological subdivision.",
+    "Only observations whose period is at or before the project snapshot are eligible.",
+    "A weather observation more than 45 days old is stale and does not count as available weather exposure.",
+    "Project geography is matched only from explicit district/state/subdivision fields; project names are never geocoded or guessed."
+  ],
+  "known_limitations": [
+    "The readily reproducible official OGD monthly subdivision resource ends in 2017 and therefore cannot by itself support 2020-2025 or 2022-2025 holdout weather exposure.",
+    "Current IMD rainfall pages are not silently scraped into historical training data because their versioned historical completeness has not been established here.",
+    "Until a reviewed official post-2017 monthly bundle is prepared, Exp121 must report INSUFFICIENT VERIFIED EXTERNAL DATA and retain exact U1 Delay predictions."
+  ]
+}
