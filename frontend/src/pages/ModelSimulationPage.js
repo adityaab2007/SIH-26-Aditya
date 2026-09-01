@@ -57,7 +57,7 @@ function overallCard(overall, experiment) {
       <div><span>Stage-balanced challenger cost MAE</span><strong>${fixed(stage.experiment_cost_mae)} pp</strong></div>
       ${delayStage}
     </div>
-    <div class="notice compact"><strong>Isolation:</strong> the challenger remains an experiment and is never auto-promoted to production.${costOnly ? ' This challenger changes cost only; delay stays on the production model.' : ''}</div>
+    <div class="notice compact"><strong>Isolation:</strong> the challenger remains an experiment and is never auto-promoted to production.${costOnly ? ' Experiment 12 changes cost only; delay stays on the production model.' : ''}</div>
   </section>`;
 }
 
