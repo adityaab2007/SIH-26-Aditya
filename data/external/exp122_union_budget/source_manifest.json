@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "experiment": "exp122",
+  "source_institution": "Ministry of Finance, Government of India — Union Budget",
+  "source_family": "Union Budget Expenditure Profile / Demands for Grants",
+  "official_source_urls": [
+    "https://www.indiabudget.gov.in/",
+    "https://www.indiabudget.gov.in/budget2025-26/",
+    "https://www.indiabudget.gov.in/budget2025-26/doc/eb/vol1.pdf"
+  ],
+  "retrieved_date": "2026-09-01",
+  "expected_cleaned_file": "union_budget_ministry_year.csv",
+  "expected_mapping_file": "ministry_mapping.csv",
+  "parser_version": "exp122_reviewed_budget_extract_v1",
+  "time_granularity": "fiscal year",
+  "geographic_category_coverage": "Government of India ministries/departments",
+  "transformations": [
+    "retain Budget Estimate capital and total expenditure by ministry/department",
+    "record official publication date/vintage",
+    "derive year-on-year growth only within the same reviewed official ministry series",
+    "apply only deterministic reviewed ministry mappings with effective date ranges"
+  ],
+  "known_limitations": [
+    "Historical ministry/department structures and demand numbers change over time and require reviewed effective-dated mappings.",
+    "No budget observations are committed in this manifest itself.",
+    "The experiment must report INSUFFICIENT VERIFIED EXTERNAL DATA when reviewed historical tables/mappings are absent or too sparse.",
+    "No fuzzy ministry matching is allowed."
+  ],
+  "status": "provenance_manifest_only_no_observations_fabricated"
+}
