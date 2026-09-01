@@ -1,0 +1,53 @@
+name: Exp121 actual rainfall exposure
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/exp121_actual_rainfall_exposure.py'
+      - 'data/external/exp121_rainfall/**'
+      - 'scripts/prepare_exp121_rainfall.py'
+      - 'tests/test_exp121_actual_rainfall_exposure.py'
+      - '.github/workflows/exp121-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  exp121:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and leakage tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/exp121_actual_rainfall_exposure.py scripts/prepare_exp121_rainfall.py
+          PYTHONPATH=. pytest -q tests/test_exp121_actual_rainfall_exposure.py
+      - name: Fresh production vs Exp121 on both future windows
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+        run: python -m backend.app.ml.experiments.exp121_actual_rainfall_exposure --output-dir models/monthly_lifecycle/experiments/exp121/ci
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp121_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp121_final_report.json'))
+          print('EXP121_VERDICT=', p['verdict'])
+          print('EXTERNAL_SOURCE_STATUS=', p['source']['status'])
+          for w in p['windows']:
+              print(w['window'], 'base_delay_mae=', w['base_mae'], 'exp121_delay_mae=', w['experiment_mae'], 'improvement_pct=', w['improvement_pct'], 'coverage=', w['external_project_coverage'], 'status=', w['status'])
+          print('EXECUTION VALID — scientific regression or insufficient verified data is not a CI failure')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp121-scientific-evidence
+          path: |
+            reports/exp121_final_report.*
+            models/monthly_lifecycle/experiments/exp121/ci/
+          if-no-files-found: error
