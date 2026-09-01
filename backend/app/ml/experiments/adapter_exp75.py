@@ -1,7 +1,7 @@
 """Experiment 75: reliability-weighted revised-cost correction."""
 from __future__ import annotations
 
-from backend.app.ml.experiments.cost_residual_challenger_common import ChallengerConfig, fit_challenger, filter_rows, predict_row
+from backend.app.ml.experiments.cost_residual_challenger_compat import ChallengerConfig, fit_challenger, filter_rows, predict_row
 
 EXPERIMENT_ID = "exp_75"
 EXPERIMENT_SEQUENCE = 75
