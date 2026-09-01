@@ -1,0 +1,55 @@
+name: Exp122 ministry capital-budget pressure
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/exp122_ministry_budget_pressure.py'
+      - 'data/external/exp122_union_budget/**'
+      - 'scripts/prepare_exp122_union_budget.py'
+      - 'tests/test_exp122_ministry_budget_pressure.py'
+      - '.github/workflows/exp122-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  exp122:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and leakage tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/exp122_ministry_budget_pressure.py scripts/prepare_exp122_union_budget.py
+          PYTHONPATH=. pytest -q tests/test_exp122_ministry_budget_pressure.py
+      - name: Fresh production vs Exp122 on both future windows
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+        run: python -m backend.app.ml.experiments.exp122_ministry_budget_pressure --output-dir models/monthly_lifecycle/experiments/exp122/ci
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp122_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp122_final_report.json'))
+          print('EXP122_COST_VERDICT=', p['cost_verdict'])
+          print('EXP122_DELAY_VERDICT=', p['delay_verdict'])
+          print('EXTERNAL_SOURCE_STATUS=', p['source']['status'])
+          for c,d in zip(p['cost_windows'],p['delay_windows']):
+              print(c['window'], 'base_cost_mae=', c['base_mae'], 'exp122_cost_mae=', c['experiment_mae'], 'cost_improvement_pct=', c['improvement_pct'])
+              print(d['window'], 'base_delay_mae=', d['base_mae'], 'exp122_delay_mae=', d['experiment_mae'], 'delay_improvement_pct=', d['improvement_pct'])
+          print('EXECUTION VALID — scientific regression or insufficient verified data is not a CI failure')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp122-scientific-evidence
+          path: |
+            reports/exp122_final_report.*
+            models/monthly_lifecycle/experiments/exp122/ci/
+          if-no-files-found: error
