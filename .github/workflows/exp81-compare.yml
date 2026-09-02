@@ -13,12 +13,15 @@ jobs:
       - env: {PYTHONPATH: .}
         run: pytest -q tests/test_exp81_gold_linkage_validation.py
       - name: Record honest evidence
-        env: {WINDOW: '${{ matrix.window }}', BASE_SHA: '27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b'}
+        env:
+          WINDOW: '${{ matrix.window }}'
+          BASE_SHA: '27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b'
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           mkdir -p audit_outputs/exp81
           python - <<'PY'
-          import json,os,subprocess,pathlib
-          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); w=os.environ['WINDOW']
+          import json,os,pathlib
+          head=os.environ['HEAD_SHA']; w=os.environ['WINDOW']
           candidates=list(pathlib.Path('data').rglob('*gold*link*.csv')) if pathlib.Path('data').exists() else []
           e={'experiment_id':'exp_81','experiment_sequence':81,'window':w,'head_sha':head,'base_sha':os.environ['BASE_SHA'],'production_cost_mae':None,'experiment_cost_mae':None,'cost_improvement_percent':None,'production_delay_mae':None,'experiment_delay_mae':None,'delay_improvement_percent':None,'comparison_projects':0,'comparison_snapshots':0,'verdict':'INVALID / INCOMPLETE','reason':'No real manually audited gold linkage evidence was found; auto-generated labels are intentionally not treated as gold.','gold_candidates_found':[str(p) for p in candidates]}
           open(f'audit_outputs/exp81/{w}.json','w').write(json.dumps(e,indent=2))
