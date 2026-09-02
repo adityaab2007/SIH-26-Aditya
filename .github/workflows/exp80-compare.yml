@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'backend/app/ml/experiments/exp80_deterministic_linkage.py'
+      - 'backend/app/ml/experiments/exp80_scientific_runner.py'
       - 'tests/test_exp80_deterministic_linkage.py'
       - '.github/workflows/exp80-compare.yml'
   workflow_dispatch:
@@ -13,30 +14,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        window: ['2001-2019','2001-2021']
+        include:
+          - window: '2001-2019'
+            training_end: 2019
+          - window: '2001-2021'
+            training_end: 2021
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12', cache: pip}
       - run: pip install -r requirements-dev.txt
-      - name: Focused tests
+      - name: Focused linkage tests
         env: {PYTHONPATH: .}
         run: pytest -q tests/test_exp80_deterministic_linkage.py
-      - name: Write scientific evidence status
-        env:
-          WINDOW: ${{ matrix.window }}
-          BASE_SHA: 27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Fresh production vs expanded-linkage challenger
+        env: {PYTHONPATH: .}
         run: |
           mkdir -p audit_outputs/exp80
-          python - <<'PY'
-          import json,os
-          head=os.environ['HEAD_SHA']; w=os.environ['WINDOW']
-          evidence={'experiment_id':'exp_80','experiment_sequence':80,'window':w,'head_sha':head,'base_sha':os.environ['BASE_SHA'],'production_cost_mae':None,'experiment_cost_mae':None,'cost_improvement_percent':None,'production_delay_mae':None,'experiment_delay_mae':None,'delay_improvement_percent':None,'comparison_projects':0,'comparison_snapshots':0,'verdict':'INVALID / INCOMPLETE','reason':'Linkage implementation is validated, but current main has no experiment-local retraining adapter that can safely rebuild the training dataset with expanded links without modifying production behavior. Scientific MAE evidence is therefore not fabricated.'}
-          open(f'audit_outputs/exp80/{w}.json','w').write(json.dumps(evidence,indent=2))
-          PY
+          python -m backend.app.ml.experiments.exp80_scientific_runner \
+            --training-end ${{ matrix.training_end }} \
+            --output audit_outputs/exp80/${{ matrix.window }}.json
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
