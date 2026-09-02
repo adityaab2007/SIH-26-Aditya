@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import backend.app.ml.production_exp35_baseline as production_exp35_baseline
 from backend.app.ml.experiments.exp80_deterministic_linkage import resolve_links
 from backend.app.ml.monthly_lifecycle import (
     OUTCOMES,
@@ -169,6 +170,36 @@ def _expand_supervised_dataset() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     return eligible, expanded_identity, diagnostics_payload
 
 
+def _train_experiment_challenger(
+    training_start: int,
+    training_end: int,
+    test_end: int,
+    data: pd.DataFrame,
+    identity: pd.DataFrame,
+    artifact_root: Path,
+) -> None:
+    """Retrain the production architecture on Exp80 data without production-only promotion guards.
+
+    The fixed-window verification in production_exp35_baseline is intentionally a guard for
+    production promotion. Exp80 changes the training cohort by design, so applying that guard
+    to the challenger makes a valid experiment impossible. Baseline retraining still runs with
+    the production guard enabled; only this experiment-only challenger call bypasses it.
+    """
+    selected_window = production_exp35_baseline._selected_window
+    try:
+        production_exp35_baseline._selected_window = lambda *_args, **_kwargs: False
+        train_current_production(
+            training_start,
+            training_end,
+            test_end,
+            data=data,
+            identity=identity,
+            artifact_root=artifact_root,
+        )
+    finally:
+        production_exp35_baseline._selected_window = selected_window
+
+
 def run(training_end: int, output: Path) -> dict:
     training_start, test_end = 2001, 2025
     baseline_data, baseline_identity = build_training_dataset()
@@ -190,7 +221,7 @@ def run(training_end: int, output: Path) -> dict:
             identity=baseline_identity,
             artifact_root=baseline_root,
         )
-        train_current_production(
+        _train_experiment_challenger(
             training_start,
             training_end,
             test_end,
