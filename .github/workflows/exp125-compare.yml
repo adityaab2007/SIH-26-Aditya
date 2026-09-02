@@ -1,0 +1,72 @@
+name: Exp125 multi-scale trajectory derivatives
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/internal_signal_challengers.py'
+      - 'backend/app/ml/experiments/exp125_multiscale_trajectory.py'
+      - '.github/workflows/exp125-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  exp125:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: '2001_2019'
+            window: '2001,2019,2025'
+          - label: '2001_2021'
+            window: '2001,2021,2025'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and causal feature tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/internal_signal_challengers.py backend/app/ml/experiments/exp125_multiscale_trajectory.py
+          PYTHONPATH=. python -m backend.app.ml.experiments.exp125_multiscale_trajectory --self-test
+      - name: Fresh production vs Exp125 — ${{ matrix.label }}
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+          SIH_EXPERIMENT_WINDOW: '${{ matrix.window }}'
+          EXP_MODULE: 'backend.app.ml.experiments.exp125_multiscale_trajectory'
+          EXP_OUTPUT: 'models/monthly_lifecycle/experiments/exp125/ci'
+        run: |
+          python - <<'PY'
+          import os, runpy, sys
+          from backend.app.ml.experiments import internal_signal_challengers as harness
+          selected = tuple(int(x) for x in os.environ['SIH_EXPERIMENT_WINDOW'].split(','))
+          approved = [tuple(int(v) for v in window) for window in harness.WINDOWS]
+          if selected not in approved:
+              raise SystemExit(f'unapproved experiment window: {selected}; approved={approved}')
+          harness.WINDOWS = [selected]
+          sys.argv = [os.environ['EXP_MODULE'], '--output-dir', os.environ['EXP_OUTPUT']]
+          runpy.run_module(os.environ['EXP_MODULE'], run_name='__main__')
+          PY
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp125_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp125_final_report.json'))
+          print('COST:', p['cost_verdict']); print('DELAY:', p['delay_verdict'])
+          for w in p['windows']:
+              print(w['window'], 'cost', w['cost']['base_mae'], '->', w['cost']['experiment_mae'], w['cost']['improvement_pct'])
+              print(w['window'], 'delay', w['delay']['base_mae'], '->', w['delay']['experiment_mae'], w['delay']['improvement_pct'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp125-scientific-evidence-${{ matrix.label }}
+          path: |
+            reports/exp125_final_report.json
+            models/monthly_lifecycle/experiments/exp125/ci/
+          if-no-files-found: error
