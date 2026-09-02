@@ -1,0 +1,93 @@
+name: Exp124 continuous Delay calibration
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/scientific_challenger_utils.py'
+      - 'backend/app/ml/experiments/exp124_continuous_delay_calibration.py'
+      - 'tests/test_exp124_continuous_delay_calibration.py'
+      - '.github/workflows/exp124-compare.yml'
+  workflow_dispatch:
+
+jobs:
+  exp124:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Integrity and leakage tests
+        run: |
+          python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/exp124_continuous_delay_calibration.py
+          PYTHONPATH=. pytest -q tests/test_exp124_continuous_delay_calibration.py
+      - name: Fresh production vs Exp124 on both future windows
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+        run: |
+          python - <<'PY'
+          import re
+          from backend.app.ml import production_exp61_baseline as exp61_production
+          from backend.app.ml import production_u1_delay_baseline as u1_production
+          from backend.app.ml.experiments import nextgen_common
+          from backend.app.ml.experiments import exp124_continuous_delay_calibration as exp124
+
+          pattern = re.compile(r'^Only (\d+) projects have AFT evidence; cannot form the requested (\d+)-project calibration cohort\.$')
+          original_helper = exp124._rolling_oof_with_adaptive_aft_gate
+          original_selector = exp61_production._select_aft_calibration_projects
+          original_u1_selector = u1_production._select_aft_calibration_projects
+          original_nextgen_selector = nextgen_common._select_aft_calibration_projects
+
+          def helper(*args, **kwargs):
+              def selector(frame, limit=688):
+                  try:
+                      return original_selector(frame, limit=limit)
+                  except RuntimeError as exc:
+                      match = pattern.match(str(exc))
+                      if not match:
+                          raise
+                      available = int(match.group(1))
+                      if available < 20:
+                          raise
+                      return original_selector(frame, limit=available)
+              exp61_production._select_aft_calibration_projects = selector
+              u1_production._select_aft_calibration_projects = selector
+              nextgen_common._select_aft_calibration_projects = selector
+              try:
+                  return original_helper(*args, **kwargs)
+              finally:
+                  exp61_production._select_aft_calibration_projects = original_selector
+                  u1_production._select_aft_calibration_projects = original_u1_selector
+                  nextgen_common._select_aft_calibration_projects = original_nextgen_selector
+
+          exp124._rolling_oof_with_adaptive_aft_gate = helper
+          try:
+              exp124.run(exp124.ROOT / 'models/monthly_lifecycle/experiments/exp124/ci')
+          finally:
+              exp124._rolling_oof_with_adaptive_aft_gate = original_helper
+              exp61_production._select_aft_calibration_projects = original_selector
+              u1_production._select_aft_calibration_projects = original_u1_selector
+              nextgen_common._select_aft_calibration_projects = original_nextgen_selector
+          PY
+      - name: Scientific verdict
+        if: always()
+        run: |
+          test -f reports/exp124_final_report.json
+          python - <<'PY'
+          import json
+          p=json.load(open('reports/exp124_final_report.json'))
+          print('EXECUTION VALID — ' + ('PROMOTION CANDIDATE' if p['verdict'] in {'STRONG PROMOTION CANDIDATE','PROMISING'} else 'DO NOT PROMOTE'))
+          for w in p['windows']:
+              print(w['window'], 'base_delay_mae=', w['base_mae'], 'exp124_delay_mae=', w['experiment_mae'], 'improvement_pct=', w['improvement_pct'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp124-scientific-evidence
+          path: |
+            reports/exp124_final_report.*
+            models/monthly_lifecycle/experiments/exp124/ci/
+          if-no-files-found: error
