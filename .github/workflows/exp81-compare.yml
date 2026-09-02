@@ -24,7 +24,7 @@ jobs:
         env: {PYTHONPATH: .}
         run: |
           mkdir -p audit_outputs/exp81
-          python -m backend.app.ml.experiments.exp81_proxy_scientific_runner \
+          python -m backend.app.ml.experiments.exp81_proxy_scientific_runner_v2 \
             --training-end ${{ matrix.training_end }} \
             --output audit_outputs/exp81/${{ matrix.window }}.json
       - if: always()
