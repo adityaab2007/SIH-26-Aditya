@@ -7,6 +7,7 @@ import re
 
 from backend.app.ml import production_exp35_baseline as exp35_production
 from backend.app.ml import production_exp61_baseline as exp61_production
+from backend.app.ml import production_u1_delay_baseline as u1_production
 from backend.app.ml.experiments import internal_signal_challengers as harness, nextgen_common
 from backend.app.ml.experiments.internal_signal_challengers import ROOT, run_experiment, self_test
 
@@ -19,6 +20,7 @@ def _run_with_adaptive_forward_oof(output_dir) -> None:
     original_oof = harness.rolling_production_oof
     original_exp35_selector = exp35_production._select_aft_calibration_projects
     original_exp61_selector = exp61_production._select_aft_calibration_projects
+    original_u1_selector = u1_production._select_aft_calibration_projects
     original_nextgen_selector = nextgen_common._select_aft_calibration_projects
     reductions: list[tuple[int, int]] = []
 
@@ -37,12 +39,14 @@ def _run_with_adaptive_forward_oof(output_dir) -> None:
                 return original_exp35_selector(frame, limit=available)
         exp35_production._select_aft_calibration_projects = adaptive_selector
         exp61_production._select_aft_calibration_projects = adaptive_selector
+        u1_production._select_aft_calibration_projects = adaptive_selector
         nextgen_common._select_aft_calibration_projects = adaptive_selector
         try:
             return original_oof(*args, **kwargs)
         finally:
             exp35_production._select_aft_calibration_projects = original_exp35_selector
             exp61_production._select_aft_calibration_projects = original_exp61_selector
+            u1_production._select_aft_calibration_projects = original_u1_selector
             nextgen_common._select_aft_calibration_projects = original_nextgen_selector
 
     harness.rolling_production_oof = adaptive_oof
@@ -52,6 +56,7 @@ def _run_with_adaptive_forward_oof(output_dir) -> None:
         harness.rolling_production_oof = original_oof
         exp35_production._select_aft_calibration_projects = original_exp35_selector
         exp61_production._select_aft_calibration_projects = original_exp61_selector
+        u1_production._select_aft_calibration_projects = original_u1_selector
         nextgen_common._select_aft_calibration_projects = original_nextgen_selector
     if reductions:
         print("EXP125_OOF_AFT_GATE_ADAPTATIONS=" + json.dumps([{"requested": r, "available": a} for r, a in reductions]))
