@@ -28,12 +28,12 @@ jobs:
         env:
           WINDOW: ${{ matrix.window }}
           BASE_SHA: 27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           mkdir -p audit_outputs/exp80
           python - <<'PY'
-          import json,os,subprocess
-          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-          w=os.environ['WINDOW']
+          import json,os
+          head=os.environ['HEAD_SHA']; w=os.environ['WINDOW']
           evidence={'experiment_id':'exp_80','experiment_sequence':80,'window':w,'head_sha':head,'base_sha':os.environ['BASE_SHA'],'production_cost_mae':None,'experiment_cost_mae':None,'cost_improvement_percent':None,'production_delay_mae':None,'experiment_delay_mae':None,'delay_improvement_percent':None,'comparison_projects':0,'comparison_snapshots':0,'verdict':'INVALID / INCOMPLETE','reason':'Linkage implementation is validated, but current main has no experiment-local retraining adapter that can safely rebuild the training dataset with expanded links without modifying production behavior. Scientific MAE evidence is therefore not fabricated.'}
           open(f'audit_outputs/exp80/{w}.json','w').write(json.dumps(evidence,indent=2))
           PY
