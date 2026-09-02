@@ -8,10 +8,17 @@ on:
       - 'backend/app/ml/experiments/exp132_causal_changepoints.py'
       - '.github/workflows/exp132-compare.yml'
   workflow_dispatch:
+
 jobs:
   exp132:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: '2001_2019', window: '2001,2019,2025'}
+          - {label: '2001_2021', window: '2001,2021,2025'}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,9 +28,20 @@ jobs:
         run: |
           python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/internal_signal_challengers.py backend/app/ml/experiments/exp132_causal_changepoints.py
           PYTHONPATH=. python -m backend.app.ml.experiments.exp132_causal_changepoints --self-test
-      - name: Fresh production vs Exp132 on both future windows
-        env: {PYTHONPATH: '${{ github.workspace }}'}
-        run: python -m backend.app.ml.experiments.exp132_causal_changepoints --output-dir models/monthly_lifecycle/experiments/exp132/ci
+      - name: Fresh production vs Exp132 — ${{ matrix.label }}
+        env:
+          PYTHONPATH: '${{ github.workspace }}'
+          SIH_EXPERIMENT_WINDOW: '${{ matrix.window }}'
+          EXP_MODULE: 'backend.app.ml.experiments.exp132_causal_changepoints'
+          EXP_OUTPUT: 'models/monthly_lifecycle/experiments/exp132/ci'
+        run: |
+          python - <<'PY'
+          import os,runpy,sys
+          from backend.app.ml.experiments import internal_signal_challengers as h
+          s=tuple(map(int,os.environ['SIH_EXPERIMENT_WINDOW'].split(','))); a=[tuple(map(int,w)) for w in h.WINDOWS]
+          if s not in a: raise SystemExit(f'unapproved experiment window: {s}; approved={a}')
+          h.WINDOWS=[s]; sys.argv=[os.environ['EXP_MODULE'],'--output-dir',os.environ['EXP_OUTPUT']]; runpy.run_module(os.environ['EXP_MODULE'],run_name='__main__')
+          PY
       - name: Scientific verdict
         if: always()
         run: |
@@ -38,7 +56,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: exp132-scientific-evidence
+          name: exp132-scientific-evidence-${{ matrix.label }}
           path: |
             reports/exp132_final_report.json
             models/monthly_lifecycle/experiments/exp132/ci/
