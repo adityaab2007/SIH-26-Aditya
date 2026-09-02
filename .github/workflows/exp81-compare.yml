@@ -1,0 +1,35 @@
+name: Experiment 81 gold linkage validation
+on: {pull_request: {branches: [main]}, workflow_dispatch: {}}
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - window: '2001-2019'
+            training_end: 2019
+          - window: '2001-2021'
+            training_end: 2021
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install -r requirements-dev.txt
+      - name: Gold-evidence integrity tests
+        env: {PYTHONPATH: .}
+        run: pytest -q tests/test_exp81_gold_linkage_validation.py
+      - name: Internal silver-proxy downstream comparison
+        env: {PYTHONPATH: .}
+        run: |
+          mkdir -p audit_outputs/exp81
+          python -m backend.app.ml.experiments.exp81_proxy_scientific_runner_v2 \
+            --training-end ${{ matrix.training_end }} \
+            --output audit_outputs/exp81/${{ matrix.window }}.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-exp81-${{ matrix.window }}-results
+          path: audit_outputs/exp81/${{ matrix.window }}.json
+          if-no-files-found: error
