@@ -1,0 +1,28 @@
+name: Experiment 81 gold linkage validation
+on: {pull_request: {branches: [main]}, workflow_dispatch: {}}
+jobs:
+  compare:
+    strategy: {fail-fast: false, matrix: {window: ['2001-2019','2001-2021']}}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install -r requirements-dev.txt
+      - env: {PYTHONPATH: .}
+        run: pytest -q tests/test_exp81_gold_linkage_validation.py
+      - name: Record honest evidence
+        env: {WINDOW: '${{ matrix.window }}', BASE_SHA: '27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b'}
+        run: |
+          mkdir -p audit_outputs/exp81
+          python - <<'PY'
+          import json,os,subprocess,pathlib
+          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); w=os.environ['WINDOW']
+          candidates=list(pathlib.Path('data').rglob('*gold*link*.csv')) if pathlib.Path('data').exists() else []
+          e={'experiment_id':'exp_81','experiment_sequence':81,'window':w,'head_sha':head,'base_sha':os.environ['BASE_SHA'],'production_cost_mae':None,'experiment_cost_mae':None,'cost_improvement_percent':None,'production_delay_mae':None,'experiment_delay_mae':None,'delay_improvement_percent':None,'comparison_projects':0,'comparison_snapshots':0,'verdict':'INVALID / INCOMPLETE','reason':'No real manually audited gold linkage evidence was found; auto-generated labels are intentionally not treated as gold.','gold_candidates_found':[str(p) for p in candidates]}
+          open(f'audit_outputs/exp81/{w}.json','w').write(json.dumps(e,indent=2))
+          PY
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: {name: 'experiment-exp81-${{ matrix.window }}-results', path: 'audit_outputs/exp81/${{ matrix.window }}.json', if-no-files-found: error}
