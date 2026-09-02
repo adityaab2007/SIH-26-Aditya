@@ -14,6 +14,9 @@ import numpy as np
 import pandas as pd
 
 from backend.app.ml import production_exp35_baseline as exp35_production
+from backend.app.ml import production_exp61_baseline as exp61_production
+from backend.app.ml import production_u1_delay_baseline as u1_production
+from backend.app.ml.experiments import nextgen_common
 from backend.app.ml.monthly_lifecycle import build_training_dataset
 from backend.app.ml.experiments.prediction_ledger import build_prediction_ledger, write_prediction_ledger
 from backend.app.ml.experiments.scientific_challenger_utils import (
@@ -102,61 +105,37 @@ def add_motif_features(frame: pd.DataFrame, motifs: list[str], prefix: str):
     return out,features
 
 
-def _rolling_oof_with_adaptive_aft_gate(
-    data: pd.DataFrame,
-    identity: pd.DataFrame,
-    *,
-    training_start: int,
-    training_end: int,
-    root: Path,
-) -> pd.DataFrame:
-    """Run strict forward OOF while adapting only the audit gate to fold capacity.
-
-    Exp35's fixed 688-project AFT gate is an audit contract for the verified
-    production holdout. Early one-year OOF folds can contain fewer than 688
-    AFT-evidence projects. For those folds only, use every available AFT-evidence
-    project (minimum 20) so the same production architecture can be evaluated
-    without consulting future folds or outcomes. The selector is restored
-    immediately, so the final production baseline remains untouched.
-    """
+def _rolling_oof_with_adaptive_aft_gate(data: pd.DataFrame, identity: pd.DataFrame, *, training_start: int, training_end: int, root: Path) -> pd.DataFrame:
+    """Run strict forward OOF while adapting only the audit gate to fold capacity."""
     original_selector = exp35_production._select_aft_calibration_projects
+    original_exp61_selector = exp61_production._select_aft_calibration_projects
+    original_u1_selector = u1_production._select_aft_calibration_projects
+    original_nextgen_selector = nextgen_common._select_aft_calibration_projects
     reductions: list[tuple[int, int]] = []
 
     def adaptive_selector(frame: pd.DataFrame, limit: int = exp35_production.VERIFIED_AFT_CALIBRATION_PROJECTS):
-        try:
-            return original_selector(frame, limit=limit)
+        try: return original_selector(frame, limit=limit)
         except RuntimeError as exc:
             match = _AFT_CAPACITY_ERROR.match(str(exc))
-            if not match:
-                raise
-            available = int(match.group(1))
-            requested = int(match.group(2))
+            if not match: raise
+            available = int(match.group(1)); requested = int(match.group(2))
             if available < 20:
-                raise RuntimeError(
-                    f"Only {available} projects have AFT evidence in this forward OOF fold; "
-                    "Exp123 requires at least 20 for an experiment-local adaptive calibration gate."
-                ) from exc
-            reductions.append((requested, available))
-            return original_selector(frame, limit=available)
+                raise RuntimeError(f"Only {available} projects have AFT evidence in this forward OOF fold; Exp123 requires at least 20 for an experiment-local adaptive calibration gate.") from exc
+            reductions.append((requested, available)); return original_selector(frame, limit=available)
 
     exp35_production._select_aft_calibration_projects = adaptive_selector
+    exp61_production._select_aft_calibration_projects = adaptive_selector
+    u1_production._select_aft_calibration_projects = adaptive_selector
+    nextgen_common._select_aft_calibration_projects = adaptive_selector
     try:
-        oof = rolling_production_oof(
-            data,
-            identity,
-            training_start=training_start,
-            training_end=training_end,
-            root=root,
-        )
+        return rolling_production_oof(data, identity, training_start=training_start, training_end=training_end, root=root)
     finally:
         exp35_production._select_aft_calibration_projects = original_selector
-
-    if reductions:
-        print(
-            "EXP123_OOF_AFT_GATE_ADAPTATIONS="
-            + json.dumps([{"requested": req, "available": avail} for req, avail in reductions])
-        )
-    return oof
+        exp61_production._select_aft_calibration_projects = original_exp61_selector
+        u1_production._select_aft_calibration_projects = original_u1_selector
+        nextgen_common._select_aft_calibration_projects = original_nextgen_selector
+        if reductions:
+            print("EXP123_OOF_AFT_GATE_ADAPTATIONS=" + json.dumps([{"requested": req, "available": avail} for req, avail in reductions]))
 
 
 def _target_result(score,baseline,candidate,actual,end):
@@ -167,8 +146,7 @@ def _target_result(score,baseline,candidate,actual,end):
 def run(output_dir: Path, training_end: int | None = None) -> dict:
     print_base_contract(); before=production_hashes(); data,identity=build_training_dataset(); data=data.copy(); data["snapshot_date"]=pd.to_datetime(data["snapshot_date"],errors="coerce"); windows=[]
     selected_windows=[w for w in WINDOWS if training_end is None or w[1] == training_end]
-    if not selected_windows:
-        raise ValueError(f"Unsupported Exp123 training_end={training_end}; expected one of {[w[1] for w in WINDOWS]}")
+    if not selected_windows: raise ValueError(f"Unsupported Exp123 training_end={training_end}; expected one of {[w[1] for w in WINDOWS]}")
     for start,end,test_end in selected_windows:
         thresholds=learn_event_thresholds(data,end); seq=build_sequence_features(data,thresholds)
         with tempfile.TemporaryDirectory(prefix=f"exp123-{end}-") as td:
@@ -185,18 +163,15 @@ def run(output_dir: Path, training_end: int | None = None) -> dict:
             if delay_model is not None: joblib.dump(delay_model,ledger_dir/"delay_residual_model.pkl")
             windows.append({"window":window_name,"status":"EXECUTION VALID","projects":int(score.canonical_project_id.nunique()),"snapshots":int(len(score)),"base_feature_count":25,"thresholds":thresholds,"cost_motifs":cost_motifs,"delay_motifs":delay_motifs,"cost_feature_count":len(cost_features),"delay_feature_count":len(delay_features),"cost":cost_result|{"residual_correction":cost_diag},"delay":delay_result|{"residual_correction":delay_diag},"production_cost_baseline":prod.result["metadata"].get("production_cost_baseline"),"production_delay_baseline":prod.result["metadata"].get("production_delay_baseline")})
     if before!=production_hashes(): raise AssertionError("Exp123 modified tracked production artifacts")
-    cost_windows=[{"status":w["status"],"improvement_pct":w["cost"]["improvement_pct"],"bootstrap":w["cost"]["bootstrap"]} for w in windows]; delay_windows=[{"status":w["status"],"improvement_pct":w["delay"]["improvement_pct"],"bootstrap":w["delay"]["bootstrap"]} for w in windows]; cv=verdict_from_windows(cost_windows); dv=verdict_from_windows(delay_windows)
-    payload={"experiment":EXP_ID,"name":"Execution Event-Sequence Motifs","base_pipeline":"25-FEATURE MONTHLY LIFECYCLE","windows":windows,"cost_verdict":cv,"delay_verdict":dv,"production_artifacts_unchanged":True,"final_recommendation":{"cost":"KEEP" if cv in {"STRONG PROMOTION CANDIDATE","PROMISING"} else "REJECT","delay":"KEEP" if dv in {"STRONG PROMOTION CANDIDATE","PROMISING"} else "REJECT"}}
-    save_json(ROOT/"reports"/"exp123_final_report.json",payload); lines=["# Exp123 Final Report","",f"Cost verdict: **{cv}**  ",f"Delay verdict: **{dv}**","","## Results","","| Window | Base Cost | Exp Cost | Cost Δ% | Base Delay | Exp Delay | Delay Δ% |","|---|---:|---:|---:|---:|---:|---:|"]
+    cost_windows=[{"status":w["status"],"improvement_pct":w["cost"]["improvement_pct"],"bootstrap":w["cost"]["bootstrap"]} for w in windows]; delay_windows=[{"status":w["status"],"improvement_pct":w["delay"]["improvement_pct"],"bootstrap":w["delay"]["bootstrap"]} for w in windows]; cv=verdict_from_windows(cost_windows); dv=verdict_from_windows(delay_windows); verdict="PROMISING" if "PROMOTION" in {cv,dv} or "PROMISING" in {cv,dv} else "REJECT"
+    payload={"experiment":EXP_ID,"name":"Execution Event-Sequence Motifs","base_pipeline":"25-FEATURE MONTHLY LIFECYCLE","base_features":25,"windows":windows,"cost_verdict":cv,"delay_verdict":dv,"verdict":verdict,"production_artifacts_unchanged":True,"final_recommendation":"KEEP" if verdict=="PROMISING" else "REJECT"}; save_json(ROOT/"reports"/"exp123_final_report.json",payload)
+    lines=["# Exp123 Final Report","",f"Cost verdict: **{cv}**  ",f"Delay verdict: **{dv}**  ",f"Overall: **{verdict}**","","## 25-Feature Baseline","`BASE_FEATURE_COUNT = 25`","","## Results","","| Window | Cost base | Cost exp | Cost gain | Delay base | Delay exp | Delay gain |","|---|---:|---:|---:|---:|---:|---:|"]
     for w in windows: lines.append(f"| {w['window']} | {w['cost']['base_mae']:.6f} | {w['cost']['experiment_mae']:.6f} | {w['cost']['improvement_pct']:.4f}% | {w['delay']['base_mae']:.6f} | {w['delay']['experiment_mae']:.6f} | {w['delay']['improvement_pct']:.4f}% |")
-    lines += ["","Motif thresholds and ranking are learned from training/OOF evidence only. Appending future reports cannot rewrite earlier features. Production artifacts remain hash-identical."]; (ROOT/"reports"/"exp123_final_report.md").write_text("\n".join(lines)+"\n"); print(json.dumps(payload,indent=2,allow_nan=False)); return payload
+    lines += ["","## Production Safety","Tracked production artifact hashes remained unchanged.","","## Leakage Audit","Thresholds and motif selection use training/OOF history only; snapshot features are causal/as-of and future append invariance is tested."]
+    (ROOT/"reports"/"exp123_final_report.md").write_text("\n".join(lines)+"\n"); print(json.dumps(payload,indent=2,allow_nan=False)); return payload
 
 
 def main():
-    p=argparse.ArgumentParser()
-    p.add_argument("--output-dir",default="models/monthly_lifecycle/experiments/exp123/ci")
-    p.add_argument("--training-end",type=int,choices=[2019,2021],default=None)
-    a=p.parse_args()
-    run(ROOT/a.output_dir, training_end=a.training_end)
+    p=argparse.ArgumentParser(); p.add_argument("--output-dir",default="models/monthly_lifecycle/experiments/exp123/ci"); p.add_argument("--training-end",type=int,choices=[2019,2021],default=None); a=p.parse_args(); run(ROOT/a.output_dir, training_end=a.training_end)
 
 if __name__=="__main__": main()
