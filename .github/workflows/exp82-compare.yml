@@ -13,14 +13,17 @@ jobs:
       - env: {PYTHONPATH: .}
         run: pytest -q tests/test_exp82_paimana_bottlenecks.py
       - name: Inspect actual PAIMANA snapshot schema and record evidence
-        env: {WINDOW: '${{ matrix.window }}', BASE_SHA: '27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b'}
+        env:
+          WINDOW: '${{ matrix.window }}'
+          BASE_SHA: '27bf096a906ff9565bc4cbc2ae16a7ac7d904c2b'
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           mkdir -p audit_outputs/exp82
           python - <<'PY'
-          import json,os,subprocess,pandas as pd
+          import json,os,pandas as pd
           from backend.app.ml.experiments.exp82_paimana_bottlenecks import discover_text_columns
           path='data/processed/paimana_monthly_snapshots.csv'; cols=list(pd.read_csv(path,nrows=0).columns); text=discover_text_columns(cols)
-          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); w=os.environ['WINDOW']
+          head=os.environ['HEAD_SHA']; w=os.environ['WINDOW']
           e={'experiment_id':'exp_82','experiment_sequence':82,'window':w,'head_sha':head,'base_sha':os.environ['BASE_SHA'],'production_cost_mae':None,'experiment_cost_mae':None,'cost_improvement_percent':0.0 if text else None,'production_delay_mae':None,'experiment_delay_mae':None,'delay_improvement_percent':None,'comparison_projects':0,'comparison_snapshots':0,'actual_text_columns':text,'verdict':'INVALID / INCOMPLETE','reason':'Actual PAIMANA snapshot schema was inspected. Scientific delay comparison is not run unless narrative columns exist and an experiment-local training adapter can add them without changing production.' if text else 'Actual PAIMANA snapshot schema contains no discoverable narrative/delay-reason columns; future-text features cannot be constructed from the tracked dataset.'}
           open(f'audit_outputs/exp82/{w}.json','w').write(json.dumps(e,indent=2))
           PY
