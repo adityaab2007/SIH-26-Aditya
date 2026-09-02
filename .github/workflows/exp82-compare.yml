@@ -23,9 +23,36 @@ jobs:
         env: {PYTHONPATH: .}
         run: |
           mkdir -p audit_outputs/exp82
-          python -m backend.app.ml.experiments.exp82_scientific_runner \
-            --training-end ${{ matrix.training_end }} \
-            --output audit_outputs/exp82/${{ matrix.window }}.json
+          python - <<'PY'
+          import runpy
+          import sys
+
+          import backend.app.ml.production_exp35_baseline as exp35
+
+          original_selector = exp35._select_aft_calibration_projects
+
+          def oof_safe_selector(frame, limit=exp35.VERIFIED_AFT_CALIBRATION_PROJECTS):
+              eligible = exp35.AFTResidualDelayModel._aft_eligible(frame)
+              available = int(
+                  frame.loc[eligible, "canonical_project_id"]
+                  .astype("string")
+                  .nunique()
+              )
+              return original_selector(frame, limit=min(int(limit), available))
+
+          exp35._select_aft_calibration_projects = oof_safe_selector
+          sys.argv = [
+              "backend.app.ml.experiments.exp82_scientific_runner",
+              "--training-end",
+              "${{ matrix.training_end }}",
+              "--output",
+              "audit_outputs/exp82/${{ matrix.window }}.json",
+          ]
+          runpy.run_module(
+              "backend.app.ml.experiments.exp82_scientific_runner",
+              run_name="__main__",
+          )
+          PY
       - if: always()
         uses: actions/upload-artifact@v4
         with:
