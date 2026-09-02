@@ -1,0 +1,45 @@
+name: Experiment 80 deterministic linkage
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/app/ml/experiments/exp80_deterministic_linkage.py'
+      - 'backend/app/ml/experiments/exp80_scientific_runner.py'
+      - 'tests/test_exp80_deterministic_linkage.py'
+      - '.github/workflows/exp80-compare.yml'
+  workflow_dispatch:
+jobs:
+  compare:
+    name: compare (${{ matrix.window }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - window: '2001-2019'
+            training_end: 2019
+          - window: '2001-2021'
+            training_end: 2021
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install -r requirements-dev.txt
+      - name: Focused linkage tests
+        env: {PYTHONPATH: .}
+        run: pytest -q tests/test_exp80_deterministic_linkage.py
+      - name: Fresh production vs expanded-linkage challenger
+        env: {PYTHONPATH: .}
+        run: |
+          mkdir -p audit_outputs/exp80
+          python -m backend.app.ml.experiments.exp80_scientific_runner \
+            --training-end ${{ matrix.training_end }} \
+            --output audit_outputs/exp80/${{ matrix.window }}.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: experiment-exp80-${{ matrix.window }}-results
+          path: audit_outputs/exp80/${{ matrix.window }}.json
+          if-no-files-found: error
