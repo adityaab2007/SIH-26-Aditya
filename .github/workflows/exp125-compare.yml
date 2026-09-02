@@ -13,6 +13,14 @@ jobs:
   exp125:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: '2001_2019'
+            window: '2001,2019,2025'
+          - label: '2001_2021'
+            window: '2001,2021,2025'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,10 +32,24 @@ jobs:
         run: |
           python -m py_compile backend/app/ml/experiments/scientific_challenger_utils.py backend/app/ml/experiments/internal_signal_challengers.py backend/app/ml/experiments/exp125_multiscale_trajectory.py
           PYTHONPATH=. python -m backend.app.ml.experiments.exp125_multiscale_trajectory --self-test
-      - name: Fresh production vs Exp125 on both future windows
+      - name: Fresh production vs Exp125 — ${{ matrix.label }}
         env:
           PYTHONPATH: '${{ github.workspace }}'
-        run: python -m backend.app.ml.experiments.exp125_multiscale_trajectory --output-dir models/monthly_lifecycle/experiments/exp125/ci
+          SIH_EXPERIMENT_WINDOW: '${{ matrix.window }}'
+          EXP_MODULE: 'backend.app.ml.experiments.exp125_multiscale_trajectory'
+          EXP_OUTPUT: 'models/monthly_lifecycle/experiments/exp125/ci'
+        run: |
+          python - <<'PY'
+          import os, runpy, sys
+          from backend.app.ml.experiments import internal_signal_challengers as harness
+          selected = tuple(int(x) for x in os.environ['SIH_EXPERIMENT_WINDOW'].split(','))
+          approved = [tuple(int(v) for v in window) for window in harness.WINDOWS]
+          if selected not in approved:
+              raise SystemExit(f'unapproved experiment window: {selected}; approved={approved}')
+          harness.WINDOWS = [selected]
+          sys.argv = [os.environ['EXP_MODULE'], '--output-dir', os.environ['EXP_OUTPUT']]
+          runpy.run_module(os.environ['EXP_MODULE'], run_name='__main__')
+          PY
       - name: Scientific verdict
         if: always()
         run: |
@@ -43,7 +65,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: exp125-scientific-evidence
+          name: exp125-scientific-evidence-${{ matrix.label }}
           path: |
             reports/exp125_final_report.json
             models/monthly_lifecycle/experiments/exp125/ci/
