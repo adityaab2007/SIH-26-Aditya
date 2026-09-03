@@ -11,7 +11,7 @@ jobs:
           - window: '2001-2021'
             training_end: 2021
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 480
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
