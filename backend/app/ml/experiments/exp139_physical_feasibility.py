@@ -1,0 +1,31 @@
+"""Exp139 — auditable post-prediction physical lower-bound projection."""
+from __future__ import annotations
+import argparse,json
+from pathlib import Path
+import numpy as np,pandas as pd
+from backend.app.ml.experiments.nextgen_common import _compare,_gain,_metric,_prepare
+from backend.app.ml.monthly_lifecycle import build_training_dataset
+from backend.app.ml.monthly_training import temporal_project_split
+from scripts.run_fast_current_experiment import fast_current_production
+EXPERIMENT_ID="Exp139";MAX_VIOLATION_RATE=.02
+
+def cost_lower_bound(frame):
+    approved=pd.to_numeric(frame.get("approved_cost_cr"),errors="coerce");spent=pd.to_numeric(frame.get("cumulative_expenditure_cr"),errors="coerce");return ((spent-approved)/approved*100).where(approved.gt(0)&spent.notna())
+def delay_lower_bound(frame):
+    snap=pd.to_datetime(frame.get("snapshot_date"),errors="coerce");planned=pd.to_datetime(frame.get("planned_completion_date"),errors="coerce");return ((snap-planned).dt.days.clip(lower=0)).where(snap.notna()&planned.notna())
+def audit_invariants(train):
+    x=train.copy().sort_values(["canonical_project_id","snapshot_date"]);spent=pd.to_numeric(x.get("cumulative_expenditure_cr"),errors="coerce");prev=spent.groupby(x.canonical_project_id).shift(1);pairs=spent.notna()&prev.notna();cost_revision=(spent+1e-6<prev)&pairs;cost_rate=float(cost_revision.sum()/max(int(pairs.sum()),1))
+    cb=cost_lower_bound(x);ct=pd.to_numeric(x.actual_cost_overrun_percentage,errors="coerce");cm=cb.notna()&ct.notna();cost_target_rate=float((ct[cm]+1e-6<cb[cm]).mean()) if cm.any() else 1.
+    db=delay_lower_bound(x);dt=pd.to_numeric(x.actual_delay_days,errors="coerce");dm=db.notna()&dt.notna();delay_rate=float((dt[dm]+1e-6<db[dm]).mean()) if dm.any() else 1.
+    return {"cost_expenditure_monotonicity_violation_rate":cost_rate,"cost_target_lower_bound_violation_rate":cost_target_rate,"delay_target_lower_bound_violation_rate":delay_rate,"cost_invariant_valid":max(cost_rate,cost_target_rate)<=MAX_VIOLATION_RATE,"delay_invariant_valid":delay_rate<=MAX_VIOLATION_RATE,"audit_rows":len(x)}
+def project_lower_bound(prediction,lower_bound,enabled=True):
+    p=np.asarray(prediction,float).copy();lb=pd.to_numeric(lower_bound,errors="coerce").to_numpy(float);mask=bool(enabled)&np.isfinite(lb)&np.isfinite(p);out=p.copy();out[mask]=np.maximum(out[mask],lb[mask]);return out,mask&(out>p+1e-12)
+def _diag(before,after,mask,rate):
+    delta=np.asarray(after)-np.asarray(before);return {"projected_percentage":float(100*np.mean(mask)) if len(mask) else 0.,"mean_projection_size":float(delta[mask].mean()) if np.any(mask) else 0.,"maximum_projection_size":float(delta[mask].max()) if np.any(mask) else 0.,"invariant_violation_rate":float(rate)}
+def fit_against_production(*,data,training_start,training_end,test_end,production_bundle,production_receipt=None):
+    f=_prepare(data);train,test=temporal_project_split(f,training_start,training_end,test_end);c=_compare(test);audit=audit_invariants(train);meta=production_bundle["metadata"];cf=list(meta["cost_features_used"]);df=list(meta["delay_features_used"]);pc=np.asarray(production_bundle["cost"].predict(c[cf]),float);pdly=np.maximum(0,np.asarray(production_bundle["delay"].predict(c[df]),float));ec,cm=project_lower_bound(pc,cost_lower_bound(c),audit["cost_invariant_valid"]);ed,dm=project_lower_bound(pdly,delay_lower_bound(c),audit["delay_invariant_valid"]);ed=np.maximum(0,ed);cd=_diag(pc,ec,cm,max(audit["cost_expenditure_monotonicity_violation_rate"],audit["cost_target_lower_bound_violation_rate"]));dd=_diag(pdly,ed,dm,audit["delay_target_lower_bound_violation_rate"]);cd["constraint_enabled"]=audit["cost_invariant_valid"];dd["constraint_enabled"]=audit["delay_invariant_valid"]
+    pcm,ecm=_metric(c,"actual_cost_overrun_percentage",pc),_metric(c,"actual_cost_overrun_percentage",ec);pdm,edm=_metric(c,"actual_delay_days",pdly),_metric(c,"actual_delay_days",ed);m={"production_cost_mae":pcm,"experiment_cost_mae":ecm,"cost_improvement_percentage":_gain(pcm,ecm),"production_delay_mae":pdm,"experiment_delay_mae":edm,"delay_improvement_percentage":_gain(pdm,edm),"comparison_test_projects":int(c.canonical_project_id.nunique()),"comparison_test_snapshots":len(c)};return {"experiment":{"experiment_id":EXPERIMENT_ID,"diagnostics":{"audit":audit,"cost":cd,"delay":dd}},"overall_comparison":m}
+def main():
+ p=argparse.ArgumentParser();p.add_argument("--start",type=int,required=True);p.add_argument("--end",type=int,required=True);p.add_argument("--test-end",type=int,required=True);p.add_argument("--output",required=True);a=p.parse_args();data,_=build_training_dataset();data=data.copy();data["completion_year"]=pd.to_numeric(data.completion_year,errors="coerce");b,r=fast_current_production(data,a.start,a.end,a.test_end);z=fit_against_production(data=data,training_start=a.start,training_end=a.end,test_end=a.test_end,production_bundle=b,production_receipt=r);m=z["overall_comparison"];v={k:("IMPROVED" if m[f"{k}_improvement_percentage"]>0 else "REGRESSED" if m[f"{k}_improvement_percentage"]<0 else "UNCHANGED") for k in ("cost","delay")};payload={"experiment":EXPERIMENT_ID,"window":f"{a.start}-{a.end}","production":{"cost_mae":m["production_cost_mae"],"delay_mae":m["production_delay_mae"]},"experiment_metrics":{"cost_mae":m["experiment_cost_mae"],"delay_mae":m["experiment_delay_mae"]},"improvement":{"cost_percent":m["cost_improvement_percentage"],"delay_percent":m["delay_improvement_percentage"]},"cohort":{"projects":m["comparison_test_projects"],"snapshots":m["comparison_test_snapshots"]},"diagnostics":z["experiment"]["diagnostics"],"verdict":v};o=Path(a.output);o.parent.mkdir(parents=True,exist_ok=True);o.write_text(json.dumps(payload,indent=2,allow_nan=False)+"\n");
+ for k,val in [("WINDOW",f"{a.start}_{a.end}"),("PRODUCTION_COST_MAE",m["production_cost_mae"]),("EXPERIMENT_COST_MAE",m["experiment_cost_mae"]),("COST_IMPROVEMENT_PERCENT",m["cost_improvement_percentage"]),("PRODUCTION_DELAY_MAE",m["production_delay_mae"]),("EXPERIMENT_DELAY_MAE",m["experiment_delay_mae"]),("DELAY_IMPROVEMENT_PERCENT",m["delay_improvement_percentage"]),("PROJECT_COUNT",m["comparison_test_projects"]),("SNAPSHOT_COUNT",m["comparison_test_snapshots"]),("VERDICT_COST",v["cost"]),("VERDICT_DELAY",v["delay"])]:print(f"{k}={val}")
+if __name__=="__main__":main()
