@@ -1,0 +1,23 @@
+name: Exp142 comparison
+on:
+  pull_request:
+    branches: [main]
+    paths: ['backend/app/ml/experiments/exp142_dart_dropout.py','tests/test_exp142_dart_dropout.py','.github/workflows/exp142-compare.yml']
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy: {fail-fast: false, matrix: {include: [{start: 2001, end: 2019},{start: 2001, end: 2021}]}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install -r requirements-dev.txt
+      - run: python -m compileall -q backend/app/ml/experiments/exp142_dart_dropout.py
+      - run: PYTHONPATH=. pytest -q tests/test_exp142_dart_dropout.py
+      - env: {PYTHONPATH: '${{ github.workspace }}'}
+        run: python -m backend.app.ml.experiments.exp142_dart_dropout --start ${{ matrix.start }} --end ${{ matrix.end }} --test-end 2025 --output audit_outputs/exp142_${{ matrix.start }}_${{ matrix.end }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: 'exp142-${{ matrix.start }}-${{ matrix.end }}', path: 'audit_outputs/exp142_${{ matrix.start }}_${{ matrix.end }}.json', if-no-files-found: warn}
